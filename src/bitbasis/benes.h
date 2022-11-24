@@ -4,7 +4,7 @@
 namespace bitbasis {
 
 
-static const no_index =  int(-1);
+static const int no_index =  int(-1);
 
 template<typename I, int ld_bits>
 struct tr_bfly{
