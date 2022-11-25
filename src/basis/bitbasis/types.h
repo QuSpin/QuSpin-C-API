@@ -19,9 +19,6 @@ typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<409
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<8192, 8192, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint8192_t;
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<16384, 16384, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint16384_t;
 
-
 }
 
-
-
-endif
+#endif

@@ -1,5 +1,5 @@
-#ifndef __BITS_INFO_H__
-#define __BITS_INFO_H__
+#ifndef __BIT_INFO_H__
+#define __BIT_INFO_H__
 
 #include "basis/bitbasis/int_types.h"
 

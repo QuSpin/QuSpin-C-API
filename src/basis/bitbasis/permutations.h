@@ -1,9 +1,6 @@
 #ifndef __DIT_PERMS_H__
 #define __DIT_PERMS_H__
 
-#include "basis/bitbasis/bit_info.h"
-#include "basis/bitbasis/benes_perm.h"
-
 namespace BitBasis {
 
 template <typename I, int D>
