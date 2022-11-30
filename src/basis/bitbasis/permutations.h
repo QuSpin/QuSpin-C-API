@@ -1,5 +1,5 @@
-#ifndef __DIT_PERMS_H__
-#define __DIT_PERMS_H__
+#ifndef __QUSPIN_BASIS_BITBASIS_PERMUTATION_H__
+#define __QUSPIN_BASIS_BITBASIS_PERMUTATION_H__
 
 namespace BitBasis {
 

@@ -1,5 +1,5 @@
-#ifndef __BITBASIS_H__
-#define __BITBASIS_H__
+#ifndef __QUSPIN_BASIS_BITBASIS_H__
+#define __QUSPIN_BASIS_BITBASIS_H__
 
 #include "basis/bitbasis/types.h"
 #include "basis/bitbasis/info.h"

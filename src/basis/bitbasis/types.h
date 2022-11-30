@@ -1,9 +1,10 @@
-#ifndef __INT_TYPES_H__
-#define __INT_TYPES_H__
+#ifndef __QUSPIN_BASIS_BITBASIS_TYPES_H__
+#define __QUSPIN_BASIS_BITBASIS_TYPES_H__
 
 
 #include "boost/multiprecision/cpp_int.hpp"
 #include "boost/numeric/conversion/cast.hpp"
+
 
 namespace BitBasis {
 

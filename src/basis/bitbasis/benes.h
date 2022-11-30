@@ -1,5 +1,5 @@
-#ifndef _BENES_PERM_H
-#define _BENES_PERM_H
+#ifndef __QUSPIN_BASIS_BITBASIS_BENES_H__
+#define __QUSPIN_BASIS_BITBASIS_BENES_H__
 
 
 namespace BitBasis {
