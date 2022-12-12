@@ -8,10 +8,15 @@
 #include <list>
 #include <limits>
 
+
+
+
 template<class T>
 class dense_term
 {
-private:
+    // project locations onto local hilbert space to evaluate matrix elements
+    // good for when the terms have few-body terms where the local matrix fits into cache. 
+private: 
     const int nrow;
     const int nloc;
     const int * loc;
@@ -25,103 +30,267 @@ public:
     ~dense_term(){}
 
     template<typename I>
-    inline void op(I s, std::unordered_map<I,T> &output){
+    void op(const I s, std::unordered_map<I,T> &output) const {
         std::unordered_map<I,T> output();
         int a = get_bits(s,loc,nloc);
         for(int b=0;b<nrow;++b){
             const int i = nrow*a+b;
             if(nonzero[i]){
-                I s = Basis::BitBasis::get_sub_bitstring(s,b,loc,nloc);
-                output[s] = (output.contains(s) ? output[s] + data[i] : data[i] );
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
     }
 
     template<typename I>
-    inline void op_dag(I s, std::unordered_map<I,T> &output){
+    void op_transpose(const I s, std::unordered_map<I,T> &output) const {
         int a = get_bits(s,loc,nloc);
         for(int b=0;b<nrow;++b){
             const int i = nrow*b+aå;
             if(nonzero[i]){
-                I s = Basis::BitBasis::get_sub_bitstring(s,b,loc,nloc);
-                output[s] = (output.contains(s) ? output[s] + std::conj(data[i]) : std::conj(data[i]) );
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
     }
 
+    template<typename I>
+    void op_dagger(const I s, std::unordered_map<I,T> &output) const {
+        int a = get_bits(s,loc,nloc);
+        for(int b=0;b<nrow;++b){
+            const int i = nrow*b+aå;
+            if(nonzero[i]){
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + std::conj(data[i]) : std::conj(data[i]) );
+            }
+        }
+    }
+
+/*
+    template<typename I>
+    void fermion_op(const I s, std::unordered_map<I,T> &output) const {
+        std::unordered_map<I,T> output();
+        int a = get_bits(s,loc,nloc);
+        for(int b=0;b<nrow;++b){
+            const int i = nrow*a+b;
+            if(nonzero[i]){
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+            }
+        }
+    }
+
+    template<typename I>
+    void fermion_op_transpose(const I s, std::unordered_map<I,T> &output) const {
+        int a = get_bits(s,loc,nloc);
+        for(int b=0;b<nrow;++b){
+            const int i = nrow*b+aå;
+            if(nonzero[i]){
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+            }
+        }
+    }
+
+    template<typename I>
+    void fermion_op_dagger(const I s, std::unordered_map<I,T> &output) const {
+        int a = get_bits(s,loc,nloc);
+        for(int b=0;b<nrow;++b){
+            const int i = nrow*b+aå;
+            if(nonzero[i]){
+                const I r = BitBasis::get_sub_bitstring(s,b,loc,nloc);
+                output[r] = (output.contains(r) ? output[r] + std::conj(data[i]) : std::conj(data[i]) );
+            }
+        }
+    }
+*/
 };
 
 template<typename T>
-class permutation_term
+class operator_string
 {
 private:
-    const int nrow;
-    const int nloc;
-    const int * loc;
-    const int * perm;
-    const int * inv_perm;
-    const T * data;
+    const int lhss; // local hilbert space size for each term
+    const int nloc;  // number of local operators
+    const int * loc; // number of local operators in 
+    const int * perms; // non-branching operators stored as permutations
+    const int * inv_perms; // non-branching operators dagger stored as permutations
+    const T * datas; // matrix elements for non-branching operators. 
 
 public:
-    permutation_term(const int _nrow,const int _perm,const int _inv_perm, const T * _data): 
-    nrow(_nrow), perm(_perm), inv_perm(_inv_perm), data(_data) {}
+    operator_string(int _lhss,int _perm,int _inv_perm, T * _data): 
+    lhss(_lhss), perm(_perm), inv_perm(_inv_perm), data(_data) {}
     
-    ~permutation_term(){}
+    ~operator_string(){}
 
     template<typename I>
-    inline void op(I s, std::unordered_map<I,T> &output){
-        int a = Basis::BitBasis::get_sub_bitstring(s,loc,nloc);
-        int b = perm[a];
-        I s = Basis::BitBasis::set_sub_bitstring(s,b,loc,nloc);
-        output[s] = (output.contains(s) ? output[s] + data[i] : data[i] );
+    inline void op(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int a = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int b = perm[a];
+            r = BitBasis::set_sub_bitstring(r,a,b,loc[i]);
+            m *= data[s_loc];
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+    }
+    
+    template<typename I>
+    inline op_transpose(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = inv_perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int s_loc = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int r_loc = perm[s_loc];
+            r = BitBasis::set_sub_bitstring(r,r_loc,loc[i]);
+            m *= data[s_loc];
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
     }
 
     template<typename I>
-    inline op_dag(I s, std::unordered_map<I,T> &output){
-        int a = Basis::BitBasis::get_sub_bitstring(s,loc,nloc);
-        int b = inv_perm[a];
-        I s = Basis::BitBasis::set_sub_bitstring(s,b,loc,nloc);
-        output[s] = (output.contains(s) ? output[s] + std::conj(data[i]) : std::conj(data[i]) );
+    inline op_dagger(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = inv_perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int s_loc = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int r_loc = perm[s_loc];
+            r = BitBasis::set_sub_bitstring(r,r_loc,loc[i]);
+            m *= std::conj(data[s_loc]);
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+    }
+/*
+    template<typename I>
+    inline void fermion_op(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int a = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int b = perm[a];
+            r = BitBasis::set_sub_bitstring(r,a,b,loc[i]);
+            m *= data[s_loc];
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+    }
+    
+    template<typename I>
+    inline fermion_op_transpose(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = inv_perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int s_loc = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int r_loc = perm[s_loc];
+            r = BitBasis::set_sub_bitstring(r,r_loc,loc[i]);
+            m *= data[s_loc];
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
     }
 
+    template<typename I>
+    inline fermion_op_dagger(const I s, std::unordered_map<I,T> &output) const {
+        const int * perm = inv_perms;
+        const T * data = datas;
+        T m = T(1.0);
+        I r = s;
+        for(int i=0;i<nloc;++i){
+            const int s_loc = BitBasis::get_sub_bitstring(r,loc[i]);
+            const int r_loc = perm[s_loc];
+            r = BitBasis::set_sub_bitstring(r,r_loc,loc[i]);
+            m *= std::conj(data[s_loc]);
+
+            if(m==T(0)) break;
+            
+            // shift to next permutation
+            perm += lhss; 
+            data += lhss;
+        }
+
+        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+    }
+*/
 };
+
 
 
 template<typename T>
 class operator
 {
 private:
-    std::vector<permutation_term<T>> pterms;
+    std::vector<operator_string<T>> pterms;
     std::vector<dense_term<T>> dterms;
+
     
 public:
-    operator(/* args */);
-    ~operator();
+    operator(std::vector<operator_string<T>>& pterms,std::vector<dense_term<T>> dterms){
+        self->pterms = pterms;
+        self->dterms = dterms;
+    }
+    ~operator() {}
 
-    template<typename Basis,typename J>
-    size_t nnz_columns(Basis& basis,J row){
-        std::unordered_map<Basis::BitSet,T> output;
-
-        for(auto pterm : pterms){
-            pterm->op_dag(basis[row],output);
-            
+    template<typename I>
+    void columns(const I s,unordered_map<I,T>& output){
+        for(auto const& pterm : pterms){
+            pterm.op_dagger(s,output);
         }
-
-        return 
+        for(auto const& dterm : dterms){
+            pterm.op_dagger(s,output);
+        }
     }
 
-    template<typename Basis,typename J>
-    map<J,T> columns(Basis&,J);
+    template<typename I>
+    void rows(const I s,unordered_map<I,T>& output){
+        for(auto const& pterm : pterms){
+            pterm.op_dagger(s,output);
+        }
+    }
 };
-
-operator::operator(/* args */)
-{
-}
-
-operator::~operator()
-{
-}
-
 
 
 #endif

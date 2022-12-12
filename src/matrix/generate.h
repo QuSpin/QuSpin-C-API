@@ -3,36 +3,70 @@
 
 #include <cinttypes>
 #include <cmath>
+#include <numeric>
+#include <algorithm>
+
 
 template<typename Basis,typename T,typename J>
 void calc_rowptr(Basis &basis, operator<T> &hamil,J rowptr[],
 ){
-    J nnz = 0;
+    std::unordered_map<Basis::BitSet,T> col_states;
+    std::unrdered_map<J,T> columns;
+
+
     for(size_t row = 0;row < basis.size();row++)
     {
-        rowptr[row] = nnz;
-        nnz += hamil.nnz_columns(basis,row); // get nnz for this row
+        col_states.clear();
+        columns.clear();
+
+        // generate action on states
+        hamil.columns(basis[row],col_states);
+
+        // calculate location of states in basis
+        basis.refstate(col_states,columns);
+
+        rowptr[row] = columns.size(); // get nnz for this row
     }
-    rowptr[basis.size()] = nnz;
+
+    std::partial_sum(rowptr,rowptr+basis.size()+1,rowptr)
 }
 
 
-template<typename Basis,typename T,typename J>
-void generate_matrix(
+template<typename Basis,typename Operator,typename T,typename J>
+void generate_matrix_elements(
+    Operator &hamil,
     Basis &basis,
-    operator<T> &hamil,
     J rowptr[],
     J indices[],
     T values[])
 {
+    std::unordered_map<Basis::BitSet,T> col_states;
+    std::unrdered_map<J,T> columns;
+    std::vector<std::pair<Basis::BitSet,T>> sorted_columns;
+    
     for(size_t row = 0;row < basis->size();row++)
     {
-        auto results = hamil.columns(basis,row);
-        auto results_iter = results.begin();
-        for(J ind=rowptr[row],cind=0;ind<rowptr[row+1];++ind,++cind){
-            indices[ind] = results_iter.first();
-            values[ind] = results_iter.second();
+        col_states.clear();
+        columns.clear();
+        sorted_columns.clear();
+
+        // generate action on states
+        hamil.columns(basis[row],col_states);
+
+        // calculate location of states in basis and matrix elements
+        basis.refstate(col_states,columns);
+
+        // sort columns
+        sorted_columns.insert(columns.begin(), columns.end());
+        std::sort(sorted_columns.begin(), sorted_columns.end(), comp);
+
+        // insert data
+        J i = rowptr[row];
+        for(auto const& [col,nzval] : sorted_columns){
+            indices[i] = col;
+            values[i++] = nzval;
         }
+
     }
 }
 
