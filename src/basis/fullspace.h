@@ -1,5 +1,0 @@
-#ifndef __QUSPIN_BASIS_FULLSPACE_H__
-#define __QUSPIN_BASIS_FULLSPACE_H__
-
-
-#endif

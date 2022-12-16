@@ -2,9 +2,8 @@
 #define __QUSPIN_BASIS_BITBASIS_BENES_H__
 
 
-namespace BitBasis {
 
-namespace Benes {
+namespace quspin::basis::bit_basis::benes_perm {
 
 static const int no_index = -1;
 
@@ -13,7 +12,7 @@ template<typename I>
 struct tr_bfly{
   // This structure is used to hold the configuration of
   // butterfly-based operations as well as compress and expand.
-  enum {ld_bits = BitInfo<I>::ld_bits};
+  enum {ld_bits = bit_info<I>::ld_bits};
   I cfg[ld_bits];  // butterfly configuration
   I mask;  // saved mask, for compress/expand
 
@@ -41,7 +40,7 @@ struct tr_benes{
 template<typename I>   // primary template
 struct ta_index
 {
-  enum { bits = BitInfo<I>::bits};
+  enum { bits = bit_info<I>::bits};
   int data[bits];
 
   int& operator[](int idx) {
@@ -56,7 +55,7 @@ struct ta_index
 template<typename I>   // primary template
 struct ta_subword
 {
-  enum { ld_bits = BitInfo<I>::ld_bits};
+  enum { ld_bits = bit_info<I>::ld_bits};
   unsigned int data[ld_bits];
 
   unsigned int& operator[](int idx) {
@@ -77,10 +76,10 @@ void invert_perm(const ta_index<I> &src, ta_index<I> &tgt) {
 
   int i;
 
-  for (i = 0; i <= BitInfo<I>::bits-1; ++i) {
+  for (i = 0; i <= bit_info<I>::bits-1; ++i) {
     tgt[i] = no_index;
     }
-  for (i = 0; i <= BitInfo<I>::bits-1; ++i) {
+  for (i = 0; i <= bit_info<I>::bits-1; ++i) {
     if (src[i] != no_index) {
       tgt[src[i]] = i;
       }
@@ -116,7 +115,7 @@ I bfly(const tr_bfly<I>* self, I x) {
 
   int stage,j;
 
-  for (stage = BitInfo<I>::ld_bits-1; stage >= 0; --stage) {  // UNROLL
+  for (stage = bit_info<I>::ld_bits-1; stage >= 0; --stage) {  // UNROLL
     // x = butterfly(x, self->cfg[stage], sw);
     j = 1 << stage;
     x = bit_permute_step<I>(x, self->cfg[stage], j);
@@ -135,7 +134,7 @@ I ibfly(const tr_bfly<I>* self, I x) {
 
   int stage,j;
 
-  for (stage = 0; stage <= BitInfo<I>::ld_bits-1; ++stage) {  // UNROLL
+  for (stage = 0; stage <= bit_info<I>::ld_bits-1; ++stage) {  // UNROLL
     // x = butterfly(x, self->cfg[stage], sw);
     j = 1 << stage;
     x = bit_permute_step<I>(x, self->cfg[stage], j);
@@ -146,7 +145,7 @@ I ibfly(const tr_bfly<I>* self, I x) {
 
 
 //////
-// Permutations via Benes network
+// Permutations via benes_perm network
 
 template<typename t_bit_index>
 static void exchange_bit_index(t_bit_index* a, t_bit_index* b) {
@@ -161,7 +160,7 @@ static void exchange_bit_index(t_bit_index* a, t_bit_index* b) {
 
 template<typename I>
 void gen_benes_ex(tr_benes<I>* self, const ta_index<I> &c_tgt, const ta_subword<I> &a_stage) {
-// Generate a configuration for the Benes network with variable stage order.
+// Generate a configuration for the benes_perm network with variable stage order.
 // Use benes_fwd_ex and benes_bwd_ex.
 // Algorithm as sketched by Donal E. Knuth,
 //   The art of computer programming, vol. 4, pre-fascicle 1a
@@ -180,11 +179,11 @@ void gen_benes_ex(tr_benes<I>* self, const ta_index<I> &c_tgt, const ta_subword<
   int s;
   I lo_bit = 1;
 
-  for (s = 0; s <= BitInfo<I>::bits-1; ++s) {
+  for (s = 0; s <= bit_info<I>::bits-1; ++s) {
     src[s] = no_index;
     tgt[s] = no_index;
     }
-  for (s = 0; s <= BitInfo<I>::bits-1; ++s) {
+  for (s = 0; s <= bit_info<I>::bits-1; ++s) {
     if (c_tgt[s] != no_index) {
       tgt[s] = s;
       src[c_tgt[s]] = s;
@@ -192,14 +191,14 @@ void gen_benes_ex(tr_benes<I>* self, const ta_index<I> &c_tgt, const ta_subword<
     }
   invert_perm(src,inv_src);
   invert_perm(tgt,inv_tgt);
-  for (stage_idx = 0; stage_idx <= BitInfo<I>::ld_bits-1; ++stage_idx) {
+  for (stage_idx = 0; stage_idx <= bit_info<I>::ld_bits-1; ++stage_idx) {
     stage = a_stage[stage_idx];
     src_set = 0;
     src_idx = 0;
     mask = ((int)lo_bit) << stage;
     cfg_src = 0;
     cfg_tgt = 0;
-    for (main_idx = 0; main_idx <= BitInfo<I>::bits-1; ++main_idx) {  // This order to meet Waksman test
+    for (main_idx = 0; main_idx <= bit_info<I>::bits-1; ++main_idx) {  // This order to meet Waksman test
       if ((main_idx & mask) == 0) {  // low only
         for (aux_idx = 0; aux_idx <= 1; ++aux_idx) {
           src_idx = main_idx+(aux_idx << stage);
@@ -276,17 +275,17 @@ void gen_benes_ex(tr_benes<I>* self, const ta_index<I> &c_tgt, const ta_subword<
 template<typename I>
 void gen_benes(tr_benes<I>* self, const ta_index<I> &c_tgt) {
 // INLINE
-// Generate a configuration for the standard Benes network.
+// Generate a configuration for the standard benes_perm network.
   ta_subword<I> a_stage_bwd;
-  for(unsigned int i=0;i < BitInfo<I>::ld_bits;++i){
-    a_stage_bwd[i] = BitInfo<I>::ld_bits - i - 1;
+  for(unsigned int i=0;i < bit_info<I>::ld_bits;++i){
+    a_stage_bwd[i] = bit_info<I>::ld_bits - i - 1;
   }
-  gen_benes_ex(self,c_tgt,a_stage_bwd);  // standard Benes order
+  gen_benes_ex(self,c_tgt,a_stage_bwd);  // standard benes_perm order
   }
 
 template<typename I>
 I benes_fwd(const tr_benes<I>* self, I x) {
-// Apply Benes network.
+// Apply benes_perm network.
 // c_tgt of gen_benes selected source indexes.
 
   return ibfly(&self->b2, bfly(&self->b1,x));
@@ -294,11 +293,11 @@ I benes_fwd(const tr_benes<I>* self, I x) {
 
 template<typename I>
 I benes_bwd(const tr_benes<I>* self, I x) {
-// Apply Benes network.
+// Apply benes_perm network.
 // c_tgt of gen_benes selected target indexes.
 
   return ibfly(&self->b1, bfly(&self->b2,x));
   }
 }
-}
+
 #endif
