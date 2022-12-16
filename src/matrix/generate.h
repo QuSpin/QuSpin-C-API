@@ -7,14 +7,16 @@
 #include <algorithm>
 
 
-template<typename Basis,typename T,typename J>
-void calc_rowptr(Basis &basis, operator<T> &hamil,J rowptr[],
-){
-    std::unordered_map<Basis::BitSet,T> col_states;
+
+template<typename basis_t,typename T,typename J>
+void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
+{
+    J n_row = basis.size();
+    std::unordered_map<basis_t::bitset_t,T> col_states;
     std::unrdered_map<J,T> columns;
 
-
-    for(size_t row = 0;row < basis.size();row++)
+    rowptr[0] = 0;
+    for(J row = 0;row < n_row;row++)
     {
         col_states.clear();
         columns.clear();
@@ -25,24 +27,23 @@ void calc_rowptr(Basis &basis, operator<T> &hamil,J rowptr[],
         // calculate location of states in basis
         basis.refstate(col_states,columns);
 
-        rowptr[row] = columns.size(); // get nnz for this row
+        rowptr[row+1] = columns.size(); // get nnz for this row
     }
 
-    std::partial_sum(rowptr,rowptr+basis.size()+1,rowptr)
+    std::partial_sum(rowptr,rowptr+n_row+1,rowptr)
 }
 
-
-template<typename Basis,typename Operator,typename T,typename J>
+template<typename basis_t,typename T,typename J>
 void generate_matrix_elements(
-    Operator &hamil,
-    Basis &basis,
+    operator<T> &hamil,
+    basis_t &basis,
     J rowptr[],
     J indices[],
     T values[])
 {
-    std::unordered_map<Basis::BitSet,T> col_states;
+    std::unordered_map<basis_t::bitset_t,T> col_states;
     std::unrdered_map<J,T> columns;
-    std::vector<std::pair<Basis::BitSet,T>> sorted_columns;
+    std::vector<std::pair<basis_t::bitset_t,T>> sorted_columns;
     
     for(size_t row = 0;row < basis->size();row++)
     {
