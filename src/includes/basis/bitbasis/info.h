@@ -8,6 +8,7 @@ namespace bit_basis {
 template<typename I>
 struct bit_info{};
 
+#ifdef USE_BOOST
 template<>
 struct bit_info<uint16384_t>
 { enum {ld_bits=14,bits=16384,bytes=2048};
@@ -56,6 +57,24 @@ struct bit_info<uint128_t>
   typedef int bit_index_type;
 };
 
+template<class J,class I>
+inline J integer_cast(I s){
+  try 
+  {
+    return boost::numeric_cast<J>(s);; // This conversion succeeds (is in range)
+  }
+  catch(boost::numeric::positive_overflow& e) {
+    return -1;
+  }
+}
+
+#else
+
+template<class J,class I>
+J integer_cast(const I s)
+
+#endif
+
 template<>
 struct bit_info<uint64_t>
 {  enum {ld_bits=6,bits=64,bytes=8};
@@ -81,37 +100,27 @@ struct bit_info<uint8_t>
 };
 
 
-template<class J,class I>
-inline J integer_cast(I s){
-  try 
-  {
-    return boost::numeric_cast<J>(s);; // This conversion succeeds (is in range)
-  }
-  catch(boost::numeric::positive_overflow& e) {
-    return -1;
-  }
-}
+
 
 template<class J>
-inline J integer_cast<J,uint64_t>(uint64_t s){
+inline J integer_cast<J,uint64_t>(const uint64_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint32_t>(uint32_t s){
+inline J integer_cast<J,uint32_t>(const uint32_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint16_t>(uint16_t s){
+inline J integer_cast<J,uint16_t>(const uint16_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint8_t>(uint8_t s){
+inline J integer_cast<J,uint8_t>(const uint8_t s){
   return J(s);
 }
-
 
 template<class T>
 typename bit_info<T>::bit_index_type bit_pos(T x, typename bit_info<T>::bit_index_type *idx)

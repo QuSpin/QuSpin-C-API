@@ -2,9 +2,11 @@
 #define __QUSPIN_BASIS_BITBASIS_TYPES_H__
 
 #include <cinttypes>
+
+#ifdef USE_BOOST
 #include "boost/multiprecision/cpp_int.hpp"
 #include "boost/numeric/conversion/cast.hpp"
-
+#endif
 
 namespace quspin::basis::bit_basis {
 
@@ -12,6 +14,8 @@ typedef std::int8_t uint8_t;
 typedef std::int16_t uint16_t;
 typedef std::uint32_t uint32_t;
 typedef std::uint64_t uint64_t;
+
+#ifdef USE_BOOST
 typedef boost::multiprecision::uint128_t uint128_t;
 typedef boost::multiprecision::uint256_t uint256_t;
 typedef boost::multiprecision::uint512_t uint512_t;
@@ -20,6 +24,7 @@ typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<204
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<4096UL, 4096UL, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint4096_t;
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<8192UL, 8192UL, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint8192_t;
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<16384UL, 16384UL, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint16384_t;
+#endif
 
 }
 #endif

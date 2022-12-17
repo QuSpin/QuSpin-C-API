@@ -12,7 +12,7 @@ template<typename basis_t,typename T,typename J>
 void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
 {
     J n_row = basis.size();
-    std::unordered_map<basis_t::bitset_t,T> col_states;
+    std::unordered_map<typename basis_t::bitset_t,T> col_states;
     std::unrdered_map<J,T> columns;
 
     rowptr[0] = 0;
@@ -43,7 +43,7 @@ void generate_matrix_elements(
 {
     std::unordered_map<basis_t::bitset_t,T> col_states;
     std::unrdered_map<J,T> columns;
-    std::vector<std::pair<basis_t::bitset_t,T>> sorted_columns;
+    std::vector<std::pair<typename basis_t::bitset_t,T>> sorted_columns;
     
     for(size_t row = 0;row < basis->size();row++)
     {
