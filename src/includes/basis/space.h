@@ -3,6 +3,7 @@
 
 
 #include <cmath>
+#include <unordered_map>
 #include "basis/bitbasis/dits.h"
 #include "basis/bitbasis/bits.h"
 
@@ -68,13 +69,18 @@ private:
     std::vector<K> norms;
     std::unordered_map<I,J> index_map;
 
-
 public:
     typedef I bitset_t;
     typedef J index_t;
+    typedef K norm_t;
 
-    dit_fullspace(const int _lhss,const int N) : 
-    lhss(_lhss), N(_N),
+    dit_subspace(const int _lhss,const int _N) : lhss(_lhss), N(_N)
+    dit_subspace(const int _lhss,const int _N, const size_t Ns_est) : lhss(_lhss), N(_N)
+    {
+        state.reserve(Ns_est);
+        norms.reserve(Ns_est);
+        index_map.reserve(Ns_est*2);
+    }
     mask(constants::mask[_lhss]), 
     bits(constants::bits[_lhss]) {}
     ~dit_fullspace() {}
@@ -91,6 +97,11 @@ public:
         return index_map[state.content];
     }
 
+    void add_state(const I new_state,const K new_norm){
+        states.push(new_state);
+        norms.push(new_norm);
+        index_map[new_state] = states.size();
+    }
 
 };
 
@@ -106,6 +117,7 @@ private:
 public:
     typedef I bitset_t;
     typedef J index_t;
+    typedef J norm_t;
 
 
     bit_fullspace(const int _N) : 
@@ -134,13 +146,17 @@ private:
     std::vector<K> norms;
     std::unordered_map<I,J> index_map;
 
-
 public:
     typedef I bitset_t;
     typedef J index_t;
+    typedef K norm_t;
 
-    bit_subspace(const int N) : 
-    N(_N),
+    bit_subspace(const int _N) : N(_N)
+    bit_subspace(const int _N, const size_t Ns_est) {
+        state.reserve(Ns_est);
+        norms.reserve(Ns_est);
+        index_map.reserve(Ns_est*2);
+    }
     ~bit_subspace() {}
 
     inline size_t size() const { return states.size();}
@@ -155,12 +171,12 @@ public:
         return index_map[state.content];
     }
 
-    template<typename gen_t,typename lattice_symmetry, typename local_symmetry> 
-    void grow_basis(gen_t generator,lattice_symmetry &lat_symm, local_symmetry &loc_symm){
-        for(const auto& s : generator){
-            
-        }
+    void add_state(const I new_state,const K new_norm){
+        states.push(new_state);
+        norms.push(new_norm);
+        index_map[new_state] = states.size();
     }
+
 };
 
 }
