@@ -19,6 +19,7 @@ private:
     bit_basis::benes_perm::tr_benes<I> benes;
 
 public:
+    dit_perm() : lhss(0), perm(NULL), length(0) // identity constructor
     dit_perm(const int _lhss,const int * _perm,const int _length) : 
     lhss(_lhss), perm(_perm), length(_length)
     {
@@ -41,12 +42,14 @@ public:
     }
     ~dit_perm() {}
 
-    inline bit_basis::dit_set<I> app(const bit_basis::dit_set<I>& s) const { 
-        return bit_basis::dit_set<I>(benes_bwd(benes,s.content),s.lhss,s.mask,s.bits); 
+    template<typename T>
+    inline const bit_basis::dit_set<I> app(const bit_basis::dit_set<I>& s, T& coeff) const { 
+        return (perm != NULL ? bit_basis::dit_set<I>(benes_bwd(benes,s.content),s.lhss,s.mask,s.bits) : s); 
     }
 
-    inline bit_basis::dit_set<I> inv(const bit_basis::dit_set<I>& s) const { 
-        return bit_basis::dit_set<I>(benes_fwd(benes,s.content),s.lhss,s.mask,s.bits); 
+    template<typename T>
+    inline const bit_basis::dit_set<I> inv(const bit_basis::dit_set<I>& s, T& coeff) const { 
+        return (perm != NULL ? bit_basis::dit_set<I>(benes_fwd(benes,s.content),s.lhss,s.mask,s.bits) : s);  
     }
 };
 
@@ -58,27 +61,45 @@ private:
     const dit_integer_t * perm;
     const dit_integer_t * inv_perm;
     const int * locs;
-    const int nlocs;
     const int length;
 
 public:
-    perm_dit(const int _lhss,const int * _perm,const int _length) : perm(_perm), length(_length), lhss(_lhss) { }
+    perm_dit() : lhss(0), perm(NULL), inv_perm(NULL), locs(NULL), length(0) // identity
+    perm_dit(
+        const int _lhss, const dit_integer_t * _perm, 
+        const dit_integer_t * _inv_perm, const int * _locs, const int _length
+    ) : lhss(_lhss), perm(_perm), inv_perm(_inv_perm), locs(_locs), length(_length)
+    { }
     ~dit_perm() {}
 
-    bit_basis::dit_set<I> app(const bit_basis::dit_set<I>& s) const {
+    template<typename T>
+    bit_basis::dit_set<I> app(const bit_basis::dit_set<I>& s, T& coeff) const {
+        
         bit_basis::dit_set<I> r(s);
-        for(int i=0;i<nlocs;++i){
+        
+        const dit_integer_t * perm_ptr = perm;
+
+        for(int i=0;i<length;++i){
             const int bits = get_sub_bitstring(s,locs[i]);
-            r = get_sub_bitstring(r,perm[bits],locs[i]);
+            r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
+            perm_ptr += lhss;
         }
+
         return r;
     }
-   bit_basis::dit_set<I> inv(const bit_basis::dit_set<I>& s) const {
+
+    template<typename T>
+    bit_basis::dit_set<I> inv(const bit_basis::dit_set<I>& s, T& coeff) const {
         bit_basis::dit_set<I> r(s);
-        for(int i=0;i<nlocs;++i){
+        
+        const dit_integer_t * perm_ptr = perm_inv;
+
+        for(int i=0;i<length;++i){
             const int bits = get_sub_bitstring(s,locs[i]);
-            r = get_sub_bitstring(r,inv_perm[bits],locs[i]);
+            r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
+            perm_ptr += lhss;
         }
+        
         return r;
     }
 };
@@ -92,6 +113,7 @@ private:
     bit_basis::benes_perm::tr_benes<I> benes;
 
 public:
+    dit_perm() : perm(NULL), length(0) // identity constructor
     bit_perm(const int * _perm,const int _length) : 
     lhss(_lhss), perm(_perm), length(_length)
     {
@@ -108,12 +130,14 @@ public:
     }
     ~bit_perm() {}
 
-    inline bit_basis::bit_set<I> app(const bit_basis::bit_set<I>& s) const { 
-        return bit_basis::bit_set<I>(benes_bwd(benes,s.content)); 
+    template<typename T>
+    inline const bit_basis::bit_set<I> app(const bit_basis::bit_set<I>& s, T& coeff) const { 
+        return (perm != NULL ? bit_basis::bit_set<I>(benes_bwd(benes,s.content)) : s); 
     }
 
-    inline bit_basis::bit_set<I> inv(const bit_basis::bit_set<I>& s) const { 
-        return bit_basis::bit_set<I>(benes_fwd(benes,s.content)); 
+    template<typename T>
+    inline const bit_basis::bit_set<I> inv(const bit_basis::bit_set<I>& s, T& coeff) const { 
+        return (perm != NULL ?bit_basis::bit_set<I>(benes_fwd(benes,s.content)) : s); 
     }
 };
 
@@ -124,36 +148,92 @@ private:
     const I mask; // which bits to flip
 
 public:
+    perm_bit() : mask(0) // identity (don't flip any bits)
     perm_bit(const I _mask) : mask(_mask) { }
     ~bit_perm() {}
 
-    inline bit_basis::bit_set<I> app(const bit_basis::bit_set<I> s) const {
+    template<typename T>
+    inline bit_basis::bit_set<I> app(const bit_basis::bit_set<I> s, T& coeff) const {
 
         return  bit_basis::bit_set<I>( s.content^mask );
     }
 
-    inline I inv(const I s) const {
+    template<typename T>
+    inline bit_basis::bit_set<I> inv(const I s, T& coeff) const {
         return bit_basis::bit_set<I>( s.content^mask );
     }
 };
 
 
-template<typename perm,typename T>
+template<typename lat_perm,typename loc_perm,typename T>
 class symmetry
 {
 private:
-    std::vector<perm> perms;
-    std::vector<T> chars;
+    std::vector<lat_perm> lat_symm;
+    std::vector<loc_perm> loc_symm;
+    std::vector<T> lat_chars;
+    std::vector<T> loc_chars;
+
+
 
 public:
-    lattice_symmetry(std::vector<perm> &_perms,std::vector<T> &_chars) : perms(_perms), chars(_chars) {
-        assert(_perms.size() == _chars.size());
+    lattice_symmetry(std::vector<perm> &_lat_symm,std::vector<T> &_lat_chars,
+    std::vector<perm> &_loc_symm,std::vector<T> &_loc_chars) : 
+    {
+        lat_symm = _lat_symm;
+        loc_symm = _loc_symm;
+        lat_char = _lat_char;
+        loc_char = _loc_char;
+
+        assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
+
     }
     ~lattice_symmetry() {}
 
-    size_t size() const {return perms.size();}
-    T character(const size_t i) const {return chars[i];}
-    const perm& operator[](const size_t i) const {return perms[i];}
+    size_t size() const {return lattice_perms.size() * local_perms.size();}
+
+    template<typename dits_or_bits>
+    std::pair<dits_or_bits,T> get_refstate(const dits_or_bits &s){
+
+        dits_or_bits ss(s);
+        T sign = T(1);
+        
+        for(int i=0;i<loc_symm.size();++i) 
+        {
+            const auto r = loc_symm[i].app(s,sign);
+            for(int j=0;j<lat_symm.size();++j)
+            {
+                const auto rr = lat_symm[i].app(r,sign);
+
+                if(rr > ss){
+                    ss = rr;
+                    coeff = sign * lat_chars[p] * loc_chars[i];
+                }
+            }
+        }
+
+        return make_pair(ss,coeff);
+    }
+
+    template<typename dits_or_bits>
+    double check_refstate(const dits_or_bits &s){
+        double norm=0.0;
+        
+
+        for(int i=0;i<loc_symm.size();++i) 
+        {
+            const auto r = loc_symm[i].app(s,norm);
+            for(int j=0;j<lat_symm.size();++j)
+            {
+                const auto rr = lat_symm[i].app(r,norm);
+
+                if(rr >  s){return std::numeric_limits<double>::quiet_NaN()};
+                if(rr == s) norm += std::real(lat_char[j] * loc_char[i]);
+            }
+        }
+
+        return norm;
+    }
 
 };
 
