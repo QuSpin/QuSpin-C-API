@@ -6,7 +6,7 @@
 #include <numeric>
 #include <algorithm>
 
-
+namespace quspin {
 
 template<typename basis_t,typename T,typename J>
 void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
@@ -71,5 +71,6 @@ void generate_matrix_elements(
     }
 }
 
+}
 
 #endif

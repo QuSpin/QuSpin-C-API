@@ -9,6 +9,11 @@ namespace quspin::basis::bit_basis {
 template<typename I>
 typedef struct bit_set { // thin wrapper used for convience
 
+    // doesn't allocate any data
+    static const int lhss = 2;
+    static const types::dit_integer_t bits = 1;
+    
+    typedef I bitset_t;
     I content;
 
     bit_set(I _content) : content(_content) {}
@@ -46,65 +51,6 @@ bit_set<I> set_sub_bitstring(const bit_set<I> s,int in,const int * locs,const in
     return  r;
 }
 
-
-// permutations
-
-template <typename I>
-class bit_perm // permutation of dit locations
-{
-private:
-    const int * perm;
-    const int length;
-    benes_perm::tr_benes<I> benes;
-
-public:
-    bit_perm(const int * _perm,const int _length) : 
-    lhss(_lhss), perm(_perm), length(_length)
-    {
-        benes_perm::ta_index<I> index;
-        for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes_perm::no_index;}
-
-        // benes permutation is agnostic to lhss
-        for(int i=0;i<length;i++){
-            index[i] = perm[i];  
-        }
-
-        benes_perm::gen_benes(&benes,index);
-
-    }
-    ~bit_perm() {}
-
-    inline bit_set<I> app(const bit_set<I> s) const { 
-        return bit_set<I>(benes_bwd(benes,s.content)); 
-    }
-
-    inline bit_set<I> inv(const bit_set<I> s) const { 
-        return bit_set<I>(benes_fwd(benes,s.content)); 
-    }
-};
-
-
-template <typename I>
-class perm_bit // permutations of the dit states locally
-{
-private:
-    const I mask; // which bits to flip
-
-public:
-    perm_bit(const I _mask) : mask(_mask) { }
-    ~bit_perm() {}
-
-    inline bit_set<I> app(const bit_set<I> s) const {
-
-        return  bit_set<I>( s.content^mask );
-    }
-
-    inline I inv(const I s) const {
-        return bit_set<I>( s.content^mask );
-    }
-};
-
-
-}
+} // end namespace quspin::basis
 
 #endif

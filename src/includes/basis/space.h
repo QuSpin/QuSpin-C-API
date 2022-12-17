@@ -30,7 +30,7 @@ private:
     const int N; // number of lattice sites
     const J Ns; // number of states
     const I mask; // mask for local hilbert space storage.
-    const dit_integer_t nbits; // number of bits to store lhss
+    const dit_integer_t bits; // number of bits to store lhss
 
 public:
     typedef I bitset_t;
@@ -40,7 +40,7 @@ public:
     lhss(_lhss), N(_N) 
     Ns(calc_Ns_fullspace<J>(_lhss,_N)), 
     mask(constants::mask[_lhss]), 
-    nbits(constants::nbits[_lhss]) {}
+    bits(constants::bits[_lhss]) {}
 
     ~dit_fullspace() {}
 
@@ -48,7 +48,7 @@ public:
     inline J get_Ns() const { return Ns;}
     inline int get_N() const {return N;}
     inline dit_set<I> operator[](const J index) const {
-        return ditset<I>(I(Ns-index-1),lhss,mask,nbits);
+        return ditset<I>(I(Ns-index-1),lhss,mask,bits);
     }
     inline J operator[](const dit_set<I> state) const {
         return Ns - integer_cast<J,I>(state.content) - 1;
@@ -62,8 +62,8 @@ class dit_subspace // sps > 2
 private:
     const int lhss; // local hilbert space sice
     const int N; // number of lattice sites
-    const I mask; // mask for nbits
-    const dit_integer_t nbits; // number of bits to store lhss
+    const I mask; // mask for bits
+    const dit_integer_t bits; // number of bits to store lhss
     std::vector<I> states;
     std::vector<K> norms;
     std::unordered_map<I,J> index_map;
@@ -76,7 +76,7 @@ public:
     dit_fullspace(const int _lhss,const int N) : 
     lhss(_lhss), N(_N),
     mask(constants::mask[_lhss]), 
-    nbits(constants::nbits[_lhss]) {}
+    bits(constants::bits[_lhss]) {}
     ~dit_fullspace() {}
 
     inline J size() const { return states.size();}
@@ -101,7 +101,7 @@ class bit_fullspace // sps = 2
 private:
     const int N; // number of lattice sites
     const J Ns; // total number of states 
-    const dit_integer_t nbits; // number of bits to store lhss
+    const dit_integer_t bits; // number of bits to store lhss
 
 public:
     typedef I bitset_t;

@@ -3,7 +3,7 @@
 
 #include "basis/bit_basis/int_types.h"
 
-namespace bit_basis {
+namespace quspin::basis::bit_basis {
 
 template<typename I>
 struct bit_info{};

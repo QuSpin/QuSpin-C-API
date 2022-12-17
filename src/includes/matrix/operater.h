@@ -9,7 +9,7 @@
 #include <limits>
 
 
-
+namespace quspin {
 
 template<class T>
 class dense_term
@@ -35,7 +35,7 @@ public:
         for(int b=0;b<nrow;++b){
             const int i = nrow*a+b;
             if(nonzero[i]){
-                const I r = bit_basis::get_sub_bitstring(s,b,loc,nloc);
+                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
                 output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
@@ -47,7 +47,7 @@ public:
         for(int b=0;b<nrow;++b){
             const int i = nrow*b+a;
             if(nonzero[i]){
-                const I r = bit_basis::get_sub_bitstring(s,b,loc,nloc);
+                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
                 output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
@@ -59,7 +59,7 @@ public:
         for(int b=0;b<nrow;++b){
             const int i = nrow*b+a;
             if(nonzero[i]){
-                const I r = bit_basis::get_sub_bitstring(s,b,loc,nloc);
+                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
                 output[r] = (output.contains(r) ? output[r] + std::conj(data[i]) : std::conj(data[i]) );
             }
         }
@@ -92,9 +92,9 @@ public:
         T m = T(1.0);
         I r = s;
         for(int i=0;i<nloc;++i){
-            const int a = bit_basis::get_sub_bitstring(r,loc[i]);
+            const int a = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int b = perm[a];
-            r = bit_basis::set_sub_bitstring(r,a,b,loc[i]);
+            r = basis::bit_basis::set_sub_bitstring(r,a,b,loc[i]);
             m *= data[s_loc];
 
             if(m==T(0)) break;
@@ -114,9 +114,9 @@ public:
         T m = T(1.0);
         I r = s;
         for(int i=0;i<nloc;++i){
-            const int s_loc = bit_basis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= data[s_loc];
 
             if(m==T(0)) break;
@@ -136,9 +136,9 @@ public:
         T m = T(1.0);
         I r = s;
         for(int i=0;i<nloc;++i){
-            const int s_loc = bit_basis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= std::conj(data[s_loc]);
 
             if(m==T(0)) break;
@@ -205,5 +205,5 @@ public:
 
 };
 
-
+}
 #endif

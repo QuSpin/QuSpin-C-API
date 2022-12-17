@@ -8,12 +8,14 @@
 #include "boost/numeric/conversion/cast.hpp"
 #endif
 
-namespace quspin::basis::bit_basis {
+namespace quspin::basis::bit_basis::types {
 
 typedef std::int8_t uint8_t;
 typedef std::int16_t uint16_t;
 typedef std::uint32_t uint32_t;
 typedef std::uint64_t uint64_t;
+
+typedef uint_fast8_t dit_integer_t; 
 
 #ifdef USE_BOOST
 typedef boost::multiprecision::uint128_t uint128_t;
