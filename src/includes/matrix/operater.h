@@ -7,6 +7,7 @@
 #include <tuple>
 #include <list>
 #include <limits>
+#include <memory>
 
 
 namespace quspin {
@@ -17,50 +18,68 @@ class dense_term
     // project locations onto local hilbert space to evaluate matrix elements
     // good for when the terms have few-body terms where the local matrix fits into cache. 
 private: 
-    const int lhss; 
+    const int lhss; // size of local 
     const int nloc;
-    const int * loc;
-    const T * data;
-    const bool * nonzero;
+    std::unique_ptr<int> loc;
+    std::unique_ptr<T> data;
+    std::unique_ptr<bool> nonzero;
 
 public:
-    dense_term(const int _nrow, const T * _data,const bool * _nonzero) : 
-    nrow(_nrow), data(_data), nonzero(_nonzero) {}
+    dense_term(std::vector<int> _loc,std::vector<std::vector>> _data) : 
+    lhss(_data.size()), nloc(_loc.size())
+    {
+        loc(new int[nloc]);
+        data(new T[lhss*lhss]);
+        nonzero(new bool[lhss*lhss]);
 
+        // copy to contiguous pointers
+        std::copy(_loc.begin(),_loc.end(),loc);
+
+        int ptr = 0; 
+        for(int i=0;i<lhss;++i){
+            for(int j=0;j<lhss;++j){
+                data[ptr] = _data[i][j];
+                nonzero[ptr] = (data[ptr] != T(0));
+                ++ptr;
+            }
+        }
+
+
+    }
     ~dense_term(){}
 
     template<typename I>
     void op(const I s, std::unordered_map<I,T> &output) const {
-        const int a = get_bits(s,loc,nloc);
-        for(int b=0;b<nrow;++b){
-            const int i = nrow*a+b;
+        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        for(int b=0;b<lhss;++b){ // loop over columns
+            const int i = lhss*a+b;
             if(nonzero[i]){
-                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
-                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
     }
 
     template<typename I>
     void op_transpose(const I s, std::unordered_map<I,T> &output) const {
-        const int a = get_bits(s,loc,nloc);
-        for(int b=0;b<nrow;++b){
-            const int i = nrow*b+a;
+        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        for(int b=0;b<lhss;++b){  // loop over rows
+            const int i = lhss*b+a;
             if(nonzero[i]){
-                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
-                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
     }
 
     template<typename I>
     void op_dagger(const I s, std::unordered_map<I,T> &output) const {
-        int a = get_bits(s,loc,nloc);
-        for(int b=0;b<nrow;++b){
-            const int i = nrow*b+a;
+        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        for(int b=0;b<lhss;++b){ // loop over rows
+            const int i = lhss*b+a;
             if(nonzero[i]){
-                const I r = basis::bit_basis::get_sub_bitstring(s,b,loc,nloc);
-                output[r] = (output.contains(r) ? output[r] + std::conj(data[i]) : std::conj(data[i]) );
+                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
             }
         }
     }
@@ -73,82 +92,110 @@ class operator_string
 private:
     const int lhss; // local hilbert space size for each term
     const int nloc;  // number of local operators
-    const int * loc; // number of local operators in 
-    const int * perms; // non-branching operators stored as permutations
-    const int * inv_perms; // non-branching operators dagger stored as permutations
-    const T * datas; // matrix elements for non-branching operators. 
+    std::unique_ptr<int> loc; // number of local operators in 
+    std::unique_ptr<int> perms; // non-branching operators stored as permutations
+    std::unique_ptr<int> inv_perms; // non-branching operators dagger stored as permutations
+    std::unique_ptr<T> datas; // matrix elements for non-branching operators. 
 
 public:
-    operator_string(int _lhss,int _perm,int _inv_perm, T * _data): 
-    lhss(_lhss), perm(_perm), inv_perm(_inv_perm), data(_data) {}
+    operator_string(std::vector<int> _loc,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
+    lhss(perms.front().size()), nloc(_locs.size())
+    { 
+
+        loc(new int[nloc]);
+        perms(new int[nloc*lhss]);
+        inv_perms(new int[nloc*lhss]);
+        datas(new T[nloc*lhss]);
+
+        int * perm = perms.get();
+        int * inv_perm = inv_perms.get();
+        T * data = datas.get();
+
+        for(int i=0;i<nloc;i++){
+            loc[i] = _loc[i];
+
+            for(int j=0;j<lhss;i++){
+                perm[j] = _perms[i][j];
+                inv_perm[perm[j]] = j;
+                data[j] = _datas[i][j];
+
+            }
+            perm += lhss;
+            inv_perm += lhss;
+            data += lhss;
+        }
+    }
     
 
     ~operator_string(){}
 
     template<typename I>
     inline void op(const I s, std::unordered_map<I,T> &output) const {
-        const int * perm = perms;
-        const T * data = datas;
+        const int * perm = perms.get();
+        const T * data = datas.get();
         T m = T(1.0);
         I r = s;
+        bool nonzero=true;
         for(int i=0;i<nloc;++i){
             const int a = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int b = perm[a];
             r = basis::bit_basis::set_sub_bitstring(r,a,b,loc[i]);
             m *= data[s_loc];
 
-            if(m==T(0)) break;
+            if(m == T(0)){nonzero=false; break;}
             
             // shift to next permutation
             perm += lhss; 
             data += lhss;
         }
 
-        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
     }
     
     template<typename I>
     inline op_transpose(const I s, std::unordered_map<I,T> &output) const {
-        const int * perm = inv_perms;
-        const T * data = datas;
+        const int * perm = inv_perms.get();
+        const T * data = datas.get();
         T m = T(1.0);
         I r = s;
+        bool nonzero = true;
         for(int i=0;i<nloc;++i){
             const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
             r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= data[s_loc];
 
-            if(m==T(0)) break;
+            if(m == T(0)){nonzero=false; break;}
             
             // shift to next permutation
             perm += lhss; 
             data += lhss;
         }
 
-        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
     }
 
     template<typename I>
     inline op_dagger(const I s, std::unordered_map<I,T> &output) const {
-        const int * perm = inv_perms;
-        const T * data = datas;
+        const int * perm = inv_perms.get();
+        const T * data = datas.get();
         T m = T(1.0);
         I r = s;
+        bool nonzero=true;
         for(int i=0;i<nloc;++i){
             const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
             r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= std::conj(data[s_loc]);
 
-            if(m==T(0)) break;
+            if(m == T(0)){nonzero=false; break;}
             
             // shift to next permutation
             perm += lhss; 
             data += lhss;
         }
 
-        if(m!=T(0)) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
     }
 
 };
