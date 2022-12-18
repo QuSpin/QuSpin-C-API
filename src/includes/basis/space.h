@@ -34,7 +34,7 @@ private:
     const dit_integer_t bits; // number of bits to store lhss
 
 public:
-    typedef I bitset_t;
+    typedef dit_set<I> bitset_t;
     typedef J index_t;
     typedef int norm_t;
 
@@ -50,19 +50,18 @@ public:
     inline J get_Ns() const { return Ns;}
     inline int get_N() const {return N;}
     
-    inline dit_set<I> get_state(const J index) const {
+    inline bitset_t get_state(const J index) const {
         return ditset<I>(I(Ns-index-1),lhss,mask,bits);
     }
 
-    inline J get_index(const dit_set<I>& state) const {
+    inline J get_index(const bitset_t& state) const {
         return Ns - integer_cast<J,I>(state.content) - 1;
     }
 
-    static int get_norm(const dit_set<I>& state) const {return 1;}
+    static int get_norm(const bitset_t& state) const {return 1;}
     static int get_norm(const J index) const {return 1;}
     
 };
-
 
 template<typename I,typename J,typename K>
 class dit_subspace // sps > 2 
@@ -77,7 +76,7 @@ private:
     std::unordered_map<I,J> index_map;
 
 public:
-    typedef I bitset_t;
+    typedef dit_set<I> bitset_t;
     typedef J index_t;
     typedef K norm_t;
 
@@ -98,15 +97,15 @@ public:
     inline J get_Ns() const { return states.size();}
     inline int get_N() const { return N;}
 
-    inline dit_set<I> get_state(const size_t index) const {
-        return dit_set<I>(states[index],lhss,mask,bits);
+    inline bitset_t get_state(const size_t index) const {
+        return bitset_t(states[index],lhss,mask,bits);
     }
 
-    inline J get_index(const dit_set<I>& state) const {
+    inline J get_index(const bitset_t& state) const {
         return index_map[state.content];
     }
 
-    inline K get_norm(const dit_set<I>& state) const {
+    inline K get_norm(const bitset_t& state) const {
         return norms[index_map[state.content]];
     }
 
@@ -123,6 +122,7 @@ public:
 };
 
 
+
 template<typename I,typename J>
 class bit_fullspace // sps = 2
 {
@@ -132,9 +132,9 @@ private:
     const dit_integer_t bits; // number of bits to store lhss
 
 public:
-    typedef I bitset_t;
+    typedef bit_set<I> bitset_t;
     typedef J index_t;
-    typedef J norm_t;
+    typedef int norm_t;
 
 
     bit_fullspace(const int _N) : 
@@ -146,12 +146,15 @@ public:
     inline size_t get_Ns() const { return Ns;}
     inline int get_N() const { return N;}
 
-    inline bit_set<I> operator[](const J index) const {
-        return bit_set<I>(I(Ns-index-1));
+    inline bitset_t operator[](const J index) const {
+        return bitset_t(I(Ns-index-1));
     }
-    inline J operator[](const bit_set<I> state) const {
+    inline J operator[](const bitset_t state) const {
         return Ns - integer_cast<J,I>(state.content) - 1;
     }
+
+    static inline int get_norm(const bitset_t& state) const {return 1;}
+    static inline int get_norm(const J index) const {return 1;}
 };
 
 template<typename I,typename J,typename K>
@@ -164,7 +167,7 @@ private:
     std::unordered_map<I,J> index_map;
 
 public:
-    typedef I bitset_t;
+    typedef bit_set<I> bitset_t;
     typedef J index_t;
     typedef K norm_t;
 
@@ -180,15 +183,15 @@ public:
     inline size_t get_Ns() const { return states.size();}
     inline int get_N() const { return N;}
 
-    inline bit_set<I> get_state(const size_t index) const {
-        return bit_set<I>(I(states[index]),lhss);
+    inline bitset_t get_state(const size_t index) const {
+        return bitset_t(I(states[index]),lhss);
     }
 
-    inline J get_index(const bit_set<I>& state) const {
+    inline J get_index(const bitset_t& state) const {
         return index_map[state.content];
     }
 
-    inline K get_norm(const bit_set<I>& state) const {
+    inline K get_norm(const bitset_t& state) const {
         return norms[index_map[state.content]];
     }
 
@@ -196,9 +199,7 @@ public:
         return norms[index];
     }
 
-
-
-    void add_state(const I new_state,const K new_norm){
+    void add_state(const bitset_t new_state,const K new_norm){
         states.push(new_state);
         norms.push(new_norm);
         index_map[new_state] = states.size();
