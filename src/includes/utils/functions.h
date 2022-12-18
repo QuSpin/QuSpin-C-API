@@ -1,6 +1,8 @@
 #ifndef __QUSPIN_UTILS_FUNCTIONS_H__
 #define __QUSPIN_UTILS_FUNCTIONS_H__
 
+#include <vector>
+
 namespace quspin {
 
 template<typename dits_or_bits>
