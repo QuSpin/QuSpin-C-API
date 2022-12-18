@@ -126,11 +126,10 @@ public:
         }
     }
     
-
     ~operator_string(){}
 
     template<typename bitset_t>
-    inline void op(const bitset_t& s, std::unordered_map<I,T> &output) const {
+    inline void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = perms.get();
         const T * data = datas.get();
         T m = T(1.0);
@@ -153,7 +152,7 @@ public:
     }
     
     template<typename bitset_t>
-    inline op_transpose(const bitset_t& s, std::unordered_map<I,T> &output) const {
+    inline op_transpose(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
@@ -176,7 +175,7 @@ public:
     }
 
     template<typename bitset_t>
-    inline op_dagger(const bitset_t& s, std::unordered_map<I,T> &output) const {
+    inline op_dagger(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
@@ -200,71 +199,79 @@ public:
 
 };
 
+/*
 
-
-template<typename T>
+template<typename basis_t,typename T>
 class operator
 {
 private:
+    basis_t * basis;
     std::vector<operator_string<T>> pterms;
     std::vector<dense_term<T>> dterms;
 
     
 public:
-    operator(std::vector<operator_string<T>>& pterms,std::vector<dense_term<T>>& dterms){
-        self->pterms = pterms;
-        self->dterms = dterms;
+    typedef basis_t::bitset_t bitset_t;
+    typedef basis_t::index_t index_t;
+
+    operator(basis_t& _basis,std::vector<operator_string<T>>& _pterms,std::vector<dense_term<T>>& _dterms){
+        pterms = _pterms;
+        dterms = _dterms;
+        basis  = &_basis;
     }
     ~operator() {}
 
-    template<typename bitset_t>
-    void columns(const bitset_t& s,unordered_map<bitset_t,T>& output){
+    basis_t& get_basis() {return *basis;}
+    const basis_t& get_basis() const {return *basis;}
+
+    void columns(const index_t row,std::unordered_map<typename index_t,T>& output){
+        std::unordered_map<typename bitset_t,T> col_states;
+
         for(auto const& pterm : pterms){
-            pterm.op_dagger(s,output);
+            pterm.op_dagger<typename bitset_t>(basis.get_state(row),col_states);
         }
         for(auto const& dterm : dterms){
-            pterm.op_dagger(s,output);
+            pterm.op_dagger<typename bitset_t>(basis.get_state(row),col_states);
         }
+        basis -> ref_state_conj(col_states,output);
     }
 
-    template<typename bitset_t>
-    void rows(const bitset_t s,unordered_map<bitset_t,T>& output){
+    void rows(const index_t col,std::unordered_map<typename index_t,T>& output){
+        std::unordered_map<typename bitset_t,T> row_states;
+
         for(auto const& pterm : pterms){
-            pterm.op(s,output);
+            pterm.op<typename bitset_t>(basis.get_state(col),output);
         }
         for(auto const& dterm : dterms){
-            pterm.op(s,output);
+            pterm.op<typename bitset_t>(basis.get_state(col),output);
         }
+        basis -> ref_state(row_states,output);
     }
 
-    template<typename basis_t,typename X,typename Y>
-    void op(const basis_t &basis,const Y a,const X * x, const Y b, Y  * y){
+
+    template<typename X,typename Y>
+    void op(const Y a,const X * x, const Y b, Y  * y){
 
         if(b == Y(0.0)){
-            std::fill(y,y+basis.size(),0)
+            std::fill(y,y+basis->size(),0)
         }
-        std::unordered_map<typename basis_t::bitset_t,T> row_states;
-        std::unrdered_map<typename basis_t::index_t,T> matrix_ele;
 
-        for(typename basis_t::index_t row=0;row<basis.size();row++){
-            this->rows(basis[s],row_states);
-            basis.ref_states(row,row_states,matrix_ele);
+        std::unordered_map<typename index_t,T> matrix_ele;
+
+        for(typename index_t row=0;row < basis->size();++row){
+            this->rows(row,row_states);
+
             Y total = 0;
             for(const auto& me : matrix_ele){total += me.second * x[me.first];}
             y[row] += a * total;
 
             matrix_ele.clear();
-            row_states.clear();
         }
-
-
     }
 
-
-
-
-
 };
+
+*/
 
 }
 #endif

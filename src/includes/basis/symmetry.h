@@ -165,7 +165,7 @@ public:
 };
 
 
-template<typename lat_perm_t,typename loc_perm_t,typename T>
+template<typename lat_perm_t,typename loc_perm_t,typename dits_or_bits,typename T>
 class symmetry
 {
 private:
@@ -188,11 +188,17 @@ public:
         assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
 
     }
+
+    lattice_symmetry(lattice_symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
+        lat_symm = other.lat_symm;
+        loc_symm = other.loc_symm;
+        lat_char = other.lat_char;
+        loc_char = other.loc_char;
+    }
     ~lattice_symmetry() {}
 
     size_t size() const {return lattice_perms.size() * local_perms.size();}
 
-    template<typename dits_or_bits>
     std::pair<dits_or_bits,T> get_refstate(const dits_or_bits &s){
 
         dits_or_bits ss(s);
@@ -215,7 +221,6 @@ public:
         return make_pair(ss,coeff);
     }
 
-    template<typename dits_or_bits>
     double check_refstate(const dits_or_bits &s){
         double norm=0.0;
         

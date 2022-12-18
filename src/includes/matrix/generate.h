@@ -8,8 +8,10 @@
 
 namespace quspin {
 
+/*
+
 template<typename basis_t,typename T,typename J>
-void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
+void calc_rowptr(operator<T> &hamil,J rowptr[],)
 {
     J n_row = basis.size();
     std::unordered_map<typename basis_t::bitset_t,T> col_states;
@@ -25,7 +27,7 @@ void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
         hamil.columns(basis[row],col_states);
 
         // calculate location of states in basis
-        basis.ref_state_conj(col_states,columns);
+        hamil.basis.ref_state_conj(col_states,columns);
 
         rowptr[row+1] = columns.size(); // get nnz for this row
     }
@@ -70,6 +72,8 @@ void generate_matrix_elements(
 
     }
 }
+
+*/
 
 }
 

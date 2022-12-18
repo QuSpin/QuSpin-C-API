@@ -44,6 +44,9 @@ public:
     mask(constants::mask[_lhss]), 
     bits(constants::bits[_lhss]) {}
 
+    dit_fullspace(dit_fullspace<I,J>& other) :
+    dit_fullspace(other.lhss,other.N,other.Ns,other.mask,other.bits) {}
+    
     ~dit_fullspace() {}
 
     inline J size() const { return Ns;}
@@ -71,6 +74,7 @@ private:
     const int N; // number of lattice sites
     const I mask; // mask for bits
     const dit_integer_t bits; // number of bits to store lhss
+
     std::vector<I> states;
     std::vector<K> norms;
     std::unordered_map<I,J> index_map;
@@ -82,6 +86,7 @@ public:
 
     dit_subspace(const int _lhss,const int _N) : 
     lhss(_lhss), N(_N), mask(constants::mask[_lhss]), bits(constants::bits[_lhss]) {}
+    
     dit_subspace(const int _lhss,const int _N, const size_t Ns_est) : 
     lhss(_lhss), N(_N), mask(constants::mask[_lhss]), bits(constants::bits[_lhss])
     {
@@ -89,6 +94,7 @@ public:
         norms.reserve(Ns_est);
         index_map.reserve(Ns_est*2);
     }
+
     mask(constants::mask[_lhss]), 
     bits(constants::bits[_lhss]) {}
     ~dit_subspace() {}
@@ -120,7 +126,6 @@ public:
     }
 
 };
-
 
 
 template<typename I,typename J>
