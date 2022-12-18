@@ -25,7 +25,7 @@ void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
         hamil.columns(basis[row],col_states);
 
         // calculate location of states in basis
-        basis.refstate(col_states,columns);
+        basis.ref_state_conj(col_states,columns);
 
         rowptr[row+1] = columns.size(); // get nnz for this row
     }
@@ -33,7 +33,7 @@ void calc_rowptr(basis_t &basis, operator<T> &hamil,J rowptr[],)
     std::partial_sum(rowptr,rowptr+n_row+1,rowptr)
 }
 
-template<typename basis_t,typename T,typename J>
+template<typename basis_t,typename T>
 void generate_matrix_elements(
     operator<T> &hamil,
     basis_t &basis,
@@ -45,7 +45,7 @@ void generate_matrix_elements(
     std::unrdered_map<J,T> columns;
     std::vector<std::pair<typename basis_t::bitset_t,T>> sorted_columns;
     
-    for(size_t row = 0;row < basis->size();row++)
+    for(size_t row = 0;row < basis.size();row++)
     {
         col_states.clear();
         columns.clear();
@@ -55,7 +55,7 @@ void generate_matrix_elements(
         hamil.columns(basis[row],col_states);
 
         // calculate location of states in basis and matrix elements
-        basis.refstate(col_states,columns);
+        basis.ref_state_conj(row,col_states,columns);
 
         // sort columns
         sorted_columns.insert(columns.begin(), columns.end());

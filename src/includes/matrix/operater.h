@@ -48,37 +48,37 @@ public:
     }
     ~dense_term(){}
 
-    template<typename I>
-    void op(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over columns
             const int i = lhss*a+b;
             if(nonzero[i]){
-                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
     }
 
-    template<typename I>
-    void op_transpose(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    void op_transpose(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
         const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){  // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
     }
 
-    template<typename I>
-    void op_dagger(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    void op_dagger(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
         const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const I r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
             }
         }
@@ -129,12 +129,12 @@ public:
 
     ~operator_string(){}
 
-    template<typename I>
-    inline void op(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    inline void op(const bitset_t& s, std::unordered_map<I,T> &output) const {
         const int * perm = perms.get();
         const T * data = datas.get();
         T m = T(1.0);
-        I r = s;
+        bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
             const int a = basis::bit_basis::get_sub_bitstring(r,loc[i]);
@@ -152,12 +152,12 @@ public:
         if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
     }
     
-    template<typename I>
-    inline op_transpose(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    inline op_transpose(const bitset_t& s, std::unordered_map<I,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
-        I r = s;
+        bitset_t r(s);
         bool nonzero = true;
         for(int i=0;i<nloc;++i){
             const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
@@ -175,12 +175,12 @@ public:
         if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
     }
 
-    template<typename I>
-    inline op_dagger(const I s, std::unordered_map<I,T> &output) const {
+    template<typename bitset_t>
+    inline op_dagger(const bitset_t& s, std::unordered_map<I,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
-        I r = s;
+        bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
             const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
@@ -218,7 +218,7 @@ public:
     ~operator() {}
 
     template<typename bitset_t>
-    void columns(const bitset_t s,unordered_map<bitset_t,T>& output){
+    void columns(const bitset_t& s,unordered_map<bitset_t,T>& output){
         for(auto const& pterm : pterms){
             pterm.op_dagger(s,output);
         }
@@ -228,7 +228,7 @@ public:
     }
 
     template<typename bitset_t>
-    void rows(const bit_setI s,unordered_map<bitset_t,T>& output){
+    void rows(const bitset_t s,unordered_map<bitset_t,T>& output){
         for(auto const& pterm : pterms){
             pterm.op(s,output);
         }
@@ -238,9 +238,23 @@ public:
     }
 
     template<typename basis_t,typename X,typename Y>
-    void op(const basis_t &basis,const Y a,const X * x, const V b, Y  * y){
+    void op(const basis_t &basis,const Y a,const X * x, const Y b, Y  * y){
+
         if(b == Y(0.0)){
             std::fill(y,y+basis.size(),0)
+        }
+        std::unordered_map<typename basis_t::bitset_t,T> row_states;
+        std::unrdered_map<typename basis_t::index_t,T> matrix_ele;
+
+        for(typename basis_t::index_t row=0;row<basis.size();row++){
+            this->rows(basis[s],row_states);
+            basis.ref_states(row,row_states,matrix_ele);
+            Y total = 0;
+            for(const auto& me : matrix_ele){total += me.second * x[me.first];}
+            y[row] += a * total;
+
+            matrix_ele.clear();
+            row_states.clear();
         }
 
 
