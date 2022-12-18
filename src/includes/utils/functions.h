@@ -19,9 +19,9 @@ std::vector<int> to_vector(const dits_or_bits& s,const int length=0){
     const int niter = (length>0 ? length : bit_info<typename dits_or_bits::bitset_t>::bits/s.bits)
 
     for(int i=0;i<niter;++i){
-        out.push_back(get_sub_bitstring())
+        out.push_back(get_sub_bitstring(state,i))
     }
-
+    return out;
 }
 
 
@@ -34,5 +34,15 @@ T real_value(const std::complex<T>& v){return v.real();}
 }
 
 
+template<typename I>
+std::hash(quspin::basis::bit_basis::bit_set<I> &state){
+    return std::hash(state.content);
+}
+
+
+template<typename I>
+std::hash(quspin::basis::bit_basis::dit_set<I> &state){
+    return std::hash(state.content);
+}
 
 #endif
