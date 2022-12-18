@@ -165,20 +165,20 @@ public:
 };
 
 
-template<typename lat_perm,typename loc_perm,typename T>
+template<typename lat_perm_t,typename loc_perm_t,typename T>
 class symmetry
 {
 private:
-    std::vector<lat_perm> lat_symm;
-    std::vector<loc_perm> loc_symm;
+    std::vector<lat_perm_t> lat_symm;
+    std::vector<loc_perm_t> loc_symm;
     std::vector<T> lat_chars;
     std::vector<T> loc_chars;
 
 
 
 public:
-    lattice_symmetry(std::vector<perm> &_lat_symm,std::vector<T> &_lat_chars,
-    std::vector<perm> &_loc_symm,std::vector<T> &_loc_chars) : 
+    lattice_symmetry(std::vector<lat_perm_t> &_lat_symm,std::vector<T> &_lat_chars,
+    std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_chars) : 
     {
         lat_symm = _lat_symm;
         loc_symm = _loc_symm;
