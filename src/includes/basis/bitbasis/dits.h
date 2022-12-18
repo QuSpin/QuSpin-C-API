@@ -61,7 +61,7 @@ typedef struct dit_set { // thin wrapper used for convience
     const I mask;
     const types::dit_integer_t bits;
 
-    dit_set(I _content,const int _lhss, const dit_integer_t bits, const I _mask) : 
+    dit_set(I _content,const int _lhss, const I _mask, const dit_integer_t bits) : 
     content(_content), 
     lhss(_lhss), 
     mask(_mask), 
@@ -116,9 +116,6 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const i
 
     return  r;
 }
-
-
-
 
 } // end namespace quspin::basis
 
