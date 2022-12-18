@@ -3,6 +3,7 @@
 
 
 #include <vector>
+#include <memory>
 
 #include "basis/bitbasis/dits.h"
 #include "basis/bitbasis/bits.h"
