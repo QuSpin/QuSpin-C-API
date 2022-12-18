@@ -3,9 +3,6 @@
 
 #include "basis/bitbasis/types.h"
 
-#include <vector>
-
-
 namespace quspin::basis {
 
 namespace constants {
