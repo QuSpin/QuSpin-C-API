@@ -1,0 +1,2 @@
+src/quspin_api/basis.pxd
+src/quspin_api/operator.pxd

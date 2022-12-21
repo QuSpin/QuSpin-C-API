@@ -8,31 +8,34 @@
 
 namespace quspin::basis {
 
-template<typename space_t, typename symmetry_t>
-class basis
+template<typename subspace_t, typename symmetry_t>
+class subspace_basis
 {
 private:
     symmetry_t symmetry; // OK to copy
-    space_t * space; // ? on whether to copy
+    shared_ptr<subspace_t> space;
 
 public:
 
-    typedef space_t::bitset_t bitset_t;
-    typedef space_t::index_t index_t;
-    typedef space_t::norm_t norm_t;
+    typedef subspace_t::bitset_t bitset_t;
+    typedef subspace_t::index_t index_t;
+    typedef subspace_t::norm_t norm_t;
 
-    basis(symmetry_t& _symmetry, space_t& _sapce) : symmetry(_symmetry), space(&_space) {}
+    basis(symmetry_t& _symmetry, shared_ptr<subspace_t> _sapce) : symmetry(_symmetry), space(_space) {}
     ~basis() {}
 
-    template<typename T>
+    shared_ptr<subspace_t> get_space() {return space;}
+    symmetry_t get_symmetries() const {return symmetry;}
+
+    template<typename J,typename T>
     void ref_states_conj(
-        const typename index_t i,
-        std::unrdered_map<typename bitset_t,T>& col_states, 
-        std::unrdered_map<typename index_t,T>& columns
-    ){
+        const J i,
+        std::unrdered_map<J,T>& col_states, 
+        std::unrdered_map<J,T>& columns
+    ) const {
         for(const auto& [state,raw_mat_ele] : col_states){
             const auto& [ref_state,charater] = symmetry.get_refstate(state);
-            const typename index_t j = space->get_index(ref_state);
+            const J j = space->get_index(ref_state);
             const typename norm_t norm_j = space->get_norm(j);
             typename norm_t norm_i = space->get_norm(i);
             const T mat_ele =  raw_mat_ele * std::conj(charater) * std::sqrt(double(norm_j) / norm_i);
@@ -40,15 +43,15 @@ public:
         }
     }
 
-    template<typename T>
+    template<typename J, typename T>
     void ref_states(
-        const typename index_t i,
+        const J i,
         std::unrdered_map<typename bitset_t,T>& row_states, 
-        std::unrdered_map<typename index_t,T>& rows    
-    ){
+        std::unrdered_map<J,T>& rows    
+    ) const {
         for(const auto& [state,raw_mat_ele] : row_states){
             const auto& [ref_state,charater] = symmetry.get_refstate(state);
-            typename index_t j = space->get_index(ref_state);
+            J j = space->get_index(ref_state);
             typename norm_t norm_j = space->get_norm(j);
             typename norm_t norm_i = space->get_norm(i);
             const T mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
@@ -56,20 +59,20 @@ public:
         }
     }
 
-    template<typename T>
+    template<typename J,typename T>
     void calc_rowptr(
         std::vector<operator_string<T>>& pterms,
         std::vector<dense_term<T>>& dterms,
-        typename index_t rowptr[]
-    ){
+        J rowptr[]
+    ) const {
 
         J n_row = space -> size();
 
         std::unordered_map<typename bitset_t,T> col_states;
-        std::unordered_map<typename index_t,T> columns;
+        std::unordered_map<J,T> columns;
 
         rowptr[0] = 0;
-        for(typename index_t row = 0;row < n_row;++row)
+        for(J row = 0;row < n_row;++row)
         {
             col_states.clear();
             columns.clear();
@@ -87,9 +90,9 @@ public:
             rowptr[row] = columns.size();
         }
 
-        typename index_t nnz = 0;
-        for(typename index_t row = 0;row < n_row;++row){
-            typename index_t tmp = rowptr[row];
+        J nnz = 0;
+        for(J row = 0;row < n_row;++row){
+            J tmp = rowptr[row];
             rowptr[row] = nnz;
             nnz += tmp;
         }
@@ -97,24 +100,24 @@ public:
 
     }
 
-    template<typename T>
+    template<typename J,typename T>
     void calc_rowptr(
         std::vector<operator_string<T>>& pterms,
         std::vector<dense_term<T>>& dterms,
-        typename index_t rowptr[],
-        typename index_t indices[],
+        J rowptr[],
+        J indices[],
         T values[]
-    ){
+    ) const {
 
         J n_row = space -> size();
 
         std::unordered_map<typename bitset_t,T> col_states;
-        std::unordered_map<typename index_t,T> columns;
-        std::vector<std::pair<typename index_t,T>> sorted_columns;
+        std::unordered_map<J,T> columns;
+        std::vector<std::pair<J,T>> sorted_columns;
 
 
         rowptr[0] = 0;
-        for(typename index_t row = 0;row < n_row;++row)
+        for(J row = 0;row < n_row;++row)
         {
             col_states.clear();
             columns.clear();
@@ -134,14 +137,14 @@ public:
             // sort columns
             sorted_columns.insert(columns.begin(), columns.end());
             std::sort(sorted_columns.begin(), sorted_columns.end(), 
-                [](std::pair<typename index_t,T> lhs,std::pair<typename index_t,T> rhs) -> bool 
+                [](std::pair<J,T> lhs,std::pair<J,T> rhs) -> bool 
                 {
                     return lhs.first < rhs.first;
                 }
             );
 
             // insert data
-            typename index_t i = rowptr[row];
+            J i = rowptr[row];
             for(const auto& [col,nzval] : sorted_columns){
                 indices[i] = col;
                 values[i++] = nzval;
@@ -151,7 +154,6 @@ public:
 
     }
 
-
     template<typename X,typename Y>
     void on_the_fly(
         std::vector<operator_string<T>>& pterms,
@@ -160,19 +162,19 @@ public:
         const X * x, 
         const Y b, 
         Y  * y
-    ){
+    )const {
 
         if(b == Y(0.0)){
             std::fill(y,y+space->size(),0)
         }
         else{
-            for(typename index_t index=0;index < space-<size();++index){ y[index] *= b; }
+            for(size_t index=0;index < space-<size();++index){ y[index] *= b; }
         }
 
         std::unordered_map<typename bitset_t,T> row_states;
-        std::unordered_map<typename index_t,T> matrix_ele;
+        std::unordered_map<size_t,T> matrix_ele;
 
-        for(typename index_t row=0;row < space->size();++row){
+        for(J row=0;row < space->size();++row){
             row_states.clear();
             matrix_ele.clear();
 
