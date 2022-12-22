@@ -101,7 +101,7 @@ public:
     }
 
     template<typename J,typename T>
-    void calc_rowptr(
+    void calc_matrix(
         std::vector<operator_string<T>>& pterms,
         std::vector<dense_term<T>>& dterms,
         J rowptr[],
@@ -154,7 +154,7 @@ public:
 
     }
 
-    template<typename X,typename Y>
+    template<typename T, typename X, typename Y>
     void on_the_fly(
         std::vector<operator_string<T>>& pterms,
         std::vector<dense_term<T>>& dterms,
