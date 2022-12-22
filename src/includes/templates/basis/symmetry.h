@@ -221,6 +221,7 @@ public:
 
         dits_or_bits ss(s);
         T sign = T(1);
+        T coeff = T(1);
         
         for(int i=0;i<loc_symm.size();++i) 
         {
@@ -231,7 +232,7 @@ public:
 
                 if(rr > ss){
                     ss = rr;
-                    coeff = sign * lat_chars[p] * loc_chars[i];
+                    coeff = sign * lat_chars[j] * loc_chars[i];
                 }
             }
         }
@@ -239,19 +240,35 @@ public:
         return make_pair(ss,coeff);
     }
 
-    double check_refstate(const dits_or_bits &s){
-        double norm=0.0;
-        
+    double calc_norm(const dits_or_bits &s){
+        double norm = 0.0;
+        T sign = T(1);
 
         for(int i=0;i<loc_symm.size();++i) 
         {
-            const auto r = loc_symm[i].app(s,norm);
+            const auto r = loc_symm[i].app(s,sign);
             for(int j=0;j<lat_symm.size();++j)
             {
-                const auto rr = lat_symm[i].app(r,norm);
+                const auto rr = lat_symm[i].app(r,sign);
+                if(rr == s) norm += std::real(sign * lat_char[j] * loc_char[i]);
+            }
+        }
+        return norm;
+    }
+
+    double check_refstate(const dits_or_bits &s){
+        double norm=0.0;
+        T sign = T(1);
+
+        for(int i=0;i<loc_symm.size();++i) 
+        {
+            const auto r = loc_symm[i].app(s,sign);
+            for(int j=0;j<lat_symm.size();++j)
+            {
+                const auto rr = lat_symm[i].app(r,sign);
 
                 if(rr >  s){return std::numeric_limits<double>::quiet_NaN()};
-                if(rr == s) norm += std::real(lat_char[j] * loc_char[i]);
+                if(rr == s) norm += std::real(sign * lat_char[j] * loc_char[i]);
             }
         }
 
