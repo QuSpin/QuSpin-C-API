@@ -1,5 +1,5 @@
-#ifndef __QUSPIN_MATRIX_OPERATOR_H__
-#define __QUSPIN_MATRIX_OPERATOR_H__
+#ifndef __QUSPIN_OPERATOR_H__
+#define __QUSPIN_OPERATOR_H__
 
 #include <cinttypes>
 #include <cmath>
