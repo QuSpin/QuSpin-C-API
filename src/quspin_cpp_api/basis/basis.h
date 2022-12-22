@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include "quspin_backend/operater.h"
+#include "quspin_cpp_api/operater.h"
 
 namespace quspin::basis {
 

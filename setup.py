@@ -7,10 +7,9 @@ def pwd():
     return os.path.split(os.path.abspath(__file__))[0]
 
 def get_includes():
-    return [np.get_include(),os.path.join(pwd(),"src","includes")]
-    
-def get_library_dirs():
-    return [os.path.join(pwd(),"src","quspin_abi")]
+    return [np.get_include(),
+            os.path.join(pwd(),"src","quspin_cpp_api"),
+            os.path.join(pwd(),"src","quspin_core","include")]
 
 if __name__ == "__main__":
 
@@ -18,12 +17,12 @@ if __name__ == "__main__":
         long_description = f.read()
         
     ext = [
-        Extension("src.quspin_api.basis", [os.path.join(pwd(),"src","quspin_api","basis.pyx")],
+        Extension("src.quspin_core.basis", [os.path.join(pwd(),"src","quspin_core","basis.pyx")],
             include_dirs=get_includes(),
             language_level=3,
             language="c++",
         ),
-        Extension("src.quspin_api.operators", [os.path.join(pwd(),"src","quspin_api","operator.pyx")],
+        Extension("src.quspin_core.operators", [os.path.join(pwd(),"src","quspin_core","operator.pyx")],
             include_dirs=get_includes(),
             language_level=3,
             language="c++",
@@ -34,7 +33,7 @@ if __name__ == "__main__":
         name="QuSpin-Core",
         version="0.0.1a0",
         zip_safe=False,
-        packages=find_packages(where="src/quspin_api"),
+        packages=find_packages(where="src/quspin_core"),
         author="Phillip Weinberg, Marin Bukov, Markus Schmitt",
         description="Base low-level components for QuSpin.",
         long_description=long_description,

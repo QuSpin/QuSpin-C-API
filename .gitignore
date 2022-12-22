@@ -36,3 +36,4 @@
 *dSYM*
 build/
 __pycache__/
+CMakeFiles/

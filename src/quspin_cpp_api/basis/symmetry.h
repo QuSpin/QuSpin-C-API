@@ -5,9 +5,9 @@
 #include <vector>
 #include <memory>
 
-#include "quspin_backend/basis/bitbasis/dits.h"
-#include "quspin_backend/basis/bitbasis/bits.h"
-#include "quspin_backend/basis/bitbasis/types.h"
+#include "quspin_cpp_api/basis/bitbasis/dits.h"
+#include "quspin_cpp_api/basis/bitbasis/bits.h"
+#include "quspin_cpp_api/basis/bitbasis/types.h"
 
 namespace quspin::basis {
 

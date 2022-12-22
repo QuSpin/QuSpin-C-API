@@ -4,19 +4,18 @@
 {
     "distutils": {
         "depends": [],
+        "include_dirs": [
+            "/Users/pweinberg/opt/anaconda3/lib/python3.9/site-packages/numpy/core/include",
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_cpp_api",
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspincore/include"
+        ],
         "language": "c++",
-        "libraries": [
-            "quspin_abi"
-        ],
-        "library_dirs": [
-            "src/impl"
-        ],
-        "name": "quspin_api.basis",
+        "name": "src.quspin_core.basis",
         "sources": [
-            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_api/basis.pyx"
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_core/basis.pyx"
         ]
     },
-    "module_name": "quspin_api.basis"
+    "module_name": "src.quspin_core.basis"
 }
 END: Cython Metadata */
 
@@ -772,10 +771,9 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__quspin_api__basis
-#define __PYX_HAVE_API__quspin_api__basis
+#define __PYX_HAVE__src__quspin_core__basis
+#define __PYX_HAVE_API__src__quspin_core__basis
 /* Early includes */
-#include "basis.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -985,21 +983,21 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src/quspin_api/basis.pyx",
+  "src/quspin_core/basis.pyx",
   "stringsource",
 };
 
 /*--- Type declarations ---*/
-struct __pyx_obj_10quspin_api_5basis_bit_basis;
+struct __pyx_obj_3src_11quspin_core_5basis_bit_basis;
 
-/* "quspin_api/basis.pyx":3
+/* "src/quspin_core/basis.pyx":3
  * # from basis cimport *
  * 
  * cdef class bit_basis:             # <<<<<<<<<<<<<<
  *     def __init__(self):
  *         self._name = "basis"
  */
-struct __pyx_obj_10quspin_api_5basis_bit_basis {
+struct __pyx_obj_3src_11quspin_core_5basis_bit_basis {
   PyObject_HEAD
 };
 
@@ -1375,14 +1373,14 @@ static int __Pyx_check_binary_version(void);
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 
-/* Module declarations from 'quspin_api.basis' */
-static PyTypeObject *__pyx_ptype_10quspin_api_5basis_bit_basis = 0;
-static PyObject *__pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state(struct __pyx_obj_10quspin_api_5basis_bit_basis *, PyObject *); /*proto*/
-#define __Pyx_MODULE_NAME "quspin_api.basis"
-extern int __pyx_module_is_main_quspin_api__basis;
-int __pyx_module_is_main_quspin_api__basis = 0;
+/* Module declarations from 'src.quspin_core.basis' */
+static PyTypeObject *__pyx_ptype_3src_11quspin_core_5basis_bit_basis = 0;
+static PyObject *__pyx_f_3src_11quspin_core_5basis___pyx_unpickle_bit_basis__set_state(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *, PyObject *); /*proto*/
+#define __Pyx_MODULE_NAME "src.quspin_core.basis"
+extern int __pyx_module_is_main_src__quspin_core__basis;
+int __pyx_module_is_main_src__quspin_core__basis = 0;
 
-/* Implementation of 'quspin_api.basis' */
+/* Implementation of 'src.quspin_core.basis' */
 static const char __pyx_k_new[] = "__new__";
 static const char __pyx_k_dict[] = "__dict__";
 static const char __pyx_k_main[] = "__main__";
@@ -1407,8 +1405,8 @@ static const char __pyx_k_stringsource[] = "stringsource";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
 static const char __pyx_k_pyx_PickleError[] = "__pyx_PickleError";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
-static const char __pyx_k_quspin_api_basis[] = "quspin_api.basis";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
+static const char __pyx_k_src_quspin_core_basis[] = "src.quspin_core.basis";
 static const char __pyx_k_pyx_unpickle_bit_basis[] = "__pyx_unpickle_bit_basis";
 static const char __pyx_k_Incompatible_checksums_0x_x_vs_0[] = "Incompatible checksums (0x%x vs (0xd41d8cd, 0xe3b0c44, 0xda39a3e) = ())";
 static PyObject *__pyx_kp_s_Incompatible_checksums_0x_x_vs_0;
@@ -1430,20 +1428,20 @@ static PyObject *__pyx_n_s_pyx_result;
 static PyObject *__pyx_n_s_pyx_state;
 static PyObject *__pyx_n_s_pyx_type;
 static PyObject *__pyx_n_s_pyx_unpickle_bit_basis;
-static PyObject *__pyx_n_s_quspin_api_basis;
 static PyObject *__pyx_n_s_reduce;
 static PyObject *__pyx_n_s_reduce_cython;
 static PyObject *__pyx_n_s_reduce_ex;
 static PyObject *__pyx_n_s_setstate;
 static PyObject *__pyx_n_s_setstate_cython;
+static PyObject *__pyx_n_s_src_quspin_core_basis;
 static PyObject *__pyx_kp_s_stringsource;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_update;
-static int __pyx_pf_10quspin_api_5basis_9bit_basis___init__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_2__reduce_cython__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self, PyObject *__pyx_v___pyx_state); /* proto */
-static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state); /* proto */
-static PyObject *__pyx_tp_new_10quspin_api_5basis_bit_basis(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static int __pyx_pf_3src_11quspin_core_5basis_9bit_basis___init__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11quspin_core_5basis_9bit_basis_2__reduce_cython__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11quspin_core_5basis_9bit_basis_4__setstate_cython__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self, PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_pf_3src_11quspin_core_5basis___pyx_unpickle_bit_basis(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_tp_new_3src_11quspin_core_5basis_bit_basis(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_int_222419149;
 static PyObject *__pyx_int_228825662;
 static PyObject *__pyx_int_238750788;
@@ -1452,7 +1450,7 @@ static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_codeobj__3;
 /* Late includes */
 
-/* "quspin_api/basis.pyx":4
+/* "src/quspin_core/basis.pyx":4
  * 
  * cdef class bit_basis:
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -1460,22 +1458,22 @@ static PyObject *__pyx_codeobj__3;
  */
 
 /* Python wrapper */
-static int __pyx_pw_10quspin_api_5basis_9bit_basis_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_10quspin_api_5basis_9bit_basis_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_3src_11quspin_core_5basis_9bit_basis_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_3src_11quspin_core_5basis_9bit_basis_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("__init__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__init__", 0))) return -1;
-  __pyx_r = __pyx_pf_10quspin_api_5basis_9bit_basis___init__(((struct __pyx_obj_10quspin_api_5basis_bit_basis *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11quspin_core_5basis_9bit_basis___init__(((struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_10quspin_api_5basis_9bit_basis___init__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self) {
+static int __pyx_pf_3src_11quspin_core_5basis_9bit_basis___init__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_lineno = 0;
@@ -1483,14 +1481,14 @@ static int __pyx_pf_10quspin_api_5basis_9bit_basis___init__(struct __pyx_obj_10q
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "quspin_api/basis.pyx":5
+  /* "src/quspin_core/basis.pyx":5
  * cdef class bit_basis:
  *     def __init__(self):
  *         self._name = "basis"             # <<<<<<<<<<<<<<
  */
   if (__Pyx_PyObject_SetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name, __pyx_n_s_basis) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
 
-  /* "quspin_api/basis.pyx":4
+  /* "src/quspin_core/basis.pyx":4
  * 
  * cdef class bit_basis:
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -1501,7 +1499,7 @@ static int __pyx_pf_10quspin_api_5basis_9bit_basis___init__(struct __pyx_obj_10q
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("quspin_api.basis.bit_basis.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.bit_basis.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -1515,19 +1513,19 @@ static int __pyx_pf_10quspin_api_5basis_9bit_basis___init__(struct __pyx_obj_10q
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10quspin_api_5basis_9bit_basis_3__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_10quspin_api_5basis_9bit_basis_3__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_9bit_basis_3__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_9bit_basis_3__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10quspin_api_5basis_9bit_basis_2__reduce_cython__(((struct __pyx_obj_10quspin_api_5basis_bit_basis *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11quspin_core_5basis_9bit_basis_2__reduce_cython__(((struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_2__reduce_cython__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11quspin_core_5basis_9bit_basis_2__reduce_cython__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self) {
   PyObject *__pyx_v_state = 0;
   PyObject *__pyx_v__dict = 0;
   int __pyx_v_use_setstate;
@@ -1726,7 +1724,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_2__reduce_cython__(stru
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("quspin_api.basis.bit_basis.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.bit_basis.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_state);
@@ -1744,19 +1742,19 @@ static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_2__reduce_cython__(stru
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10quspin_api_5basis_9bit_basis_5__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_10quspin_api_5basis_9bit_basis_5__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_9bit_basis_5__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_9bit_basis_5__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(((struct __pyx_obj_10quspin_api_5basis_bit_basis *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_3src_11quspin_core_5basis_9bit_basis_4__setstate_cython__(((struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_3src_11quspin_core_5basis_9bit_basis_4__setstate_cython__(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1771,7 +1769,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(st
  *     __pyx_unpickle_bit_basis__set_state(self, __pyx_state)             # <<<<<<<<<<<<<<
  */
   if (!(likely(PyTuple_CheckExact(__pyx_v___pyx_state))||((__pyx_v___pyx_state) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_v___pyx_state)->tp_name), 0))) __PYX_ERR(1, 17, __pyx_L1_error)
-  __pyx_t_1 = __pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state(__pyx_v_self, ((PyObject*)__pyx_v___pyx_state)); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 17, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3src_11quspin_core_5basis___pyx_unpickle_bit_basis__set_state(__pyx_v_self, ((PyObject*)__pyx_v___pyx_state)); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 17, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
@@ -1787,7 +1785,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(st
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("quspin_api.basis.bit_basis.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.bit_basis.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1802,9 +1800,9 @@ static PyObject *__pyx_pf_10quspin_api_5basis_9bit_basis_4__setstate_cython__(st
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10quspin_api_5basis_1__pyx_unpickle_bit_basis(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_10quspin_api_5basis_1__pyx_unpickle_bit_basis = {"__pyx_unpickle_bit_basis", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10quspin_api_5basis_1__pyx_unpickle_bit_basis, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_10quspin_api_5basis_1__pyx_unpickle_bit_basis(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_1__pyx_unpickle_bit_basis(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_3src_11quspin_core_5basis_1__pyx_unpickle_bit_basis = {"__pyx_unpickle_bit_basis", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_3src_11quspin_core_5basis_1__pyx_unpickle_bit_basis, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_3src_11quspin_core_5basis_1__pyx_unpickle_bit_basis(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v___pyx_type = 0;
   long __pyx_v___pyx_checksum;
   PyObject *__pyx_v___pyx_state = 0;
@@ -1866,18 +1864,18 @@ static PyObject *__pyx_pw_10quspin_api_5basis_1__pyx_unpickle_bit_basis(PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__pyx_unpickle_bit_basis", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(1, 1, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("quspin_api.basis.__pyx_unpickle_bit_basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.__pyx_unpickle_bit_basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(__pyx_self, __pyx_v___pyx_type, __pyx_v___pyx_checksum, __pyx_v___pyx_state);
+  __pyx_r = __pyx_pf_3src_11quspin_core_5basis___pyx_unpickle_bit_basis(__pyx_self, __pyx_v___pyx_type, __pyx_v___pyx_checksum, __pyx_v___pyx_state);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_3src_11quspin_core_5basis___pyx_unpickle_bit_basis(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_v___pyx_PickleError = 0;
   PyObject *__pyx_v___pyx_result = 0;
   PyObject *__pyx_r = NULL;
@@ -1978,7 +1976,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UN
  *     if __pyx_state is not None:
  *         __pyx_unpickle_bit_basis__set_state(<bit_basis> __pyx_result, __pyx_state)
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_ptype_10quspin_api_5basis_bit_basis), __pyx_n_s_new); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 7, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_ptype_3src_11quspin_core_5basis_bit_basis), __pyx_n_s_new); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -2017,7 +2015,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UN
  * cdef __pyx_unpickle_bit_basis__set_state(bit_basis __pyx_result, tuple __pyx_state):
  */
     if (!(likely(PyTuple_CheckExact(__pyx_v___pyx_state))||((__pyx_v___pyx_state) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_v___pyx_state)->tp_name), 0))) __PYX_ERR(1, 9, __pyx_L1_error)
-    __pyx_t_4 = __pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state(((struct __pyx_obj_10quspin_api_5basis_bit_basis *)__pyx_v___pyx_result), ((PyObject*)__pyx_v___pyx_state)); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 9, __pyx_L1_error)
+    __pyx_t_4 = __pyx_f_3src_11quspin_core_5basis___pyx_unpickle_bit_basis__set_state(((struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *)__pyx_v___pyx_result), ((PyObject*)__pyx_v___pyx_state)); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 9, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
@@ -2054,7 +2052,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UN
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("quspin_api.basis.__pyx_unpickle_bit_basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.__pyx_unpickle_bit_basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v___pyx_PickleError);
@@ -2072,7 +2070,7 @@ static PyObject *__pyx_pf_10quspin_api_5basis___pyx_unpickle_bit_basis(CYTHON_UN
  *         __pyx_result.__dict__.update(__pyx_state[0])
  */
 
-static PyObject *__pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state(struct __pyx_obj_10quspin_api_5basis_bit_basis *__pyx_v___pyx_result, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_f_3src_11quspin_core_5basis___pyx_unpickle_bit_basis__set_state(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis *__pyx_v___pyx_result, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -2169,7 +2167,7 @@ static PyObject *__pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_AddTraceback("quspin_api.basis.__pyx_unpickle_bit_basis__set_state", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.quspin_core.basis.__pyx_unpickle_bit_basis__set_state", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2177,7 +2175,7 @@ static PyObject *__pyx_f_10quspin_api_5basis___pyx_unpickle_bit_basis__set_state
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_10quspin_api_5basis_bit_basis(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+static PyObject *__pyx_tp_new_3src_11quspin_core_5basis_bit_basis(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -2188,7 +2186,7 @@ static PyObject *__pyx_tp_new_10quspin_api_5basis_bit_basis(PyTypeObject *t, CYT
   return o;
 }
 
-static void __pyx_tp_dealloc_10quspin_api_5basis_bit_basis(PyObject *o) {
+static void __pyx_tp_dealloc_3src_11quspin_core_5basis_bit_basis(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -2197,18 +2195,18 @@ static void __pyx_tp_dealloc_10quspin_api_5basis_bit_basis(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_10quspin_api_5basis_bit_basis[] = {
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_10quspin_api_5basis_9bit_basis_3__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_10quspin_api_5basis_9bit_basis_5__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_3src_11quspin_core_5basis_bit_basis[] = {
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_3src_11quspin_core_5basis_9bit_basis_3__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_3src_11quspin_core_5basis_9bit_basis_5__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_10quspin_api_5basis_bit_basis = {
+static PyTypeObject __pyx_type_3src_11quspin_core_5basis_bit_basis = {
   PyVarObject_HEAD_INIT(0, 0)
-  "quspin_api.basis.bit_basis", /*tp_name*/
-  sizeof(struct __pyx_obj_10quspin_api_5basis_bit_basis), /*tp_basicsize*/
+  "src.quspin_core.basis.bit_basis", /*tp_name*/
+  sizeof(struct __pyx_obj_3src_11quspin_core_5basis_bit_basis), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_10quspin_api_5basis_bit_basis, /*tp_dealloc*/
+  __pyx_tp_dealloc_3src_11quspin_core_5basis_bit_basis, /*tp_dealloc*/
   #if PY_VERSION_HEX < 0x030800b4
   0, /*tp_print*/
   #endif
@@ -2241,7 +2239,7 @@ static PyTypeObject __pyx_type_10quspin_api_5basis_bit_basis = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_10quspin_api_5basis_bit_basis, /*tp_methods*/
+  __pyx_methods_3src_11quspin_core_5basis_bit_basis, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -2249,9 +2247,9 @@ static PyTypeObject __pyx_type_10quspin_api_5basis_bit_basis = {
   0, /*tp_descr_get*/
   0, /*tp_descr_set*/
   0, /*tp_dictoffset*/
-  __pyx_pw_10quspin_api_5basis_9bit_basis_1__init__, /*tp_init*/
+  __pyx_pw_3src_11quspin_core_5basis_9bit_basis_1__init__, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_10quspin_api_5basis_bit_basis, /*tp_new*/
+  __pyx_tp_new_3src_11quspin_core_5basis_bit_basis, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -2340,12 +2338,12 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_pyx_state, __pyx_k_pyx_state, sizeof(__pyx_k_pyx_state), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_type, __pyx_k_pyx_type, sizeof(__pyx_k_pyx_type), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_unpickle_bit_basis, __pyx_k_pyx_unpickle_bit_basis, sizeof(__pyx_k_pyx_unpickle_bit_basis), 0, 0, 1, 1},
-  {&__pyx_n_s_quspin_api_basis, __pyx_k_quspin_api_basis, sizeof(__pyx_k_quspin_api_basis), 0, 0, 1, 1},
   {&__pyx_n_s_reduce, __pyx_k_reduce, sizeof(__pyx_k_reduce), 0, 0, 1, 1},
   {&__pyx_n_s_reduce_cython, __pyx_k_reduce_cython, sizeof(__pyx_k_reduce_cython), 0, 0, 1, 1},
   {&__pyx_n_s_reduce_ex, __pyx_k_reduce_ex, sizeof(__pyx_k_reduce_ex), 0, 0, 1, 1},
   {&__pyx_n_s_setstate, __pyx_k_setstate, sizeof(__pyx_k_setstate), 0, 0, 1, 1},
   {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
+  {&__pyx_n_s_src_quspin_core_basis, __pyx_k_src_quspin_core_basis, sizeof(__pyx_k_src_quspin_core_basis), 0, 0, 1, 1},
   {&__pyx_kp_s_stringsource, __pyx_k_stringsource, sizeof(__pyx_k_stringsource), 0, 0, 1, 0},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_update, __pyx_k_update, sizeof(__pyx_k_update), 0, 0, 1, 1},
@@ -2435,16 +2433,16 @@ static int __Pyx_modinit_type_init_code(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_10quspin_api_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_3src_11quspin_core_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
-  __pyx_type_10quspin_api_5basis_bit_basis.tp_print = 0;
+  __pyx_type_3src_11quspin_core_5basis_bit_basis.tp_print = 0;
   #endif
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_10quspin_api_5basis_bit_basis.tp_dictoffset && __pyx_type_10quspin_api_5basis_bit_basis.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_10quspin_api_5basis_bit_basis.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3src_11quspin_core_5basis_bit_basis.tp_dictoffset && __pyx_type_3src_11quspin_core_5basis_bit_basis.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_3src_11quspin_core_5basis_bit_basis.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_bit_basis, (PyObject *)&__pyx_type_10quspin_api_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_10quspin_api_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
-  __pyx_ptype_10quspin_api_5basis_bit_basis = &__pyx_type_10quspin_api_5basis_bit_basis;
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_bit_basis, (PyObject *)&__pyx_type_3src_11quspin_core_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3src_11quspin_core_5basis_bit_basis) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_ptype_3src_11quspin_core_5basis_bit_basis = &__pyx_type_3src_11quspin_core_5basis_bit_basis;
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -2648,14 +2646,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_quspin_api__basis) {
+  if (__pyx_module_is_main_src__quspin_core__basis) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name_2, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "quspin_api.basis")) {
-      if (unlikely(PyDict_SetItemString(modules, "quspin_api.basis", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "src.quspin_core.basis")) {
+      if (unlikely(PyDict_SetItemString(modules, "src.quspin_core.basis", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -2681,12 +2679,12 @@ if (!__Pyx_RefNanny) {
  *     cdef object __pyx_PickleError
  *     cdef object __pyx_result
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_10quspin_api_5basis_1__pyx_unpickle_bit_basis, NULL, __pyx_n_s_quspin_api_basis); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 1, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_3src_11quspin_core_5basis_1__pyx_unpickle_bit_basis, NULL, __pyx_n_s_src_quspin_core_basis); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pyx_unpickle_bit_basis, __pyx_t_1) < 0) __PYX_ERR(1, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "quspin_api/basis.pyx":1
+  /* "src/quspin_core/basis.pyx":1
  * # from basis cimport *             # <<<<<<<<<<<<<<
  * 
  * cdef class bit_basis:
@@ -2703,11 +2701,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init quspin_api.basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init src.quspin_core.basis", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init quspin_api.basis");
+    PyErr_SetString(PyExc_ImportError, "init src.quspin_core.basis");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

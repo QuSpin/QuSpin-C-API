@@ -1,7 +1,7 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_DITS_H__
 #define __QUSPIN_BASIS_BITBASIS_DITS_H__
 
-#include "quspin_backend/basis/bitbasis/types.h"
+#include "quspin_cpp_api/basis/bitbasis/types.h"
 
 namespace quspin::basis {
 

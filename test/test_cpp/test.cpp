@@ -3,7 +3,7 @@
 
 
 #define QUSPIN_UNIT_TESTS
-#include "quspin_backend/basis/bitbasis/bits.h"
+#include "basis/bitbasis/bits.h"
 
 int main(int argc, char **argv) {
     doctest::Context context;

@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <algorithm>
 // quspin includes
-#include "quspin_backend/basis/bitbasis/dits.h"
-#include "quspin_backend/basis/bitbasis/bits.h"
+#include "quspin_cpp_api/basis/bitbasis/dits.h"
+#include "quspin_cpp_api/basis/bitbasis/bits.h"
 
 
 namespace quspin::basis {
