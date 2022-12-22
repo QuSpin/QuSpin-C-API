@@ -1,9 +1,9 @@
 #ifndef __QUSPIN_BASIS_TYPES_H__
 #define __QUSPIN_BASIS_TYPES_H__
 
-#include "basis/basis.h"
-#include "basis/symmetry.h"
-#include "matrix/operator.h"
+#include "quspin_backend/basis/basis.h"
+#include "quspin_backend/basis/symmetry.h"
+#include "quspin_backend/matrix/operator.h"
 
 namespace quspin {
 

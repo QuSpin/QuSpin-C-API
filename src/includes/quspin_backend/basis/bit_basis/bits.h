@@ -1,7 +1,8 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_BITS_H__
 #define __QUSPIN_BASIS_BITBASIS_BITS_H__
 
-#include "basis/bitbasis/types.h"
+#include "quspin_backend/basis/bit_basis/types.h"
+#include "quspin_backend/basis/bit_basis/info.h"
 
 namespace quspin::basis::bit_basis {
 
@@ -20,11 +21,11 @@ typedef struct bit_set { // thin wrapper used for convience
     bit_set(I _content) : content(_content) {}
     bit_set(const bit_set<I>& other) : content(other.content) {}
 
-} bit_set;
+};
 
 template<typename I>
 int get_sub_bitstring(bit_set<I> s,const int i){
-    return integer_cast<int,I>( (s.content >> i) & I(1))
+    return integer_cast<int,I>( (s.content >> i) & I(1));
 }
 
 template<typename I>
@@ -52,6 +53,62 @@ bit_set<I> set_sub_bitstring(const bit_set<I> s,int in,const int * locs,const in
     return  r;
 }
 
+template<typename I>
+inline bool operator<(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.content < rhs.content;}
+
+template<typename I>
+inline bool operator>(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.content > rhs.content;}
+
+template<typename I>
+inline bool operator==(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.content == rhs.content;}
+
+template<typename I>
+std::vector<bool> to_vector(const bit_set<I>& s,const int length=0){
+    std::vector<bool> out;
+
+    const int niter = (length>0 ? length : bit_info<I>::bits/s.bits);
+
+    for(int i=0;i<niter;++i){
+        out.push_back(static_cast<bool>(get_sub_bitstring(s,i)));
+    }
+    return out;
+}
+
+template<typename I>
+bit_set<I> from_vector(const std::vector<bool>& input){
+    bit_set<I>  state;
+
+    for(int i=0;i<input.size();i++){
+        set_sub_bitstring(state,static_cast<int>(input[i]),i);
+    }
+
+    return state;
+}
+
+
 } // end namespace quspin::basis
+
+
+#ifdef __UNIT_TESTS__
+
+TEST_CASE("get_bit_substring") {
+
+}
+
+TEST_CASE("set_sub_bitstring") {
+
+}
+
+TEST_CAST("operators") {
+
+}
+
+TEST_CAST("to_/from_vector") {
+    
+}
+
+#endif
+
+
 
 #endif

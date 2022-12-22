@@ -1,7 +1,7 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_DITS_H__
 #define __QUSPIN_BASIS_BITBASIS_DITS_H__
 
-#include "basis/bitbasis/types.h"
+#include "quspin_backend/basis/bit_basis/types.h"
 
 namespace quspin::basis {
 
@@ -115,5 +115,27 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const i
 }
 
 } // end namespace quspin::basis
+
+
+#ifdef __UNIT_TESTS__
+
+TEST_CASE("get_bit_substring") {
+
+}
+
+TEST_CASE("set_sub_bitstring") {
+
+}
+
+TEST_CAST("operators") {
+
+}
+
+TEST_CAST("to_/from_vector") {
+    
+}
+
+#endif
+
 
 #endif

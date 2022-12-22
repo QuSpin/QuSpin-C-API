@@ -5,9 +5,9 @@
 #include <vector>
 #include <memory>
 
-#include "basis/bitbasis/dits.h"
-#include "basis/bitbasis/bits.h"
-#include "basis/bitbasis/types.h"
+#include "quspin_backend/basis/bit_basis/dits.h"
+#include "quspin_backend/basis/bit_basis/bits.h"
+#include "quspin_backend/basis/bit_basis/types.h"
 
 namespace quspin::basis {
 
@@ -195,7 +195,7 @@ private:
 
 
 public:
-    lattice_symmetry(std::vector<lat_perm_t> &_lat_symm,std::vector<T> &_lat_chars,
+    symmetry(std::vector<lat_perm_t> &_lat_symm,std::vector<T> &_lat_chars,
     std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_chars) : 
     {
         lat_symm = _lat_symm;
@@ -207,7 +207,7 @@ public:
 
     }
 
-    lattice_symmetry(lattice_symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
+    symmetry(symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
         lat_symm = other.lat_symm;
         loc_symm = other.loc_symm;
         lat_char = other.lat_char;
@@ -217,7 +217,7 @@ public:
 
     size_t size() const {return lattice_perms.size() * local_perms.size();}
 
-    std::pair<dits_or_bits,T> get_refstate(const dits_or_bits &s){
+    std::pair<dits_or_bits,T> get_refstate(const dits_or_bits &s) const {
 
         dits_or_bits ss(s);
         T sign = T(1);
@@ -237,10 +237,10 @@ public:
             }
         }
 
-        return make_pair(ss,coeff);
+        return std::make_pair(ss,coeff);
     }
 
-    double calc_norm(const dits_or_bits &s){
+    double calc_norm(const dits_or_bits &s) const {
         double norm = 0.0;
         T sign = T(1);
 
@@ -256,7 +256,7 @@ public:
         return norm;
     }
 
-    double check_refstate(const dits_or_bits &s){
+    double check_refstate(const dits_or_bits &s) const {
         double norm=0.0;
         T sign = T(1);
 

@@ -1,7 +1,7 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_INFO_H__
 #define __QUSPIN_BASIS_BITBASIS_INFO_H__
 
-#include "basis/bit_basis/int_types.h"
+#include "quspin_backend/basis/bit_basis/types.h"
 
 namespace quspin::basis::bit_basis {
 
@@ -68,11 +68,6 @@ inline J integer_cast(I s){
   }
 }
 
-#else
-
-template<class J,class I>
-J integer_cast(const I s)
-
 #endif
 
 template<>
@@ -103,22 +98,22 @@ struct bit_info<uint8_t>
 
 
 template<class J>
-inline J integer_cast<J,uint64_t>(const uint64_t s){
+inline J integer_cast(const uint64_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint32_t>(const uint32_t s){
+inline J integer_cast(const uint32_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint16_t>(const uint16_t s){
+inline J integer_cast(const uint16_t s){
   return J(s);
 }
 
 template<class J>
-inline J integer_cast<J,uint8_t>(const uint8_t s){
+inline J integer_cast(const uint8_t s){
   return J(s);
 }
 
@@ -147,5 +142,11 @@ int inline bit_count(T v,int l){
 
 
 }
+
+
+#ifdef __UNIT_TESTS__
+
+
+#endif
 
 #endif
