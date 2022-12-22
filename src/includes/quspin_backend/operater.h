@@ -50,11 +50,11 @@ public:
 
     template<typename bitset_t>
     void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over columns
             const int i = lhss*a+b;
             if(nonzero[i]){
-                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
@@ -62,11 +62,11 @@ public:
 
     template<typename bitset_t>
     void op_transpose(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){  // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
@@ -74,11 +74,11 @@ public:
 
     template<typename bitset_t>
     void op_dagger(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bit_basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::bit_basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
             }
         }
@@ -136,9 +136,9 @@ public:
         bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
-            const int a = basis::bit_basis::get_sub_bitstring(r,loc[i]);
+            const int a = basis::bitbasis::get_sub_bitstring(r,loc[i]);
             const int b = perm[a];
-            r = basis::bit_basis::set_sub_bitstring(r,a,b,loc[i]);
+            r = basis::bitbasis::set_sub_bitstring(r,a,b,loc[i]);
             m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
@@ -159,9 +159,9 @@ public:
         bitset_t r(s);
         bool nonzero = true;
         for(int i=0;i<nloc;++i){
-            const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::bitbasis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::bitbasis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
@@ -182,9 +182,9 @@ public:
         bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
-            const int s_loc = basis::bit_basis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::bitbasis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = basis::bit_basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::bitbasis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= std::conj(data[s_loc]);
 
             if(m == T(0)){nonzero=false; break;}

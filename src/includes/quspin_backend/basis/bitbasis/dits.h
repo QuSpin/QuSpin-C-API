@@ -1,7 +1,7 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_DITS_H__
 #define __QUSPIN_BASIS_BITBASIS_DITS_H__
 
-#include "quspin_backend/basis/bit_basis/types.h"
+#include "quspin_backend/basis/bitbasis/types.h"
 
 namespace quspin::basis {
 
@@ -75,7 +75,7 @@ typedef struct dit_set { // thin wrapper used for convience
 
 template<typename I>
 int get_sub_bitstring(const dit_set<I>& s,const int i){
-    return integer_cast<int,I>( (s.content >> (i * s.bits)) & s.mask)
+    return integer<int,I>::cast( (s.content >> (i * s.bits)) & s.mask)
 }
 
 template<typename I>
@@ -85,7 +85,7 @@ int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
         out += get_sub_bitstring(s,locs[i])
         out *= s.lhss;
         /* // implementation with padding for congituous blocks 
-        out |= integer_cast<int,I>(get_sub_bitstring(s,locs[i]));
+        out |= bit_basis<int,I>(get_sub_bitstring(s,locs[i]));
         out <<= s.bits;
         */
     }
@@ -95,7 +95,7 @@ int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
 template<typename I>
 dit_set<I> set_sub_bitstring(const dit_set<I>& s,const I in,const int i){
     const int shift =  i * s.bits;
-    const I r = s.content ^ ( -( in << shift ) ^ s.content) & (s.mask << shift)
+    const I r = s.content ^ ( ( in << shift ) ^ s.content) & (s.mask << shift)
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 
@@ -117,7 +117,7 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const i
 } // end namespace quspin::basis
 
 
-#ifdef __UNIT_TESTS__
+#ifdef QUSPIN_UNIT_TESTS
 
 TEST_CASE("get_bit_substring") {
 
@@ -127,11 +127,11 @@ TEST_CASE("set_sub_bitstring") {
 
 }
 
-TEST_CAST("operators") {
+TEST_CASE("operators") {
 
 }
 
-TEST_CAST("to_/from_vector") {
+TEST_CASE("to_/from_vector") {
     
 }
 

@@ -1,8 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
-#include "quspin_backend/basis/bit_basis/bits.h"
 
+#define QUSPIN_UNIT_TESTS
+#include "quspin_backend/basis/bitbasis/bits.h"
 
 int main(int argc, char **argv) {
     doctest::Context context;
@@ -15,9 +16,8 @@ int main(int argc, char **argv) {
         // propagate the result of the tests
         return res;
     }
-
-    printf("%s\n", "Hello, World!");
 }
+
 
 
 // running notes

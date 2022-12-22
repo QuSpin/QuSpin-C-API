@@ -3,7 +3,7 @@
 
 
 
-namespace quspin::basis::bit_basis::benes_perm {
+namespace quspin::basis::bitbasis::benes_perm {
 
 static const int no_index = -1;
 

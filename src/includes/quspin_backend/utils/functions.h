@@ -16,13 +16,13 @@ T real_value(const std::complex<T>& v){return v.real();}
 
 
 template<typename I>
-std::hash(quspin::basis::bit_basis::bit_set<I> &state){
+std::hash(quspin::basis::bitbasis::bit_set<I> &state){
     return std::hash(state.content);
 }
 
 
 template<typename I>
-std::hash(quspin::basis::bit_basis::dit_set<I> &state){
+std::hash(quspin::basis::bitbasis::dit_set<I> &state){
     return std::hash(state.content);
 }
 

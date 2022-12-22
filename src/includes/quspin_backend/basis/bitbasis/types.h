@@ -8,9 +8,9 @@
 #include "boost/numeric/conversion/cast.hpp"
 #endif
 
-namespace quspin::basis::bit_basis::types {
+namespace quspin::basis::bitbasis::types {
 
-typedef std::int8_t uint8_t;
+typedef std::uint8_t uint8_t;
 typedef std::int16_t uint16_t;
 typedef std::uint32_t uint32_t;
 typedef std::uint64_t uint64_t;
