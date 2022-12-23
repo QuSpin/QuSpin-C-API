@@ -37,3 +37,9 @@
 build/
 __pycache__/
 CMakeFiles/
+Makefile
+CMakeFiles/
+*.cmake
+CMakeCache.txt
+doctest/
+test_cpp

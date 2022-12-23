@@ -1,9 +1,9 @@
 
-add_executable(test
-    test.cpp
-)
 
-target_include_directories(test
-    ${PROJECT_SOURCE_DIR}/src/quspin_cpp_api
-    ${${doctest_INCLUDE_DIRS}}
-)
+# Prepare doctest for other targets to use
+find_package(doctest REQUIRED)
+
+# Make test executable
+add_executable(test_cpp test.cpp)
+target_link_libraries(test PRIVATE doctest::doctest)
+

@@ -1,0 +1,13 @@
+name: Workflow example
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - src/includes/quspin
+    
+
+jobs:
+
+  build:

@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include "quspin_cpp_api/basis/bitbasis/types.h"
-#include "quspin_cpp_api/basis/bitbasis/info.h"
+#include "basis/bitbasis/types.h"
+#include "basis/bitbasis/info.h"
 
 
 namespace quspin::basis::bitbasis {
