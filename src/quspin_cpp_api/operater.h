@@ -12,7 +12,6 @@
 
 namespace quspin {
 
-
 template<class T>
 class dense_term
 {
