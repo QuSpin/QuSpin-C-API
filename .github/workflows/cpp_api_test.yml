@@ -1,4 +1,4 @@
-name: CMake Build Matrix
+name: C++ API test
 
 on:
   push:
