@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(quspin_c_api VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
-
+enable_testing()
 include(ExternalProject)
 find_package(Git REQUIRED)
 
@@ -27,9 +27,6 @@ set(QUSPIN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/quspin_cpp_api)
 include_directories(${DOCTEST_INCLUDE_DIR})
 include_directories(${QUSPIN_INCLUDE_DIR})
 
+
 add_subdirectory(test/test_cpp)
 
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
