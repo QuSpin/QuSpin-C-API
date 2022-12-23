@@ -3,13 +3,9 @@ name: C++ API test
 on:
   push:
     branches: main
-    paths:
-        - ${{github.workspace}}/src/quspin_cpp_api/**
   pull_request:
     branches: main
-    paths:
-        - ${{github.workspace}}/src/quspin_cpp_api/**
-        
+
 jobs:
   build:
     name: ${ { matrix.config.name } }
@@ -24,11 +20,7 @@ jobs:
         #     build_type: "Release", cc: "cl", cxx: "cl",
         #     environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
         #   }
-        - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
-            os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++"
-          }
+        - { name: "Ubuntu Latest GCC", os: ubuntu-latest, build_type: "Release"}
         # - {
         #     name: "macOS Latest Clang", artifact: "macOS.tar.xz",
         #     os: macos-latest,
