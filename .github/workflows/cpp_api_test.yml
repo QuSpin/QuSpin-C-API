@@ -5,14 +5,20 @@ on:
     branches: 
       - main
     paths-ignore:
+      - '*.py'
+      - '**/README.md'
       - '**/quspin_core/**'
       - '**/test_python/**'
+      - '**/docs/**'
   pull_request:
     branches:
       - main
     paths-ignore:
+      - '*.py'
+      - '**/README.md'
       - '**/quspin_core/**'
       - '**/test_python/**'
+      - '**/docs/**'
 
 
 jobs:
