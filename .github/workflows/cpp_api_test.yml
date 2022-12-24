@@ -4,12 +4,13 @@ on:
   push:
     branches: main
     paths:
-        - "${{github.workspace}}/src/quspin_cpp_api/**"
+        - "*.h"
+        - "*.cpp"
   pull_request:
     branches: main
     paths:
-        - "${{github.workspace}}/src/quspin_cpp_api/**"
-
+        - "*.h"
+        - "*.cpp"
 
 jobs:
   build:
