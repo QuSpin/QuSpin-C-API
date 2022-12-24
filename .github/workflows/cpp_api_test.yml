@@ -5,14 +5,14 @@ on:
     branches: 
       - main
     paths-ignore:
-      - '${{github.workspace}}/src/quspin_core/**'
-      - '${{github.workspace}}/test/test_python/**'
+      - '**/quspin_core/**'
+      - '**/test_python/**'
   pull_request:
     branches:
       - main
     paths-ignore:
-      - '${{github.workspace}}/src/quspin_core/**'
-      - '${{github.workspace}}/test/test_python/**'
+      - '**/quspin_core/**'
+      - '**/test_python/**'
 
 
 jobs:
