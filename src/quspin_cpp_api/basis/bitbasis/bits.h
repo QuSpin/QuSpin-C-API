@@ -13,7 +13,7 @@ namespace quspin::basis::bitbasis {
 // local degrees of freedom stored in contiguous chunks of bits
 template<typename I>
 struct bit_set { // thin wrapper used for convience
-
+    // adding some comment
     // doesn't allocate any data
     static const int lhss = 2;
     static const I mask = 1;
