@@ -30,7 +30,7 @@ if __name__ == "__main__":
     ]
     
     setup(
-        name="QuSpin-Core",
+        name="quspin-core",
         version="0.0.1a0",
         zip_safe=False,
         packages=find_packages(where="src/quspin_core"),

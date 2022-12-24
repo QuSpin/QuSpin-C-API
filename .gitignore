@@ -31,8 +31,12 @@
 *.out
 *.app
 
-
-.vscode
+dist/
+*.egg
+*.egg-info
+.vscode/
+.pytest_cache/
+.vscode/
 *dSYM*
 build/
 __pycache__/
@@ -43,3 +47,4 @@ CMakeFiles/
 CMakeCache.txt
 doctest/
 test_cpp
+install.txt
