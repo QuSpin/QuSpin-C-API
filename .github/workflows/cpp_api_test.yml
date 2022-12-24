@@ -6,6 +6,8 @@ on:
       - main
     paths-ignore:
       - '*.py'
+      - '*.pyx'
+      - '*.pxd'
       - '**/README.md'
       - '**/quspin_core/**'
       - '**/test_python/**'
@@ -15,6 +17,8 @@ on:
       - main
     paths-ignore:
       - '*.py'
+      - '*.pyx'
+      - '*.pxd'
       - '**/README.md'
       - '**/quspin_core/**'
       - '**/test_python/**'
