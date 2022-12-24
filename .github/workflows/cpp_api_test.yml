@@ -4,13 +4,15 @@ on:
   push:
     branches: 
       - main
-    paths:
-      - ${{github.workspace}}/src/quspin_cpp_api/**
+    paths-ignore:
+      - '${{github.workspace}}/src/quspin_core/**'
+      - '${{github.workspace}}/test/test_python/**'
   pull_request:
     branches:
       - main
-    paths:
-      - ${{github.workspace}}/src/quspin_cpp_api/**
+    paths-ignore:
+      - '${{github.workspace}}/src/quspin_core/**'
+      - '${{github.workspace}}/test/test_python/**'
 
 
 jobs:
