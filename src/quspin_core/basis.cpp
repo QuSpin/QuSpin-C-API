@@ -5,14 +5,14 @@
     "distutils": {
         "depends": [],
         "include_dirs": [
-            "/Users/pweinberg/opt/anaconda3/envs/test/lib/python3.10/site-packages/numpy/core/include",
-            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_cpp_api",
-            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_core/include"
+            "/opt/homebrew/lib/python3.10/site-packages/numpy/core/include",
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-Core/src/quspin_cpp_api",
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-Core/src/quspin_core/include"
         ],
         "language": "c++",
         "name": "src.quspin_core.basis",
         "sources": [
-            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-C-API/src/quspin_core/basis.pyx"
+            "/Users/pweinberg/Documents/QuSpin_dev/QuSpin-Core/src/quspin_core/basis.pyx"
         ]
     },
     "module_name": "src.quspin_core.basis"
