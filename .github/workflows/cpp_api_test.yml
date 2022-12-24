@@ -1,4 +1,4 @@
-name: C++ API test
+name: C++ API CI
 
 on:
   push:
