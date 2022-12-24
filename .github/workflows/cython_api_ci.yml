@@ -46,11 +46,9 @@ jobs:
     - name: checking pip 
       run:  python -m ensurepip --upgrade
 
-    - name: Install build deps
-      run: pip install cython numpy setuptools
+    - name: Install
+      run: pip install ${{github.workspace}}
 
-    - name: Build
-      run: python setup.py install 
     # - name: Test
     #   working-directory: ${{github.workspace}}/build 
     #   # Execute tests defined by the CMake configuration.

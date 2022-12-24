@@ -31,7 +31,7 @@ if __name__ == "__main__":
     
     setup(
         name="quspin-core",
-        version="0.0.1a0",
+        version="0.0.1",
         zip_safe=False,
         packages=find_packages(where="src/quspin_core"),
         author="Phillip Weinberg, Marin Bukov, Markus Schmitt",
@@ -40,8 +40,8 @@ if __name__ == "__main__":
         long_description_content_type='text/markdown',
         url="https://github.com/weinbe58/QuSpin-C-API",
         ext_modules=cythonize(ext),
-                install_requires=[
-            'numpy>=1.19.2'
+        install_requires=[
+            'numpy>=1.19.2',
         ],
         include_dirs=get_includes(),
     )
