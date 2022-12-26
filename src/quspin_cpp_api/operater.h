@@ -8,6 +8,10 @@
 #include <list>
 #include <limits>
 #include <memory>
+#include <vector>
+
+#include "basis/bitbasis/bits.h"
+#include "basis/bitbasis/dits.h"
 
 
 namespace quspin {
@@ -25,7 +29,7 @@ private:
     std::unique_ptr<bool> nonzero;
 
 public:
-    dense_term(std::vector<int> _loc,std::vector<std::vector>> _data) : 
+    dense_term(std::vector<int> _loc,std::vector< std::vector<T> > _data) : 
     lhss(_data.size()), nloc(_loc.size())
     {
         loc(new int[nloc]);
@@ -99,7 +103,7 @@ private:
 
 public:
     operator_string(std::vector<int> _loc,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
-    lhss(perms.front().size()), nloc(_locs.size())
+    lhss(_perms.front().size()), nloc(_locs.size())
     { 
 
         loc(new int[nloc]);
@@ -136,10 +140,10 @@ public:
         bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
-            const int a = basis::bitbasis::get_sub_bitstring(r,loc[i]);
+            const int a = quspin::basis::bitbasis::get_sub_bitstring(r,loc[i]);
             const int b = perm[a];
+            m *= data[a];
             r = basis::bitbasis::set_sub_bitstring(r,a,b,loc[i]);
-            m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
             
