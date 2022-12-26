@@ -3,6 +3,7 @@
 
 #include <cinttypes>
 #include <cmath>
+#include <complex>
 #include <unordered_map>
 #include <tuple>
 #include <list>
@@ -10,8 +11,8 @@
 #include <memory>
 #include <vector>
 
-#include "basis/bitbasis/bits.h"
-#include "basis/bitbasis/dits.h"
+#include "quspin/basis/bitbasis/bits.h"
+#include "quspin/basis/bitbasis/dits.h"
 
 
 namespace quspin {
@@ -54,11 +55,11 @@ public:
 
     template<typename bitset_t>
     void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over columns
             const int i = lhss*a+b;
             if(nonzero[i]){
-                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
@@ -66,11 +67,11 @@ public:
 
     template<typename bitset_t>
     void op_transpose(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){  // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
             }
         }
@@ -78,11 +79,11 @@ public:
 
     template<typename bitset_t>
     void op_dagger(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::bitbasis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
         for(int b=0;b<lhss;++b){ // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::bitbasis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
                 (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
             }
         }
@@ -103,7 +104,7 @@ private:
 
 public:
     operator_string(std::vector<int> _loc,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
-    lhss(_perms.front().size()), nloc(_locs.size())
+    lhss(_perms.front().size()), nloc(_loc.size())
     { 
 
         loc(new int[nloc]);
@@ -133,17 +134,17 @@ public:
     ~operator_string(){}
 
     template<typename bitset_t>
-    inline void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = perms.get();
         const T * data = datas.get();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
-            const int a = quspin::basis::bitbasis::get_sub_bitstring(r,loc[i]);
+            const int a = quspin::basis::get_sub_bitstring(r,loc[i]);
             const int b = perm[a];
             m *= data[a];
-            r = basis::bitbasis::set_sub_bitstring(r,a,b,loc[i]);
+            r = basis::set_sub_bitstring(r,a,b,loc[i]);
 
             if(m == T(0)){nonzero=false; break;}
             
@@ -156,16 +157,16 @@ public:
     }
     
     template<typename bitset_t>
-    inline op_transpose(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op_transpose(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero = true;
         for(int i=0;i<nloc;++i){
-            const int s_loc = basis::bitbasis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = basis::bitbasis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
@@ -179,16 +180,16 @@ public:
     }
 
     template<typename bitset_t>
-    inline op_dagger(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op_dagger(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
         const int * perm = inv_perms.get();
         const T * data = datas.get();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero=true;
         for(int i=0;i<nloc;++i){
-            const int s_loc = basis::bitbasis::get_sub_bitstring(r,loc[i]);
+            const int s_loc = basis::get_sub_bitstring(r,loc[i]);
             const int r_loc = perm[s_loc];
-            r = basis::bitbasis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::set_sub_bitstring(r,r_loc,loc[i]);
             m *= std::conj(data[s_loc]);
 
             if(m == T(0)){nonzero=false; break;}

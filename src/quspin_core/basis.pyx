@@ -6,3 +6,7 @@ cdef class bit_basis:
     cdef object _name
     def __init__(self):
         self._name = "basis"
+
+    @property
+    def name(self):
+        return self._name

@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <algorithm>
 // quspin includes
-#include "basis/bitbasis/dits.h"
-#include "basis/bitbasis/bits.h"
+#include "quspin/basis/bitbasis/dits.h"
+#include "quspin/basis/bitbasis/bits.h"
 
 
 namespace quspin::basis {
@@ -55,8 +55,8 @@ public:
         return Ns - integer<J,I>::cast(state.content) - 1;
     }
 
-    static int get_norm(const bitset_t& state) const {return 1;}
-    static int get_norm(const J index) const {return 1;}
+    static int get_norm(const bitset_t& state) {return 1;}
+    static int get_norm(const J index) {return 1;}
     
 };
 
@@ -79,18 +79,14 @@ public:
     dit_subspace(const int _lhss, const J Ns_est) : 
     lhss(_lhss), mask(constants::mask[_lhss]), bits(constants::bits[_lhss])
     {
-        state.reserve(Ns_est);
-        norms.reserve(Ns_est);
+        states.reserve(Ns_est);
         index_map.reserve(Ns_est*2);
     }
-
-    mask(constants::mask[_lhss]), 
-    bits(constants::bits[_lhss]) {}
     ~dit_subspace() {}
 
     inline J size() const { return states.size();}
     inline J get_Ns() const { return states.size();}
-    inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>)}
+    inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {
         return bitset_t(I(states[index].first),lhss);
@@ -110,7 +106,7 @@ public:
 
     void append(const bitset_t& new_state,const K new_norm){
         if(!index_map.contains(new_state)){
-            states.push(make_pair(new_state.content,new_norm))
+            states.push(make_pair(new_state.content,new_norm));
             index_map[new_state] = states.size();
         }
     }
@@ -118,15 +114,15 @@ public:
     void append(const dit_subspace& other){
         for(const auto& [new_state,new_norm] : other.states){
             if(!index_map.contains(new_state)){
-                states.push(make_pair(new_state.content,new_norm))
+                states.push(make_pair(new_state.content,new_norm));
                 index_map[new_state] = states.size();
             }
         }
     }
 
     void sort_states() {
-        const bool is_sorted = std::is_sorted(tates.begin(),states.end(),states.begin(),
-            [](std::pair<I,L>& lhs,std::pair<I,L>& rhs) -> bool 
+        const bool is_sorted = std::is_sorted(states.begin(),states.end(),states.begin(),
+            [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
             {
                 return lhs.first < rhs.first;
             }
@@ -134,11 +130,11 @@ public:
 
         if(!is_sorted){
             std::sort(states.begin(),states.end(),states.begin(),
-                [](std::pair<I,L>& lhs,std::pair<I,L>& rhs) -> bool 
+                [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
                 {
                     return lhs.first < rhs.first;
                 }
-            )
+            );
 
             index_map.clear();
             J index = 0;
@@ -149,13 +145,13 @@ public:
     }
 
     void serialize_states(char * output) const {
-        char * states_ptr = static_cast<char*>(states.data())
+        char * states_ptr = static_cast<char*>(states.data());
         std::copy(states_ptr,states_ptr+nbytes(),output);
     }
 
     void deserialize_states(char * input,const size_t nbytes){
         const size_t n_elements = nbytes / sizeof(std::pair<I,K>);
-        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*> input;
+        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*>(input);
 
         states.clear(); // clears current data
         index_map.clear();
@@ -191,15 +187,15 @@ public:
     inline size_t get_Ns() const { return Ns;}
 
    inline bitset_t get_state(const J index) const {
-        return ditset<I>(I(Ns-index-1),lhss,mask,bits);
+        return ditset<I>(I(Ns-index-1));
     }
 
     inline J get_index(const bitset_t& state) const {
         return Ns - integer<J,I>::cast(state.content) - 1;
     }
 
-    static int get_norm(const bitset_t& state) const {return 1;}
-    static int get_norm(const J index) const {return 1;}
+    static int get_norm(const bitset_t& state) {return 1;}
+    static int get_norm(const J index) {return 1;}
 };
 
 template<typename I,typename J,typename K>
@@ -214,17 +210,17 @@ public:
     typedef K norm_t;
 
     bit_subspace(const J Ns_est) {
-        state.reserve(Ns_est);
+        states.reserve(Ns_est);
         index_map.reserve(Ns_est*2);
     }
     ~bit_subspace() {}
 
     inline size_t size() const { return states.size();}
     inline size_t get_Ns() const { return states.size();}
-    inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>)}
+    inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {
-        return bitset_t(I(states[index].first),lhss);
+        return bitset_t(I(states[index].first));
     }
 
     inline J get_index(const bitset_t& state) const {
@@ -241,23 +237,23 @@ public:
 
     void append(const bitset_t& new_state,const K new_norm){
         if(!index_map.contains(new_state)){
-            states.push(make_pair(new_state.content,new_norm))
-            map_index[new_state] = states.size();
+            states.push(make_pair(new_state.content,new_norm));
+            index_map[new_state] = states.size();
         }
     }
 
     void append(const bit_subspace& other){
         for(const auto& [new_state,new_norm] : other.states){
             if(!index_map.contains(new_state)){
-                states.push(make_pair(new_state.content,new_norm))
+                states.push(make_pair(new_state.content,new_norm));
                 index_map[new_state] = states.size();
             }
         }
     }
 
     void sort_states() {
-        const bool is_sorted = std::is_sorted(tates.begin(),states.end(),states.begin(),
-            [](std::pair<I,L>& lhs,std::pair<I,L>& rhs) -> bool 
+        const bool is_sorted = std::is_sorted(states.begin(),states.end(),states.begin(),
+            [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
             {
                 return lhs.first < rhs.first;
             }
@@ -265,11 +261,11 @@ public:
 
         if(!is_sorted){
             std::sort(states.begin(),states.end(),states.begin(),
-                [](std::pair<I,L>& lhs,std::pair<I,L>& rhs) -> bool 
+                [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
                 {
                     return lhs.first < rhs.first;
                 }
-            )
+            );
 
             index_map.clear();
             J index = 0;
@@ -280,13 +276,13 @@ public:
     }
 
     void serialize_states(char * output) const {
-        char * states_ptr = static_cast<char*>(states.data())
+        char * states_ptr = static_cast<char*>(states.data());
         std::copy(states_ptr,states_ptr+nbytes(),output);
     }
 
     void deserialize_states(char * input,const size_t nbytes){
         const size_t n_elements = nbytes / sizeof(std::pair<I,K>);
-        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*> input;
+        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*>(input);
 
         states.clear(); // clears current data
         index_map.clear();

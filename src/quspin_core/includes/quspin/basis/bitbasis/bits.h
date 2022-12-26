@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "basis/bitbasis/types.h"
-#include "basis/bitbasis/info.h"
+#include "quspin/basis/types.h"
+#include "quspin/basis/bitbasis/info.h"
 
 
-namespace quspin::basis::bitbasis {
+namespace quspin::basis {
 
 
 // local degrees of freedom stored in contiguous chunks of bits
@@ -16,7 +16,7 @@ struct bit_set { // thin wrapper used for convience
     // doesn't allocate any data
     static const int lhss = 2;
     static const I mask = 1;
-    static const types::dit_integer_t bits = 1;
+    static const dit_integer_t bits = 1;
 
     typedef I bitset_t;
     I content;
@@ -97,9 +97,9 @@ inline bool operator==(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.
 
 TEST_CASE("get_bit_substring") {
 
-    using namespace quspin::basis::bitbasis;
+    using namespace quspin::basis;
 
-    bit_set<types::uint8_t> state(0b1010111);
+    bit_set<uint8_t> state(0b1010111);
 
     CHECK(get_sub_bitstring(state,0) == 1);
     CHECK(get_sub_bitstring(state,3) == 0);
@@ -116,11 +116,11 @@ TEST_CASE("get_bit_substring") {
 
 TEST_CASE("set_sub_bitstring") {
 
-    using namespace quspin::basis::bitbasis;
+    using namespace quspin::basis;
 
-    bit_set<types::uint8_t> s(0b01010111);
+    bit_set<uint8_t> s(0b01010111);
 
-    bit_set<types::uint8_t> r = set_sub_bitstring(s,0,0);
+    bit_set<uint8_t> r = set_sub_bitstring(s,0,0);
     CHECK(r.content == 0b01010110);
 
     r = set_sub_bitstring(s,1,1);
@@ -137,7 +137,7 @@ TEST_CASE("set_sub_bitstring") {
 
     int locs1[3] = {3,5,7};
     r = set_sub_bitstring(s,(int)0b00000111,locs1,3);
-    CHECK(r.content == (types::uint8_t)0b11111111);
+    CHECK(r.content == (uint8_t)0b11111111);
 
     int locs2[3] = {5,0,7};
     r = set_sub_bitstring(s,(int)0b00000101,locs2,3);
@@ -146,12 +146,12 @@ TEST_CASE("set_sub_bitstring") {
 }
 
 TEST_CASE("operators") {
-    using namespace quspin::basis::bitbasis;
+    using namespace quspin::basis;
 
-    bit_set<types::uint8_t> s1(0b1010111);
-    bit_set<types::uint8_t> s2(0b1010111);
-    bit_set<types::uint8_t> s3(0b1011111);
-    bit_set<types::uint8_t> s4(0b1010011);
+    bit_set<uint8_t> s1(0b1010111);
+    bit_set<uint8_t> s2(0b1010111);
+    bit_set<uint8_t> s3(0b1011111);
+    bit_set<uint8_t> s4(0b1010011);
 
 
     CHECK(s1==s2);
@@ -161,13 +161,13 @@ TEST_CASE("operators") {
 
 
 TEST_CASE("to_/from_vector") {
-    using namespace quspin::basis::bitbasis;
+    using namespace quspin::basis;
 
-    bit_set<types::uint8_t> s(0b01010111);
+    bit_set<uint8_t> s(0b01010111);
 
     std::vector<bool> bits = {1,1,1,0,1,0,1,0};
 
-    CHECK(bit_set<types::uint8_t>(bits) == s);
+    CHECK(bit_set<uint8_t>(bits) == s);
     CHECK(s.to_vector() == bits);
 
 }

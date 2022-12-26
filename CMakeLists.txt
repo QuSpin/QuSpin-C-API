@@ -21,7 +21,7 @@ ExternalProject_Add(
 # Expose required variable (DOCTEST_INCLUDE_DIR) to parent scope
 ExternalProject_Get_Property(doctest source_dir)
 set(DOCTEST_INCLUDE_DIR ${source_dir}/doctest CACHE INTERNAL "Path to include folder for doctest")
-set(QUSPIN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/quspin_cpp_api)
+set(QUSPIN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/quspin_core/includes)
 
 # add it globally
 include_directories(${DOCTEST_INCLUDE_DIR})

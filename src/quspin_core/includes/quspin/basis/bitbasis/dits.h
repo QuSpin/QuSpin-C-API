@@ -1,13 +1,14 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_DITS_H__
 #define __QUSPIN_BASIS_BITBASIS_DITS_H__
 
-#include "basis/bitbasis/types.h"
+#include "quspin/basis/types.h"
+#include "quspin/basis/bitbasis/info.h"
 
 namespace quspin::basis {
 
 namespace constants {
 
-static const quspin::basis::types::dit_integer_t bits[255] = {
+static const quspin::basis::dit_integer_t bits[255] = {
     1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7,
@@ -22,7 +23,7 @@ static const quspin::basis::types::dit_integer_t bits[255] = {
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
 };
 
-static const quspin::basis::types::dit_integer_t mask[255] = {
+static const quspin::basis::dit_integer_t mask[255] = {
     1,   1,   1,   3,   3,   7,   7,   7,   7,  15,  15,  15,  15,
     15,  15,  15,  15,  31,  31,  31,  31,  31,  31,  31,  31,  31,
     31,  31,  31,  31,  31,  31,  31,  63,  63,  63,  63,  63,  63,
@@ -56,7 +57,7 @@ struct dit_set { // thin wrapper used for convience
     I content;
     const int lhss;
     const I mask;
-    const types::dit_integer_t bits;
+    const dit_integer_t bits;
 
     dit_set(I _content,const int _lhss, const I _mask, const dit_integer_t bits) : 
     content(_content), 
@@ -64,25 +65,25 @@ struct dit_set { // thin wrapper used for convience
     mask(_mask), 
     bits(bits) {}
 
-    dit_set(const dit_set<I> other) : 
+    dit_set(dit_set<I> const& other) : 
     content(other.content), 
     lhss(other.lhss), 
     mask(other.mask), 
     bits(other.bits) {}
 
 
-} dit_set;
+};
 
 template<typename I>
 int get_sub_bitstring(const dit_set<I>& s,const int i){
-    return integer<int,I>::cast( (s.content >> (i * s.bits)) & s.mask)
+    return integer<int,I>::cast( (s.content >> (i * s.bits)) & s.mask);
 }
 
 template<typename I>
 int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
     int out = 0;
     for(int i=0;i<nlocs;++i){
-        out += get_sub_bitstring(s,locs[i])
+        out += get_sub_bitstring(s,locs[i]);
         out *= s.lhss;
         /* // implementation with padding for congituous blocks 
         out |= bit_basis<int,I>(get_sub_bitstring(s,locs[i]));
@@ -95,7 +96,7 @@ int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
 template<typename I>
 dit_set<I> set_sub_bitstring(const dit_set<I>& s,const I in,const int i){
     const int shift =  i * s.bits;
-    const I r = s.content ^ ( ( in << shift ) ^ s.content) & (s.mask << shift)
+    const I r = s.content ^ ( ( in << shift ) ^ s.content) & (s.mask << shift);
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 
