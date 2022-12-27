@@ -22,8 +22,8 @@ on:
 
 
 jobs:
-  build:
-    name: ${{matrix.config.os}}
+  test:
+    name: C++ CI - ${{matrix.config.os}}
     runs-on: ${{matrix.config.os}}
     strategy:
       fail-fast: false
