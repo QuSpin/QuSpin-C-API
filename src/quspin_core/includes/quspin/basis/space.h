@@ -298,4 +298,19 @@ public:
 };
 
 }
+
+#ifdef QUSPIN_UNIT_TESTS
+
+
+namespace quspin::basis {
+
+    template class bit_subspace<uint8_t,int,uint8_t>;
+    template class bit_fullspace<uint8_t,int>;
+    template class dit_subspace<uint8_t,int,uint8_t>;
+    template class dit_fullspace<uint8_t,int>;
+    
+}
+
+#endif
+
 #endif
