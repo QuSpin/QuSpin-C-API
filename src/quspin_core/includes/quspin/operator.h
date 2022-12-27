@@ -193,4 +193,23 @@ public:
 };
 
 }
+
+#ifdef QUSPIN_UNIT_TESTS
+
+namespace quspin{
+
+template class operator_string<double>;
+template operator_string<double>::op<bit_set<uint8_t>;
+template operator_string<double>::op_dagger<bit_set<uint8_t>;
+template operator_string<double>::op_transpose<bit_set<uint8_t>;
+
+template class dense_term<double>;
+template dense_term<double>::op<bit_set<uint8_t>;
+template dense_term<double>::op_dagger<bit_set<uint8_t>;
+template dense_term<double>::op_transpose<bit_set<uint8_t>;
+
+}
+
+#endif
+
 #endif
