@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.24)
-project(quspin_c_api VERSION 0.0.1 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 20)
+cmake_minimum_required(VERSION 3.0)
+project(quspin_cpp_api VERSION 0.0.1 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 11)
 
 enable_testing()
 include(ExternalProject)
