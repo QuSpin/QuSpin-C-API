@@ -8,7 +8,7 @@
 #include <algorithm>
 // quspin includes
 #include "quspin/basis/bitbasis/dits.h"
-#include "quspin/basis/bitbasis/bits.h"
+#include "quspin/basis/bitbasis/bits.h" 
 
 
 namespace quspin::basis {
@@ -48,7 +48,7 @@ public:
     inline J get_Ns() const { return Ns;}
     
     inline bitset_t get_state(const J index) const {
-        return ditset<I>(I(Ns-index-1),lhss,mask,bits);
+        return bitset_t(I(Ns-index-1),lhss,mask,bits);
     }
 
     inline J get_index(const bitset_t& state) const {
@@ -187,7 +187,7 @@ public:
     inline size_t get_Ns() const { return Ns;}
 
    inline bitset_t get_state(const J index) const {
-        return ditset<I>(I(Ns-index-1));
+        return bitset_t(I(Ns-index-1));
     }
 
     inline J get_index(const bitset_t& state) const {

@@ -61,9 +61,9 @@ class perm_dit // permutations of the dit states locally
 private:
     const int lhss;
     const int length;
-    std::unique_ptr<dit_integer_t> perm;
-    std::unique_ptr<dit_integer_t> inv_perm;
-    std::unique_ptr<int> * locs;
+    std::vector<dit_integer_t> perm;
+    std::vector<dit_integer_t> inv_perm;
+    std::vector<int> locs;
 
 public:
     perm_dit() : lhss(0), length(0) {} // identity
@@ -71,12 +71,12 @@ public:
         const int _lhss, const dit_integer_t * _perm, const int * _locs, const int _length
     ) : lhss(_lhss), length(_length)
     { 
-        perm(new dit_integer_t[_length * _lhss]);
-        inv_perm(new dit_integer_t[_length * _lhss]);
-        locs(new int[_length]);
+        perm.resize(_length * _lhss);
+        inv_perm.resize(_length * _lhss);
+        locs.resize(_length);
 
-        dit_integer_t * loc_perm = perm.get();
-        dit_integer_t * loc_inv_perm = inv_perm.get();
+        dit_integer_t * loc_perm = perm.data();
+        dit_integer_t * loc_inv_perm = inv_perm.data();
 
         for(int i=0;i<_length;++i){
             locs[i] = _locs[i];
@@ -97,7 +97,7 @@ public:
         
         dit_set<I> r(s);
         
-        dit_integer_t * perm_ptr = perm.get();
+        dit_integer_t * perm_ptr = perm.data();
 
         for(int i=0;i<length;++i){
             const int bits = get_sub_bitstring(s,locs[i]);
@@ -112,7 +112,7 @@ public:
     dit_set<I> inv(const dit_set<I>& s, T& coeff) const {
         dit_set<I> r(s);
         
-        dit_integer_t * perm_ptr = inv_perm.get();
+        dit_integer_t * perm_ptr = inv_perm.data();
 
         for(int i=0;i<length;++i){
             const int bits = get_sub_bitstring(s,locs[i]);

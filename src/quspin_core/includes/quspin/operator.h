@@ -24,28 +24,24 @@ class dense_term
     // good for when the terms have few-body terms where the local matrix fits into cache. 
 private: 
     const int lhss; // size of local 
-    const int nloc;
-    std::unique_ptr<int> loc;
-    std::unique_ptr<T> data;
-    std::unique_ptr<bool> nonzero;
+    const int nlocs;
+    std::vector<int> locs;
+    std::vector<T> data;
+    std::vector<bool> nonzero;
 
 public:
     dense_term(std::vector<int> _loc,std::vector< std::vector<T> > _data) : 
-    lhss(_data.size()), nloc(_loc.size())
+    lhss(_data.size()), nlocs(_loc.size())
     {
-        loc(new int[nloc]);
-        data(new T[lhss*lhss]);
-        nonzero(new bool[lhss*lhss]);
 
         // copy to contiguous pointers
-        std::copy(_loc.begin(),_loc.end(),loc);
+        std::copy(_loc.begin(),_loc.end(),locs.begin());
 
-        int ptr = 0; 
-        for(int i=0;i<lhss;++i){
-            for(int j=0;j<lhss;++j){
-                data[ptr] = _data[i][j];
-                nonzero[ptr] = (data[ptr] != T(0));
-                ++ptr;
+        for(auto& d : data){
+            for(auto& v : d){
+                data.push_back(v);
+                nonzero.push_back(v!=T(0));
+
             }
         }
 
@@ -55,35 +51,35 @@ public:
 
     template<typename bitset_t>
     void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){ // loop over columns
             const int i = lhss*a+b;
             if(nonzero[i]){
-                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
-                (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
+                const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
     }
 
     template<typename bitset_t>
     void op_transpose(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){  // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
-                (output.contains(r) ? output[r] += data[i] : output[r] = data[i] );
+                const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
+                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
             }
         }
     }
 
     template<typename bitset_t>
     void op_dagger(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
-        const int a = basis::get_sub_bitstring(s,loc.get(),nloc);
+        const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){ // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
-                const bitset_t r = basis::set_sub_bitstring(s,b,loc.get(),nloc);
+                const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
                 (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
             }
         }
@@ -96,38 +92,30 @@ class operator_string
 {
 private:
     const int lhss; // local hilbert space size for each term
-    const int nloc;  // number of local operators
-    std::unique_ptr<int> loc; // number of local operators in 
-    std::unique_ptr<int> perms; // non-branching operators stored as permutations
-    std::unique_ptr<int> inv_perms; // non-branching operators dagger stored as permutations
-    std::unique_ptr<T> datas; // matrix elements for non-branching operators. 
+    const int nlocs;  // number of local operators
+    std::vector<int> locs; // number of local operators in 
+    std::vector<int> perms; // non-branching operators stored as permutations
+    std::vector<int> inv_perms; // non-branching operators dagger stored as permutations
+    std::vector<T> datas; // matrix elements for non-branching operators. 
 
 public:
-    operator_string(std::vector<int> _loc,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
-    lhss(_perms.front().size()), nloc(_loc.size())
+    operator_string(std::vector<int> _locs,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
+    lhss(_perms.front().size()), nlocs(_locs.size())
     { 
 
-        loc(new int[nloc]);
-        perms(new int[nloc*lhss]);
-        inv_perms(new int[nloc*lhss]);
-        datas(new T[nloc*lhss]);
+        std::copy(_locs.begin(),_locs.end(),locs.begin());
 
-        int * perm = perms.get();
-        int * inv_perm = inv_perms.get();
-        T * data = datas.get();
+        for(int i=0;i<nlocs;i++){
+            datas.insert(datas.end(),_datas[i].begin(),_datas[i].end());
+            perms.insert(perms.end(),_perms[i].begin(),_perms[i].end());
+            std::vector<int> ip(_perms[i].size());
 
-        for(int i=0;i<nloc;i++){
-            loc[i] = _loc[i];
-
-            for(int j=0;j<lhss;i++){
-                perm[j] = _perms[i][j];
-                inv_perm[perm[j]] = j;
-                data[j] = _datas[i][j];
-
+            for(int j=0;j<_perms[i].size();++j){
+                ip[_perms[i][j]] = j;
             }
-            perm += lhss;
-            inv_perm += lhss;
-            data += lhss;
+
+            inv_perms.insert(inv_perms.begin(),ip.begin(),ip.end());
+
         }
     }
     
@@ -135,16 +123,16 @@ public:
 
     template<typename bitset_t>
     void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int * perm = perms.get();
-        const T * data = datas.get();
+        const int * perm = perms.data();
+        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero=true;
-        for(int i=0;i<nloc;++i){
-            const int a = quspin::basis::get_sub_bitstring(r,loc[i]);
+        for(int i=0;i<nlocs;++i){
+            const int a = quspin::basis::get_sub_bitstring(r,locs[i]);
             const int b = perm[a];
             m *= data[a];
-            r = basis::set_sub_bitstring(r,a,b,loc[i]);
+            r = basis::set_sub_bitstring(r,a,b,locs[i]);
 
             if(m == T(0)){nonzero=false; break;}
             
@@ -153,20 +141,20 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
+        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
     }
     
     template<typename bitset_t>
     void op_transpose(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int * perm = inv_perms.get();
-        const T * data = datas.get();
+        const int * perm = inv_perms.data();
+        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero = true;
-        for(int i=0;i<nloc;++i){
-            const int s_loc = basis::get_sub_bitstring(r,loc[i]);
+        for(int i=0;i<nlocs;++i){
+            const int s_loc = basis::get_sub_bitstring(r,locs[i]);
             const int r_loc = perm[s_loc];
-            r = basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::set_sub_bitstring(r,r_loc,locs[i]);
             m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
@@ -176,20 +164,20 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
+        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
     }
 
     template<typename bitset_t>
     void op_dagger(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
-        const int * perm = inv_perms.get();
-        const T * data = datas.get();
+        const int * perm = inv_perms.data();
+        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
         bool nonzero=true;
-        for(int i=0;i<nloc;++i){
-            const int s_loc = basis::get_sub_bitstring(r,loc[i]);
+        for(int i=0;i<nlocs;++i){
+            const int s_loc = basis::get_sub_bitstring(r,locs[i]);
             const int r_loc = perm[s_loc];
-            r = basis::set_sub_bitstring(r,r_loc,loc[i]);
+            r = basis::set_sub_bitstring(r,r_loc,locs[i]);
             m *= std::conj(data[s_loc]);
 
             if(m == T(0)){nonzero=false; break;}
@@ -199,7 +187,7 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) (output.contains(r) ? output[r] += m : output[r] = m );
+        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
     }
 
 };
