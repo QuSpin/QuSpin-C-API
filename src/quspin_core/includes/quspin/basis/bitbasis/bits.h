@@ -24,19 +24,19 @@ struct bit_set { // thin wrapper used for convience
     bit_set(const I _content) : content(_content) {}
     bit_set(const bit_set<I>& other) : content(other.content) {}
 
-    bit_set(const std::vector<bool>& bits){
+    bit_set(const std::vector<dit_integer_t>& bits){
         content = 0;
         for(int i=0;i<bits.size();i++){
-            content |= (I(bits[i]) << i);
+            content |= (I(bits[i]) << i*bits);
         }
     }
 
-    std::vector<bool> to_vector(const int length=0){
+    std::vector<dit_integer_t> to_vector(const int length=0){
         const int niter = (length>0 ? length : bit_info<I>::bits/bits);
 
-        std::vector<bool> out(niter);
+        std::vector<dit_integer_t> out(niter);
         for(int i=0;i<niter;++i){
-            out[i] = static_cast<bool>((content >> i) & I(1));
+            out[i] = integer<dit_integer_t,I>::cast((content >> i*bits) & mask);
         }
         return out;
     }
@@ -92,8 +92,6 @@ inline bool operator==(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.
 
 
 #ifdef QUSPIN_UNIT_TESTS
-
-#include <iostream>
 
 namespace quspin::basis { // explicit instantiation for code coverage
 
@@ -179,7 +177,7 @@ TEST_CASE("to_/from_vector") {
 
     bit_set<uint8_t> s(0b01010111);
 
-    std::vector<bool> bits = {1,1,1,0,1,0,1,0};
+    std::vector<dit_integer_t> bits = {1,1,1,0,1,0,1,0};
 
     CHECK(bit_set<uint8_t>(bits) == s);
     CHECK(s.to_vector() == bits);
