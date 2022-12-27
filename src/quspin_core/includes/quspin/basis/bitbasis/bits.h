@@ -44,12 +44,12 @@ struct bit_set { // thin wrapper used for convience
 };
 
 template<typename I>
-int get_sub_bitstring(bit_set<I> s,const int i){
+int get_sub_bitstring(const bit_set<I>& s,const int i){
     return integer<int,I>::cast( (s.content >> i) & I(1));
 }
 
 template<typename I>
-int get_sub_bitstring(const bit_set<I> s,const int * locs,const int nlocs){
+int get_sub_bitstring(const bit_set<I>& s,const int * locs,const int nlocs){
     int out = 0;
     for(int i=0;i<nlocs-1;++i){
         out |= get_sub_bitstring(s,locs[i]);
@@ -94,6 +94,20 @@ inline bool operator==(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.
 #ifdef QUSPIN_UNIT_TESTS
 
 #include <iostream>
+
+namespace quspin::basis { // explicit instantiation for code coverage
+
+template struct bit_set<uint8_t>; 
+template int get_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int);
+template int get_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int*, const int);
+template bit_set<uint8_t> set_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int, const int);
+template bit_set<uint8_t> set_sub_bitstring<uint8_t>(const bit_set<uint8_t>& s,const int,const int *,const int);
+template bool operator< <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+template bool operator> <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+template bool operator== <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+
+}
+
 
 TEST_CASE("get_bit_substring") {
 
