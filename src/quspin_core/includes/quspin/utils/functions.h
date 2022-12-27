@@ -2,6 +2,7 @@
 #define __QUSPIN_UTILS_FUNCTIONS_H__
 
 #include <vector>
+#include <complex>
 
 namespace quspin {
 
