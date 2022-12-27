@@ -24,10 +24,10 @@ struct bit_set { // thin wrapper used for convience
     bit_set(const I _content) : content(_content) {}
     bit_set(const bit_set<I>& other) : content(other.content) {}
 
-    bit_set(const std::vector<dit_integer_t>& bits){
+    bit_set(const std::vector<dit_integer_t>& bits_vec){
         content = 0;
-        for(int i=0;i<bits.size();i++){
-            content |= (I(bits[i]) << i*bits);
+        for(int i=0;i<bits_vec.size();i++){
+            content |= (I(bits_vec[i]) << i*bits);
         }
     }
 

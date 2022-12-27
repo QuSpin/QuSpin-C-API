@@ -52,12 +52,12 @@ static const quspin::basis::dit_integer_t mask[255] = {
 template<typename I>
 struct dit_set { // thin wrapper used for convience
     
-    typedef I bitset_t;
-
-    I content;
     const int lhss;
     const I mask;
     const dit_integer_t bits;
+
+    typedef I bitset_t;
+    I content;
 
     dit_set(I _content,const int _lhss, const I _mask, const dit_integer_t bits) : 
     content(_content), 
@@ -71,7 +71,7 @@ struct dit_set { // thin wrapper used for convience
     mask(constants::mask[_lhss]), 
     bits(constants::bits[_lhss]) {}
 
-    dit_set(dit_set<I> const& other) : 
+    dit_set(const dit_set<I>& other) : 
     content(other.content), 
     lhss(other.lhss), 
     mask(other.mask), 
@@ -128,17 +128,15 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,const int in,const int i){
 
 template<typename I>
 dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const int nlocs){
-    dit_set<I> r(s);
+    I out = s.content;
+    I in_I = I(in);
     for(int i=0;i<nlocs;++i){
-        r = set_sub_bitstring(r,  I(in % s.lhss), locs[i]);
-        in /= s.lhss;
-        /* // implementation with padding for congituous blocks 
-        r = set_sub_bitstring(r,  in & s.mask, locs[i]);
-        in >>= s.bits;
-        */
+        const int shift = s.bits * locs[i];
+        out ^= (((in_I & s.mask) << shift ) ^ s.content)  &  ( s.mask << shift );
+        in_I /= s.lhss;
     }
 
-    return  r;
+    return dit_set<I>(out,s.lhss,s.mask,s.bits);
 }
 
 template<typename I>
