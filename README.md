@@ -25,7 +25,7 @@ Low-level C++ API for QuSpin
 
 2. create unit tests for C++ API. 
 
-    a. This is done inside the header files, e.g. here is an example from `src/quspin_core/includes/quspin/basis/bitbasis/bits.h`
+    a. This is done inside the header files. Here is an example from [`src/quspin_core/includes/quspin/basis/bitbasis/bits.h`](https://github.com/QuSpin/QuSpin-Core/blob/83e273776a6421ca58b5a20302e8a1bdd5950163/src/quspin_core/includes/quspin/basis/bitbasis/bits.h#L94)
     
         ```
         #ifdef QUSPIN_UNIT_TESTS
@@ -51,6 +51,29 @@ Low-level C++ API for QuSpin
 
         #endif
         ```
+	All one has to do is define the macro boundary `#ifdef QUSPIN_UNIT_TESTS ... #endif` and write tests inside the body of the if statement. Following the [doctest](https://github.com/doctest/doctest) instructions to set up tests. To run the tests you need CMAKE and you can run the following commands in the terminal from QuSpin-Core root directory:
+	
+	i. `cmake -B build .`
+	
+	ii. `cmake --build build/ `
+	
+	iii `cd build/`
+	
+	iv. `ctest `
+	
+	it will output something like:
+	
+	```
+	Test project .../QuSpin-Core/build
+	Start 1: test_cpp
+	1/1 Test #1: test_cpp .........................   Passed    0.07 sec
+
+	100% tests passed, 0 tests failed out of 1
+
+	Total Test time (real) =   0.11 sec
+	```
+	
+	These tests will automatically get run every time the code is updated on github so make these test as light as possible. The idea is to test the most basic functionality with simple cases that can be worked out by hand. 
 
 3. design C++ ABI (Application backend interface) 
 
