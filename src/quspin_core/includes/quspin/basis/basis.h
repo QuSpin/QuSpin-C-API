@@ -386,8 +386,11 @@ public:
 
 };
 
-
-
 }
+
+#ifdef QUSPIN_UNIT_TESTS
+
+
+#endif
 
 #endif
