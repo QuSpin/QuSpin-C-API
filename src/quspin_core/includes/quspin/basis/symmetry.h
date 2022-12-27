@@ -277,4 +277,22 @@ public:
 
 }
 
+
+#ifdef QUSPIN_UNIT_TESTS
+
+
+namespace quspin::basis {
+
+template class dit_perm<uint8_t>;
+template class perm_dit<uint8_t>;
+template class bit_perm<uint8_t>;
+template class perm_bit<uint8_t>;
+template class symmetry<bit_perm<uint8_t>,perm_bit<uint8_t>,bit_set<uint8_t>,double>;
+
+}
+
+
+
+#endif
+
 #endif
