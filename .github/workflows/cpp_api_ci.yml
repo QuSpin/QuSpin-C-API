@@ -9,8 +9,6 @@ on:
       - '*.pyx'
       - '*.pxd'
       - '**/README.md'
-      - '**/quspin_core/**'
-      - '**/test_python/**'
       - '**/docs/**'
   pull_request:
     branches:
@@ -20,8 +18,6 @@ on:
       - '*.pyx'
       - '*.pxd'
       - '**/README.md'
-      - '**/quspin_core/**'
-      - '**/test_python/**'
       - '**/docs/**'
 
 

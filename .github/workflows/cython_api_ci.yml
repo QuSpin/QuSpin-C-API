@@ -6,7 +6,6 @@ on:
       - main
     paths-ignore:
       - '**/README.md'
-      - '**/quspin_cpp_api/**'
       - '**/test_cpp/**'
       - '**/docs/**'
   pull_request:
@@ -14,7 +13,6 @@ on:
       - main
     paths-ignore:
       - '**/README.md'
-      - '**/quspin_cpp_api/**'
       - '**/test_cpp/**'
       - '**/docs/**'
 
