@@ -65,12 +65,38 @@ struct dit_set { // thin wrapper used for convience
     mask(_mask), 
     bits(bits) {}
 
+    dit_set(I _content,const int _lhss) : 
+    content(_content), 
+    lhss(_lhss), 
+    mask(constants::mask[_lhss]), 
+    bits(constants::bits[_lhss]) {}
+
     dit_set(dit_set<I> const& other) : 
     content(other.content), 
     lhss(other.lhss), 
     mask(other.mask), 
     bits(other.bits) {}
 
+    dit_set(const std::vector<dit_integer_t>& dits,const int _lhss):
+    lhss(_lhss),
+    mask(constants::mask[_lhss]),
+    bits(constants::bits[_lhss])
+    {
+        content = 0;
+        for(int i=0;i<dits.size();i++){
+            content |= (I(dits[i]) << i*bits);
+        }
+    }
+
+    std::vector<dit_integer_t> to_vector(const int length=0){
+        const int niter = (length>0 ? length : bit_info<I>::bits/bits);
+
+        std::vector<dit_integer_t> out(niter);
+        for(int i=0;i<niter;++i){
+            out[i] = integer<dit_integer_t,I>::cast((content >> i*bits) & mask);
+        }
+        return out;
+    }
 
 };
 
@@ -94,9 +120,9 @@ int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
 }
 
 template<typename I>
-dit_set<I> set_sub_bitstring(const dit_set<I>& s,const I in,const int i){
+dit_set<I> set_sub_bitstring(const dit_set<I>& s,const int in,const int i){
     const int shift =  i * s.bits;
-    const I r = s.content ^ ( ( in << shift ) ^ s.content) & (s.mask << shift);
+    const I r = s.content ^ ( ( I(in) << shift ) ^ s.content) & (s.mask << shift);
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 
@@ -115,10 +141,33 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const i
     return  r;
 }
 
+template<typename I>
+inline bool operator<(const dit_set<I>& lhs, const dit_set<I>& rhs){return lhs.content < rhs.content;}
+
+template<typename I>
+inline bool operator>(const dit_set<I>& lhs, const dit_set<I>& rhs){return lhs.content > rhs.content;}
+
+template<typename I>
+inline bool operator==(const dit_set<I>& lhs, const dit_set<I>& rhs){return lhs.content == rhs.content;}
+
+
 } // end namespace quspin::basis
 
 
 #ifdef QUSPIN_UNIT_TESTS
+
+namespace quspin::basis { // explicit instantiation for code coverage
+
+template struct dit_set<uint8_t>; 
+template int get_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int);
+template int get_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int*, const int);
+template dit_set<uint8_t> set_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int, const int);
+template dit_set<uint8_t> set_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int,const int *,const int);
+template bool operator< <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
+template bool operator> <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
+template bool operator== <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
+
+}
 
 TEST_CASE("get_bit_substring") {
 
