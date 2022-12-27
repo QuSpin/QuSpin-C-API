@@ -2,10 +2,12 @@
 # distutils: language=c++
 from operator cimport *
 
-cdef class operator:
+__all__ = ["operator_string"]
+
+cdef class operator_string:
     cdef object _name
     def __init__(self):
-        self._name = "operator"
+        self._name = "operator_string"
 
     @property
     def name(self):

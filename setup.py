@@ -17,7 +17,7 @@ if __name__ == "__main__":
         Extension("quspin_core.basis", [os.path.join("src","quspin_core","basis.pyx")],
             include_dirs=get_includes(),
         ),
-        Extension("quspin_core.operators", [os.path.join("src","quspin_core","operator.pyx")],
+        Extension("quspin_core.operator", [os.path.join("src","quspin_core","operator.pyx")],
             include_dirs=get_includes(),
         ),
     ]

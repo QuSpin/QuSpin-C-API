@@ -1,7 +1,7 @@
 import unittest
-from quspin_core.operator import bit_basis
+from quspin_core.operator import operator_string
 
 class TestBasis(unittest.TestCase):
     def test(self):
-        op = operator()
-        self.assertEqual(op.name=="basis")
+        op = operator_string()
+        self.assertEqual(op.name,"operator_string")
