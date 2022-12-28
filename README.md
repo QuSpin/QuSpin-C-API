@@ -15,6 +15,8 @@ Low-level C++ API for QuSpin
 
     * https://jhbell.com/using-cmake-and-gcov
     
+    * Need to explicitly instantiate header library inside unit tests to generate code to cover. 
+    
     d. for Cython API use coverage.py, see (NOTE: This is a bit lower on priorities since cython code hasn't even been designed.)
     
 	* https://cython.readthedocs.io/en/latest/src/tutorial/profiling_tutorial.html#enabling-coverage-analysis
