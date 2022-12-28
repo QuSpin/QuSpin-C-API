@@ -13,23 +13,22 @@
 // J = {int32_t, int64_t}
 // T = {int8_t, float32_t, float64_t, complex64_t, complex128_t}
 
-
+#include "numpy/ndarrayobject.h"
+#include "numpy/ndarraytypes.h"
 
 class symmetric_bit_basis
 {
 
-
 private:
-    unqie_ptr<void> data;
-    const bool symmetric;
+    void * data;
 
 public:
     NPY_TYPES I_dtype
 
-    bit_basis() {
+    symmetric_bit_basis() {
 
     }
-    ~bit_basis(){}    
+    ~symmetric_bit_basis(){}    
 
 };
 
