@@ -60,7 +60,6 @@ struct bit_info<uint128_t>
 
 #endif
 
-
 template<>
 struct bit_info<uint64_t>
 {  enum {ld_bits=6,bits=64,bytes=8};
@@ -84,7 +83,6 @@ struct bit_info<uint8_t>
 { enum {ld_bits=3,bits=8,bytes=1};
   typedef int bit_index_type;
 };
-
 
 #ifdef USE_BOOST
 
@@ -140,8 +138,6 @@ struct integer {
 
 #endif
 
-
-
 template<class T>
 typename bit_info<T>::bit_index_type bit_pos(T x, typename bit_info<T>::bit_index_type *idx)
 {
@@ -153,9 +149,8 @@ typename bit_info<T>::bit_index_type bit_pos(T x, typename bit_info<T>::bit_inde
   return n;
 }
 
-
 template<class T>
-int inline bit_count(T v,int l){
+int inline bit_count(T v,const int l){
   v = v & (((~(T)0) >> 1) >> (bit_info<T>::bits - 1 - l));
   v = v - ((v >> 1) & (T)~(T)0/3);                           // temp
   v = (v & (T)~(T)0/15*3) + ((v >> 2) & (T)~(T)0/15*3);      // temp
@@ -165,12 +160,16 @@ int inline bit_count(T v,int l){
 
 }
 
-
 }
 
+#ifdef QUSPIN_UNIT_TESTS
 
-#ifdef __UNIT_TESTS__
+namespace quspin::basis {
 
+template int bit_pos<uint8_t>(uint8_t,int *);
+template int bit_count<uint8_t>(uint8_t,const int);
+
+}
 
 #endif
 

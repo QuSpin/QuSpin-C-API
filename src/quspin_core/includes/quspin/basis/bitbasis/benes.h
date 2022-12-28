@@ -60,11 +60,11 @@ struct ta_subword
 
   unsigned int& operator[](int idx) {
     return data[idx];
-    }
+  }
 
   unsigned int operator[](int idx) const {
-        return data[idx];
-    }
+    return data[idx];
+  }
 };
 
 //////
@@ -148,7 +148,7 @@ I ibfly(const tr_bfly<I>* self, I x) {
 // Permutations via benes_perm network
 
 template<typename t_bit_index>
-static void exchange_bit_index(t_bit_index* a, t_bit_index* b) {
+void exchange_bit_index(t_bit_index* a, t_bit_index* b) {
 // INLINE
 
   t_bit_index q;
@@ -299,5 +299,28 @@ I benes_bwd(const tr_benes<I>* self, I x) {
   return ibfly(&self->b1, bfly(&self->b2,x));
   }
 }
+
+
+#ifdef QUSPIN_UNIT_TESTS
+
+namespace quspin::basis::benes { // explicit instantiation for code coverage
+
+template struct tr_bfly<uint8_t>;
+template struct tr_benes<uint8_t>;
+template struct ta_index<uint8_t>;
+template struct ta_subword<uint8_t>;
+template void invert_perm<uint8_t>(const ta_index<uint8_t>&, ta_index<uint8_t>&);
+template uint8_t bit_permute_step<uint8_t>(uint8_t, uint8_t, int); 
+template uint8_t bfly<uint8_t>(const tr_bfly<uint8_t>*, uint8_t);
+template uint8_t ibfly<uint8_t>(const tr_bfly<uint8_t>*, uint8_t);
+template void exchange_bit_index<uint8_t>(uint8_t* a, uint8_t* b);
+template void gen_benes_ex<uint8_t>(tr_benes<uint8_t>*, const ta_index<uint8_t>&, const ta_subword<uint8_t>&);
+template void gen_benes<uint8_t>(tr_benes<uint8_t>*, const ta_index<uint8_t>&);
+template uint8_t benes_fwd<uint8_t>(const tr_benes<uint8_t>*, uint8_t);
+template uint8_t benes_bwd<uint8_t>(const tr_benes<uint8_t>*, uint8_t);
+
+}
+
+#endif
 
 #endif

@@ -5,7 +5,7 @@
 #include <cmath>
 #include <complex>
 #include <unordered_map>
-#include <tuple>
+#include <utility>
 #include <list>
 #include <limits>
 #include <memory>
@@ -30,57 +30,56 @@ private:
     std::vector<bool> nonzero;
 
 public:
-    dense_term(std::vector<int> _loc,std::vector< std::vector<T> > _data) : 
+    dense_term(std::vector<int> &_loc,std::vector<T> &_data) : 
     lhss(_data.size()), nlocs(_loc.size())
     {
 
         // copy to contiguous pointers
         std::copy(_loc.begin(),_loc.end(),locs.begin());
+        std::copy(_data.begin(),_data.end(),data.begin());
 
-        for(auto& d : data){
-            for(auto& v : d){
-                data.push_back(v);
-                nonzero.push_back(v!=T(0));
-
+        std::transform(data.begin(),data.end(),nonzero.begin(),
+            [](const T& value) -> bool 
+            {
+                return value != T(0);
             }
-        }
-
+        );
 
     }
     ~dense_term(){}
 
     template<typename bitset_t>
-    void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){ // loop over columns
             const int i = lhss*a+b;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
-                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+                output.push_back(std::make_pair(r,data[i]));
             }
         }
     }
 
     template<typename bitset_t>
-    void op_transpose(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
+    void op_transpose(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){  // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
-                output[r] = (output.contains(r) ? output[r] + data[i] : data[i] );
+                output.push_back(std::make_pair(r,data[i]));
             }
         }
     }
 
     template<typename bitset_t>
-    void op_dagger(const bitset_t s, std::unordered_map<bitset_t,T> &output) const {
+    void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs.data(),nlocs);
         for(int b=0;b<lhss;++b){ // loop over rows
             const int i = lhss*b+a;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs.data(),nlocs);
-                (output.contains(r) ? output[r] += std::conj(data[i]) : output[r] = std::conj(data[i]) );
+                output.push_back(std::make_pair(r,conj(data[i])));
             }
         }
     }
@@ -122,7 +121,7 @@ public:
     ~operator_string(){}
 
     template<typename bitset_t>
-    void op(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int * perm = perms.data();
         const T * data = datas.data();
         T m = T(1.0);
@@ -132,7 +131,7 @@ public:
             const int a = quspin::basis::get_sub_bitstring(r,locs[i]);
             const int b = perm[a];
             m *= data[a];
-            r = basis::set_sub_bitstring(r,a,b,locs[i]);
+            r = basis::set_sub_bitstring(r,b,locs[i]);
 
             if(m == T(0)){nonzero=false; break;}
             
@@ -141,11 +140,11 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) output.push_back(std::make_pair(r,m));
     }
     
     template<typename bitset_t>
-    void op_transpose(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op_transpose(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int * perm = inv_perms.data();
         const T * data = datas.data();
         T m = T(1.0);
@@ -164,11 +163,11 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) output.push_back(std::make_pair(r,m));
     }
 
     template<typename bitset_t>
-    void op_dagger(const bitset_t& s, std::unordered_map<bitset_t,T> &output) const {
+    void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int * perm = inv_perms.data();
         const T * data = datas.data();
         T m = T(1.0);
@@ -178,7 +177,7 @@ public:
             const int s_loc = basis::get_sub_bitstring(r,locs[i]);
             const int r_loc = perm[s_loc];
             r = basis::set_sub_bitstring(r,r_loc,locs[i]);
-            m *= std::conj(data[s_loc]);
+            m *= data[s_loc];
 
             if(m == T(0)){nonzero=false; break;}
             
@@ -187,10 +186,32 @@ public:
             data += lhss;
         }
 
-        if( nonzero ) output[r] = (output.contains(r) ? output[r] + m : m );
+        if( nonzero ) output.push_back(std::make_pair(r,conj(m)));
     }
 
 };
 
 }
+
+#ifdef QUSPIN_UNIT_TESTS
+
+namespace quspin {
+
+typedef basis::bit_set<uint8_t> bs;
+
+template class operator_string<double>;
+template void operator_string<double>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void operator_string<double>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void operator_string<double>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+
+
+template class dense_term<double>;
+template void dense_term<double>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void dense_term<double>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void dense_term<double>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+
+}
+
+#endif
+
 #endif
