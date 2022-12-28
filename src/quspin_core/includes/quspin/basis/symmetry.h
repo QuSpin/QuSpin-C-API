@@ -3,11 +3,13 @@
 
 
 #include <vector>
-#include <memory>
+#include <algorithm>
+#include <cassert>
 #include "quspin/basis/types.h"
 #include "quspin/basis/bitbasis/dits.h"
 #include "quspin/basis/bitbasis/bits.h"
 #include "quspin/basis/bitbasis/benes.h"
+#include "quspin/utils/functions.h"
 
 
 namespace quspin::basis {
@@ -16,25 +18,24 @@ template <typename I>
 class dit_perm // permutation of dit locations
 {
 private:
-    const int lhss;
-    const int length;
     benes::tr_benes<I> benes;
 
 public:
-    dit_perm() : lhss(0), length(0)  {}// identity constructor
-    dit_perm(const int _lhss,const int * _perm,const int _length) : 
-    lhss(_lhss), length(_length)
-    {
+    dit_perm(const int lhss,const int * perm,const int length) {
         benes::ta_index<I> index;
         for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
 
-        // benes permutation is agnostic to lhss
-        for(int i=0;i<_length;i++){
-            const int dst = _perm[i];
+        
+        // number of bits to store lhss worth of data:
+        const dit_integer_t bits = constants::bits[lhss];
+
+        // permute chucks of bits of length 'bits' 
+        for(int i=0;i<length;i++){
+            const int dst = perm[i];
             const int src = i;
-            for(int j=0;j<constants::bits[lhss];j++){
-                const int srcbit = constants::bits[_lhss] * src + j;
-                const int dstbit = constants::bits[_lhss] * dst + j;
+            for(int j=0;j<bits;j++){
+                const int srcbit = bits * src + j;
+                const int dstbit = bits * dst + j;
                 index[srcbit] = dstbit;
             }   
         }
@@ -42,16 +43,17 @@ public:
         benes::gen_benes(&benes,index);
 
     }
+
     ~dit_perm() {}
 
     template<typename T>
     inline const dit_set<I> app(const dit_set<I>& s, T& coeff) const { 
-        return (length != 0 ? dit_set<I>(benes::benes_bwd(benes,s.content),s.lhss,s.mask,s.bits) : s); 
+        return dit_set<I>(benes::benes_bwd(&benes,s.content),s.lhss,s.mask,s.bits); 
     }
 
     template<typename T>
     inline const dit_set<I> inv(const dit_set<I>& s, T& coeff) const { 
-        return (length != 0 ? dit_set<I>(benes::benes_fwd(benes,s.content),s.lhss,s.mask,s.bits) : s);  
+        return dit_set<I>(benes::benes_fwd(&benes,s.content),s.lhss,s.mask,s.bits);  
     }
 };
 
@@ -59,34 +61,27 @@ template <typename I>
 class perm_dit // permutations of the dit states locally
 {
 private:
-    const int lhss;
-    const int length;
+    int lhss;
     std::vector<dit_integer_t> perm;
     std::vector<dit_integer_t> inv_perm;
     std::vector<int> locs;
 
 public:
-    perm_dit() : lhss(0), length(0) {} // identity
-    perm_dit(
-        const int _lhss, const dit_integer_t * _perm, const int * _locs, const int _length
-    ) : lhss(_lhss), length(_length)
+    perm_dit(const int _lhss, std::vector<dit_integer_t>& _perm, std::vector<int> _locs) : lhss(_lhss)
     { 
-        perm.resize(_length * _lhss);
-        inv_perm.resize(_length * _lhss);
-        locs.resize(_length);
+        std::copy(_perm.begin(),_perm.end(),perm.begin());
+        std::copy(_locs.begin(),_locs.end(),locs.begin());
+        inv_perm.resize(perm.size());
 
-        dit_integer_t * loc_perm = perm.data();
-        dit_integer_t * loc_inv_perm = inv_perm.data();
+        dit_integer_t * perm_ptr = perm.data();
+        dit_integer_t * inv_perm_ptr = inv_perm.data();
 
-        for(int i=0;i<_length;++i){
-            locs[i] = _locs[i];
-            for(int j=0;j<_lhss;++j){
-                loc_perm[j] = _perm[j];
-                loc_inv_perm[_perm[j]] = j;
+        for(int i=0;i<locs.size();++i){
+            for(dit_integer_t j=0;j<_lhss;++j){
+                inv_perm_ptr[perm_ptr[j]] = j;
             }
-            loc_perm += _lhss;
-            loc_inv_perm += _lhss;
-            _perm += _lhss;
+            perm_ptr += _lhss;
+            inv_perm_ptr += _lhss;
         }
 
     }
@@ -99,7 +94,7 @@ public:
         
         dit_integer_t * perm_ptr = perm.data();
 
-        for(int i=0;i<length;++i){
+        for(int i=0;i<locs.size();++i){
             const int bits = get_sub_bitstring(s,locs[i]);
             r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
             perm_ptr += lhss;
@@ -114,7 +109,7 @@ public:
         
         dit_integer_t * perm_ptr = inv_perm.data();
 
-        for(int i=0;i<length;++i){
+        for(int i=0;i<locs.size();++i){
             const int bits = get_sub_bitstring(s,locs[i]);
             r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
             perm_ptr += lhss;
@@ -125,22 +120,20 @@ public:
 };
 
 template <typename I>
-class bit_perm // permutation of dit locations
+class bit_perm // permutation of bit locations
 {
 private:
-    const int length;
     benes::tr_benes<I> benes;
 
 public:
-    bit_perm() : length(0) {} // identity constructor
-    bit_perm(const int * _perm,const int _length) : length(_length)
+    bit_perm(const int * perm,const int length) 
     {
         benes::ta_index<I> index;
         for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
 
         // benes permutation is agnostic to lhss
-        for(int i=0;i<_length;i++){
-            index[i] = _perm[i];  
+        for(int i=0;i<length;i++){
+            index[i] = perm[i];  
         }
 
         benes::gen_benes(&benes,index);
@@ -150,23 +143,22 @@ public:
 
     template<typename T>
     inline const bit_set<I> app(const bit_set<I>& s, T& coeff) const { 
-        return (length != 0 ? bit_set<I>(benes::benes_bwd(benes,s.content)) : s); 
+        return  bit_set<I>(benes::benes_bwd(&benes,s.content)); 
     }
 
     template<typename T>
     inline const bit_set<I> inv(const bit_set<I>& s, T& coeff) const { 
-        return (length != 0 ?bit_set<I>(benes::benes_fwd(benes,s.content)) : s); 
+        return bit_set<I>(benes::benes_fwd(&benes,s.content)); 
     }
 };
 
 template <typename I>
-class perm_bit // permutations of the dit states locally
+class perm_bit // permutations of the bit states locally
 {
 private:
-    const I mask; // which bits to flip
+    I mask; // which bits to flip
 
 public:
-    perm_bit() : mask(0) {} // identity (don't flip any bits)
     perm_bit(const I _mask) : mask(_mask) { }
     ~perm_bit() {}
 
@@ -199,17 +191,17 @@ public:
     std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_char)
     {
         assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
-        lat_symm = _lat_symm;
-        loc_symm = _loc_symm;
-        lat_char = _lat_char;
-        loc_char = _loc_char;
+        std::copy(_lat_symm.begin(),_lat_symm.end(),lat_symm.begin());
+        std::copy(_loc_symm.begin(),_loc_symm.end(),loc_symm.begin());
+        std::copy(_lat_char.begin(),_lat_char.end(),lat_char.begin());
+        std::copy(_loc_char.begin(),_loc_char.end(),loc_char.begin());
     }
 
     symmetry(symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
-        lat_symm = other.lat_symm;
-        loc_symm = other.loc_symm;
-        lat_char = other.lat_char;
-        loc_char = other.loc_char;
+        std::copy(other.lat_symm.begin(),other.lat_symm.end(),lat_symm.begin());
+        std::copy(other.loc_symm.begin(),other.loc_symm.end(),loc_symm.begin());
+        std::copy(other.lat_char.begin(),other.lat_char.end(),lat_char.begin());
+        std::copy(other.loc_char.begin(),other.loc_char.end(),loc_char.begin());
     }
     ~symmetry() {}
 
