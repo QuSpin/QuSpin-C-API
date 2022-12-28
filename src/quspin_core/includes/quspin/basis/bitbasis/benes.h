@@ -60,11 +60,11 @@ struct ta_subword
 
   unsigned int& operator[](int idx) {
     return data[idx];
-    }
+  }
 
   unsigned int operator[](int idx) const {
-        return data[idx];
-    }
+    return data[idx];
+  }
 };
 
 //////
