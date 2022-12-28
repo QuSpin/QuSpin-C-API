@@ -40,7 +40,7 @@ public:
     bits(constants::bits[_lhss]) {}
 
     dit_fullspace(dit_fullspace<I,J>& other) :
-    dit_fullspace(other.lhss,other.N,other.Ns,other.mask,other.bits) {}
+    dit_fullspace(other.lhss,other.Ns) {}
     
     ~dit_fullspace() {}
 
@@ -93,44 +93,41 @@ public:
     }
 
     inline J get_index(const bitset_t& state) const {
-        return index_map[state.content];
+        return index_map.at(state.content);
     }
 
     inline K get_norm(const bitset_t& state) const {
-        return states[index_map[state.content]].second;
+        return states[index_map.at(state.content)].second;
     }
 
     inline K get_norm(const J index) const {
         return states[index].second;
     }
 
-    void append(const bitset_t& new_state,const K new_norm){
-        if(!index_map.contains(new_state)){
-            states.push(make_pair(new_state.content,new_norm));
+    void append(const I new_state,const K new_norm){
+        if(index_map.count(new_state) == 0){
+            states.push_back(std::make_pair(new_state,new_norm));
             index_map[new_state] = states.size();
         }
     }
 
     void append(const dit_subspace& other){
         for(const auto& [new_state,new_norm] : other.states){
-            if(!index_map.contains(new_state)){
-                states.push(make_pair(new_state.content,new_norm));
-                index_map[new_state] = states.size();
-            }
+            this->append(new_state,new_norm);
         }
     }
 
     void sort_states() {
-        const bool is_sorted = std::is_sorted(states.begin(),states.end(),states.begin(),
-            [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
+        const bool is_sorted = std::is_sorted(states.begin(),states.end(),
+            [](const std::pair<I,K>& lhs, const std::pair<I,K>& rhs) -> bool 
             {
                 return lhs.first < rhs.first;
             }
         );
 
         if(!is_sorted){
-            std::sort(states.begin(),states.end(),states.begin(),
-                [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
+            std::sort(states.begin(),states.end(),
+                [](const std::pair<I,K>& lhs,const std::pair<I,K>& rhs) -> bool 
                 {
                     return lhs.first < rhs.first;
                 }
@@ -145,18 +142,19 @@ public:
     }
 
     void serialize_states(char * output) const {
-        char * states_ptr = static_cast<char*>(states.data());
+        char * states_ptr = (char*)states.data();
         std::copy(states_ptr,states_ptr+nbytes(),output);
     }
 
     void deserialize_states(char * input,const size_t nbytes){
         const size_t n_elements = nbytes / sizeof(std::pair<I,K>);
-        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*>(input);
 
         states.clear(); // clears current data
         index_map.clear();
 
-        std::copy(input_data, input_data+n_elements,states);
+        states.resize(n_elements);
+
+        std::copy(input, input+nbytes, (char*)states.data());
 
         J index = 0;
         for(const auto& [state,norm] : states){
@@ -172,7 +170,6 @@ class bit_fullspace // sps = 2
 {
 private:
     const J Ns; // total number of states 
-    const dit_integer_t bits; // number of bits to store lhss
 
 public:
     typedef bit_set<I> bitset_t;
@@ -220,48 +217,45 @@ public:
     inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {
-        return bitset_t(I(states[index].first));
+        return bitset_t(std::get<0>(states[index]));
     }
 
     inline J get_index(const bitset_t& state) const {
-        return index_map[state.content];
+        return index_map.at(state.content);
     }
 
     inline K get_norm(const bitset_t& state) const {
-        return states[index_map[state.content]].second;
+        return std::get<1>(states[index_map.at(state.content)]);
     }
 
     inline K get_norm(const J index) const {
-        return states[index].second;
+        return std::get<1>(states[index]);
     }
 
-    void append(const bitset_t& new_state,const K new_norm){
-        if(!index_map.contains(new_state)){
-            states.push(make_pair(new_state.content,new_norm));
+    void append(const I new_state,const K new_norm){
+        if(index_map.count(new_state) == 0){
+            states.push_back(std::make_pair(new_state,new_norm));
             index_map[new_state] = states.size();
         }
     }
 
     void append(const bit_subspace& other){
         for(const auto& [new_state,new_norm] : other.states){
-            if(!index_map.contains(new_state)){
-                states.push(make_pair(new_state.content,new_norm));
-                index_map[new_state] = states.size();
-            }
+            this->append(new_state,new_norm);
         }
     }
 
     void sort_states() {
-        const bool is_sorted = std::is_sorted(states.begin(),states.end(),states.begin(),
-            [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
+        const bool is_sorted = std::is_sorted(states.begin(),states.end(),
+            [](const std::pair<I,K>& lhs,const std::pair<I,K>& rhs) -> bool 
             {
                 return lhs.first < rhs.first;
             }
         );
 
         if(!is_sorted){
-            std::sort(states.begin(),states.end(),states.begin(),
-                [](std::pair<I,K>& lhs,std::pair<I,K>& rhs) -> bool 
+            std::sort(states.begin(),states.end(),
+                [](const std::pair<I,K>& lhs,const std::pair<I,K>& rhs) -> bool 
                 {
                     return lhs.first < rhs.first;
                 }
@@ -276,18 +270,19 @@ public:
     }
 
     void serialize_states(char * output) const {
-        char * states_ptr = static_cast<char*>(states.data());
+        char * states_ptr = (char*)states.data();
         std::copy(states_ptr,states_ptr+nbytes(),output);
     }
 
     void deserialize_states(char * input,const size_t nbytes){
         const size_t n_elements = nbytes / sizeof(std::pair<I,K>);
-        std::pair<I,K> * input_data = static_cast<std::pair<I,K>*>(input);
 
         states.clear(); // clears current data
         index_map.clear();
 
-        std::copy(input_data, input_data+n_elements,states);
+        states.resize(n_elements);
+
+        std::copy(input, input+nbytes, (char*)states.data());
 
         J index = 0;
         for(const auto& [state,norm] : states){
@@ -298,4 +293,19 @@ public:
 };
 
 }
+
+#ifdef QUSPIN_UNIT_TESTS
+
+
+namespace quspin::basis {
+
+    template class bit_subspace<uint8_t,int,uint8_t>;
+    template class bit_fullspace<uint8_t,int>;
+    template class dit_subspace<uint8_t,int,uint8_t>;
+    template class dit_fullspace<uint8_t,int>;
+    
+}
+
+#endif
+
 #endif

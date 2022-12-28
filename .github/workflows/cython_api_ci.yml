@@ -18,8 +18,8 @@ on:
 
 
 jobs:
-  build:
-    name: ${{matrix.config.os}}
+  test:
+    name: Cython CI - ${{matrix.config.os}} python ${{matrix.config.py_version}}
     runs-on: ${{matrix.config.os}}
     strategy:
       fail-fast: false

@@ -24,19 +24,19 @@ struct bit_set { // thin wrapper used for convience
     bit_set(const I _content) : content(_content) {}
     bit_set(const bit_set<I>& other) : content(other.content) {}
 
-    bit_set(const std::vector<bool>& bits){
+    bit_set(const std::vector<dit_integer_t>& bits_vec){
         content = 0;
-        for(int i=0;i<bits.size();i++){
-            content |= (I(bits[i]) << i);
+        for(int i=0;i<bits_vec.size();i++){
+            content |= (I(bits_vec[i]) << i*bits);
         }
     }
 
-    std::vector<bool> to_vector(const int length=0){
+    std::vector<dit_integer_t> to_vector(const int length=0){
         const int niter = (length>0 ? length : bit_info<I>::bits/bits);
 
-        std::vector<bool> out(niter);
+        std::vector<dit_integer_t> out(niter);
         for(int i=0;i<niter;++i){
-            out[i] = static_cast<bool>((content >> i) & I(1));
+            out[i] = integer<dit_integer_t,I>::cast((content >> i*bits) & mask);
         }
         return out;
     }
@@ -44,12 +44,12 @@ struct bit_set { // thin wrapper used for convience
 };
 
 template<typename I>
-int get_sub_bitstring(bit_set<I> s,const int i){
+int get_sub_bitstring(const bit_set<I>& s,const int i){
     return integer<int,I>::cast( (s.content >> i) & I(1));
 }
 
 template<typename I>
-int get_sub_bitstring(const bit_set<I> s,const int * locs,const int nlocs){
+int get_sub_bitstring(const bit_set<I>& s,const int * locs,const int nlocs){
     int out = 0;
     for(int i=0;i<nlocs-1;++i){
         out |= get_sub_bitstring(s,locs[i]);
@@ -93,7 +93,19 @@ inline bool operator==(const bit_set<I>& lhs, const bit_set<I>& rhs){return lhs.
 
 #ifdef QUSPIN_UNIT_TESTS
 
-#include <iostream>
+namespace quspin::basis { // explicit instantiation for code coverage
+
+template struct bit_set<uint8_t>; 
+template int get_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int);
+template int get_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int*, const int);
+template bit_set<uint8_t> set_sub_bitstring<uint8_t>(const bit_set<uint8_t>&,const int, const int);
+template bit_set<uint8_t> set_sub_bitstring<uint8_t>(const bit_set<uint8_t>& s,const int,const int *,const int);
+template bool operator< <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+template bool operator> <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+template bool operator== <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_t>&);
+
+}
+
 
 TEST_CASE("get_bit_substring") {
 
@@ -165,7 +177,7 @@ TEST_CASE("to_/from_vector") {
 
     bit_set<uint8_t> s(0b01010111);
 
-    std::vector<bool> bits = {1,1,1,0,1,0,1,0};
+    std::vector<dit_integer_t> bits = {1,1,1,0,1,0,1,0};
 
     CHECK(bit_set<uint8_t>(bits) == s);
     CHECK(s.to_vector() == bits);
