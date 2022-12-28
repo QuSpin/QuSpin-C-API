@@ -3,6 +3,8 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include <vector>
+#include <utility>
 #include <memory>
 
 #include "quspin/basis/space.h"
@@ -30,10 +32,10 @@ public:
     std::shared_ptr<subspace_t> get_space() {return space;}
     symmetry_t get_symmetries() const {return symmetry;}
 
-    template<typename J,typename T>
+    template<typename Container, typename J,typename T>
     void ref_states_conj(
         const J i,
-        const std::unordered_map<J,T>& col_states, 
+        const Container& col_states, 
         std::unordered_map<J,T>& columns
     ) const {
         for(const auto& [state,raw_mat_ele] : col_states){
@@ -46,10 +48,10 @@ public:
         }
     }
 
-    template<typename J, typename T>
+    template<typename Container, typename J, typename T>
     void ref_states(
         const J i,
-        const std::unordered_map<J,T>& row_states, 
+        const Container& row_states, 
         std::unordered_map<J,T>& rows    
     ) const {
         for(const auto& [state,raw_mat_ele] : row_states){
@@ -71,7 +73,7 @@ public:
 
         J n_row = space -> size();
 
-        std::unordered_map<typename subspace_t::bitset_t,T> col_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> col_states;
         std::unordered_map<J,T> columns;
 
         rowptr[0] = 0;
@@ -114,7 +116,7 @@ public:
 
         J n_row = space -> size();
 
-        std::unordered_map<typename subspace_t::bitset_t,T> col_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> col_states;
         std::unordered_map<J,T> columns;
         std::vector<std::pair<J,T>> sorted_columns;
 
@@ -174,7 +176,7 @@ public:
             for(typename subspace_t::index_t index=0;index < space->size();++index){ y[index] *= b; }
         }
 
-        std::unordered_map<typename subspace_t::bitset_t,T> row_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> row_states;
         std::unordered_map<size_t,T> matrix_ele;
 
         for(typename subspace_t::index_t row=0;row < space->size();++row){
@@ -221,10 +223,10 @@ public:
     std::shared_ptr<subspace_t> get_space() {return space;}
 
 
-    template<typename J,typename T>
+    template<typename Container, typename J,typename T>
     void ref_states_conj(
         const J i,
-        const std::unordered_map<J,T>& col_states, 
+        const Container& col_states, 
         std::unordered_map<J,T>& columns
     ) const {
         for(const auto& [state,mat_ele] : col_states){
@@ -233,10 +235,10 @@ public:
         }
     }
 
-    template<typename J, typename T>
+    template<typename Container, typename J, typename T>
     void ref_states(
         const J i,
-        const std::unordered_map<J,T>& row_states, 
+        const Container& row_states, 
         std::unordered_map<J,T>& rows    
     ) const {
         for(const auto& [state,mat_ele] : row_states){
@@ -254,7 +256,7 @@ public:
 
         J n_row = space -> size();
 
-        std::unordered_map<typename subspace_t::bitset_t,T> col_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> col_states;
         std::unordered_map<J,T> columns;
 
         rowptr[0] = 0;
@@ -297,7 +299,7 @@ public:
 
         J n_row = space -> size();
 
-        std::unordered_map<typename subspace_t::bitset_t,T> col_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> col_states;
         std::unordered_map<J,T> columns;
         std::vector<std::pair<J,T>> sorted_columns;
 
@@ -357,7 +359,7 @@ public:
             for(size_t index=0;index < space->size();++index){ y[index] *= b; }
         }
 
-        std::unordered_map<typename subspace_t::bitset_t,T> row_states;
+        std::vector<std::pair<typename subspace_t::bitset_t,T>> row_states;
         std::unordered_map<size_t,T> matrix_ele;
 
         for(size_t row=0;row < space->size();++row){
