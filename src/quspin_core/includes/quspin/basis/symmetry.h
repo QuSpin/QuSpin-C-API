@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include "quspin/basis/types.h"
+#include "quspin/basis/bitbasis/utils.h"
 #include "quspin/basis/bitbasis/dits.h"
 #include "quspin/basis/bitbasis/bits.h"
 #include "quspin/basis/bitbasis/benes.h"
