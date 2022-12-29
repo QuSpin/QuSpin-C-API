@@ -108,14 +108,16 @@ int get_sub_bitstring(const dit_set<I>& s,const int i){
 template<typename I>
 int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
     int out = 0;
-    for(int i=0;i<nlocs;++i){
-        out += get_sub_bitstring(s,locs[i]);
+    for(int i=nlocs-1;i>0;--i){
+        out += get_sub_bitstring(s,locs[i]) % s.lhss;
         out *= s.lhss;
         /* // implementation with padding for congituous blocks 
         out |= bit_basis<int,I>(get_sub_bitstring(s,locs[i]));
         out <<= s.bits;
         */
     }
+    out += get_sub_bitstring(s,locs[0]);
+
     return out;
 }
 
@@ -168,6 +170,20 @@ template bool operator== <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_
 }
 
 TEST_CASE("get_bit_substring") {
+    using namespace quspin::basis;
+
+    dit_set<uint8_t> state(0b01100100,3); // possible states: 00 01 10
+
+    CHECK(get_sub_bitstring(state,0) == 0);
+    CHECK(get_sub_bitstring(state,1) == 1);
+    CHECK(get_sub_bitstring(state,2) == 2);
+    CHECK(get_sub_bitstring(state,3) == 1);
+
+    int l1[2] = {0,1};
+    int l2[3] = {0,2,1};
+
+    CHECK(get_sub_bitstring(state,l1,2) == 0 + 3 * 1);
+    CHECK(get_sub_bitstring(state,l2,3) == 0 + 3 * 2 + 9 * 1);
 
 }
 
@@ -176,11 +192,27 @@ TEST_CASE("set_sub_bitstring") {
 }
 
 TEST_CASE("operators") {
+    using namespace quspin::basis;
 
+    dit_set<uint8_t> s1(0b1010111,3);
+    dit_set<uint8_t> s2(0b1010111,3);
+    dit_set<uint8_t> s3(0b1011111,3);
+    dit_set<uint8_t> s4(0b1010011,3);
+
+
+    CHECK(s1==s2);
+    CHECK(s3>s1);
+    CHECK(s4<s1);
 }
 
 TEST_CASE("to_/from_vector") {
+    using namespace quspin::basis;
+
+    dit_set<uint8_t> s(0b01100100,3);
+    std::vector<dit_integer_t> dits = {0,1,2,1};
     
+    CHECK(dit_set<uint8_t>(dits,3) == s);
+    CHECK(s.to_vector() == dits);
 }
 
 #endif
