@@ -33,7 +33,7 @@ jobs:
 
       - name: Download doctest
         working-directory: ${{github.workspace}}/test/test_cpp
-        run: curl https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h -o doctest.h
+        run: wget https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h 
 
       - name: Compile calculator
         working-directory: ${{github.workspace}}/test/test_cpp
