@@ -9,14 +9,6 @@ Low-level C++ and Cython API for QuSpin
 ## TODO:
 
 1. generate code coverage results for both Cython and C++ tests. 
-
-    a. Only runs on linux github action runners
-
-    c. for C++ API use gcov (comes standard with gcc) integrate into CMAKE
-
-    * https://jhbell.com/using-cmake-and-gcov
-    
-    * Need to explicitly instantiate header library inside unit tests to generate code to cover. 
     
     d. for Cython API use coverage.py, see (NOTE: This is a bit lower on priorities since cython code hasn't even been designed.)
     
