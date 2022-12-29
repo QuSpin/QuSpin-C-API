@@ -22,7 +22,7 @@ on:
 
 env:
   CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -O0
-  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes -I ${{github.workspace}}/build/doctest/src/doctest/doctest
+  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes
 
 jobs:
   run:
@@ -31,12 +31,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug
-
-      - name: Build
-        # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config Debug
+      - name: Download doctest
+        working-directory: ${{github.workspace}}/test/test_cpp
+        run: curl https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h -o doctest.h
 
       - name: Compile calculator
         working-directory: ${{github.workspace}}/test/test_cpp
