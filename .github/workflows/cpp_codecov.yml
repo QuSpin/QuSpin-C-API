@@ -21,7 +21,7 @@ on:
       - '**/docs/**'
 
 env:
-  CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inlin -O0
+  CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -O0
   INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes -I ${{github.workspace}}/build/doctest/src/doctest/doctest
 
 jobs:
