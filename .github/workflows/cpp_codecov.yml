@@ -22,7 +22,7 @@ on:
 
 env:
   CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -O0
-  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes
+  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes -I ${{github.workspace}}/test/test_cpp
 
 jobs:
   run:
@@ -32,12 +32,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download doctest
-        working-directory: ${{github.workspace}}/test/test_cpp
-        run: wget https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h 
+        run: wget https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h -O ${{github.workspace}}/test/test_cpp/doctest.h
 
       - name: Compile calculator
         working-directory: ${{github.workspace}}/test/test_cpp
         run: g++ $CPP_FLAGS $INCLUDE_FLAGS -o test test.cpp
+
       - name: Run tests
         working-directory: ${{github.workspace}}/test/test_cpp
         run: ./test
