@@ -42,8 +42,10 @@ jobs:
         working-directory: ${{github.workspace}}/test/test_cpp
         run: g++ $CPP_FLAGS $INCLUDE_FLAGS -o test test.cpp
       - name: Run tests
+        working-directory: ${{github.workspace}}/test/test_cpp
         run: ./test
       - name: Upload coverage to Codecov
+        working-directory: ${{github.workspace}}/test/test_cpp
         uses: codecov/codecov-action@v3          
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
