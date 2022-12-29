@@ -2,6 +2,8 @@
 #define __QUSPIN_BASIS_BITBASIS_BITS_H__
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "quspin/basis/types.h"
 #include "quspin/basis/bitbasis/info.h"
@@ -39,6 +41,15 @@ struct bit_set { // thin wrapper used for convience
             out[i] = integer<dit_integer_t,I>::cast((content >> i*bits) & mask);
         }
         return out;
+    }
+
+    std::string to_string(const int length=0){
+        auto bit_vec = to_vector(length);
+        std::stringstream out;
+        for(auto ele : bit_vec){
+            out << (int)ele; 
+        }
+        return out.str();
     }
 
 };
@@ -183,6 +194,16 @@ TEST_CASE("to_/from_vector") {
     CHECK(bit_set<uint8_t>(bits) == state);
     CHECK(state.to_vector() == bits);
 
+}
+
+TEST_CASE("to_string") {
+    using namespace quspin::basis;
+
+    bit_set<uint8_t> s(0b01100100);
+
+    std::string bits = "00100110"; // note reverse order
+    
+    CHECK(s.to_string() == bits);
 }
 
 #endif

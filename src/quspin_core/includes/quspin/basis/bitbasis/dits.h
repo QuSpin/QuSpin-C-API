@@ -1,6 +1,10 @@
 #ifndef __QUSPIN_BASIS_BITBASIS_DITS_H__
 #define __QUSPIN_BASIS_BITBASIS_DITS_H__
 
+#include <vector>
+#include <string>
+#include <sstream>
+
 #include "quspin/basis/types.h"
 #include "quspin/basis/bitbasis/info.h"
 
@@ -93,9 +97,19 @@ struct dit_set { // thin wrapper used for convience
 
         std::vector<dit_integer_t> out(niter);
         for(int i=0;i<niter;++i){
-            out[i] = integer<dit_integer_t,I>::cast((content >> i*bits) & mask);
+            int shift = i*bits;
+            out[i] = integer<dit_integer_t,I>::cast((content >> shift) & mask);
         }
         return out;
+    }
+
+    std::string to_string(const int length=0){
+        auto dit_vec = to_vector(length);
+        std::stringstream out;
+        for(auto ele : dit_vec){
+            out << (int)ele; 
+        }
+        return out.str();
     }
 
 };
@@ -223,7 +237,7 @@ TEST_CASE("operators") {
     CHECK(s4<s1);
 }
 
-TEST_CASE("to_/from_vector") {
+TEST_CASE("from_/to_vector") {
     using namespace quspin::basis;
 
     dit_set<uint8_t> s(0b01100100,3);
@@ -231,6 +245,14 @@ TEST_CASE("to_/from_vector") {
     
     CHECK(dit_set<uint8_t>(dits,3) == s);
     CHECK(s.to_vector() == dits);
+}
+
+TEST_CASE("to_string") {
+    using namespace quspin::basis;
+
+    dit_set<uint8_t> s(0b01100100,3);
+    std::string dits = "0121"; // note reverse order
+    CHECK(s.to_string() == dits);
 }
 
 #endif
