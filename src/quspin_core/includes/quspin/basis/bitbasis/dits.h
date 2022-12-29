@@ -52,9 +52,9 @@ static const quspin::basis::dit_integer_t mask[255] = {
 template<typename I>
 struct dit_set { // thin wrapper used for convience
     
-    const int lhss;
-    const I mask;
-    const dit_integer_t bits;
+    int lhss;
+    I mask;
+    dit_integer_t bits;
 
     typedef I bitset_t;
     I content;
@@ -134,7 +134,7 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const i
     I in_I = I(in);
     for(int i=0;i<nlocs;++i){
         const int shift = s.bits * locs[i];
-        out ^= (((in_I & s.mask) << shift ) ^ s.content)  &  ( s.mask << shift );
+        out ^= (((in_I % s.lhss) << shift ) ^ s.content)  &  ( s.mask << shift );
         in_I /= s.lhss;
     }
 
@@ -188,7 +188,25 @@ TEST_CASE("get_bit_substring") {
 }
 
 TEST_CASE("set_sub_bitstring") {
+    using namespace quspin::basis;
 
+    dit_set<uint8_t> state(0b01100100,3); // possible states: 00 01 10
+
+    dit_set<uint8_t> result = set_sub_bitstring(state,1,0);
+    CHECK(result.content == 0b01100101);
+
+    result = set_sub_bitstring(state,1,2);
+    CHECK(result.content == 0b01010100);
+
+    int l1[2] = {0,1};
+    int in1 = 1 + (3*2);
+    result = set_sub_bitstring(state,in1,l1,2);
+    CHECK(result.content == 0b01101001);
+
+    int l2[3] = {0,3,1};
+    int in2 = 2 + (3*2) + (9*0);
+    result = set_sub_bitstring(state,in2,l2,3);
+    CHECK(result.content == 0b10100010);
 }
 
 TEST_CASE("operators") {
