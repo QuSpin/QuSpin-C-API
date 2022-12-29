@@ -44,9 +44,8 @@ jobs:
       - name: Run tests
         run: ./test
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v3          
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-        with:
           gcov: true
           gcov_include: test.cpp
