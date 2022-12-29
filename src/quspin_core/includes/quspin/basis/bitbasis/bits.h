@@ -51,11 +51,11 @@ int get_sub_bitstring(const bit_set<I>& s,const int i){
 template<typename I>
 int get_sub_bitstring(const bit_set<I>& s,const int * locs,const int nlocs){
     int out = 0;
-    for(int i=0;i<nlocs-1;++i){
+    for(int i=nlocs-1;i>0;--i){
         out |= get_sub_bitstring(s,locs[i]);
         out <<= 1;
     }
-    out |= get_sub_bitstring(s,locs[nlocs]);
+    out |= get_sub_bitstring(s,locs[0]);
 
     return out;
 }
@@ -111,7 +111,7 @@ TEST_CASE("get_bit_substring") {
 
     using namespace quspin::basis;
 
-    bit_set<uint8_t> state(0b1010111);
+    bit_set<uint8_t> state(0b01010111);
 
     CHECK(get_sub_bitstring(state,0) == 1);
     CHECK(get_sub_bitstring(state,3) == 0);
@@ -119,10 +119,10 @@ TEST_CASE("get_bit_substring") {
     CHECK(get_sub_bitstring(state,9) == 0);
 
     int l1[2] = {0,1};
-    int l2[3] = {0,3,6};
+    int l2[4] = {0,6,4,3};
 
     CHECK(get_sub_bitstring(state,l1,2) == 0b11);
-    CHECK(get_sub_bitstring(state,l2,3) == 0b101);
+    CHECK(get_sub_bitstring(state,l2,4) == 0b0111);
 
 }
 
