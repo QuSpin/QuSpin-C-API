@@ -72,7 +72,8 @@ bit_set<I> set_sub_bitstring(const bit_set<I>& s,const int in,const int * locs,c
     I out = s.content;
     I in_I = I(in);
     for(int i=0;i<nlocs;++i){
-        out ^= (((in_I & s.mask) << locs[i] ) ^ s.content)  &  ( s.mask << locs[i] );
+        const int shift = locs[i] * s.bits;
+        out ^= (((in_I & s.mask) << shift ) ^ s.content)  &  ( s.mask << shift );
         in_I >>= 1;
     }
 
@@ -130,30 +131,30 @@ TEST_CASE("set_sub_bitstring") {
 
     using namespace quspin::basis;
 
-    bit_set<uint8_t> s(0b01010111);
+    bit_set<uint8_t> state(0b01010111);
 
-    bit_set<uint8_t> r = set_sub_bitstring(s,0,0);
-    CHECK(r.content == 0b01010110);
+    bit_set<uint8_t> result = set_sub_bitstring(state,0,0);
+    CHECK(result.content == 0b01010110);
 
-    r = set_sub_bitstring(s,1,1);
-    CHECK(r.content == 0b01010111);
+    result = set_sub_bitstring(state,1,1);
+    CHECK(result.content == 0b01010111);
 
-    r = set_sub_bitstring(s,0,1);
-    CHECK(r.content == 0b01010101);
+    result = set_sub_bitstring(state,0,1);
+    CHECK(result.content == 0b01010101);
     
-    r = set_sub_bitstring(s,1,3);
-    CHECK(r.content == 0b01011111);
+    result = set_sub_bitstring(state,1,3);
+    CHECK(result.content == 0b01011111);
 
-    r = set_sub_bitstring(s,1,5);
-    CHECK(r.content == 0b01110111);
+    result = set_sub_bitstring(state,1,5);
+    CHECK(result.content == 0b01110111);
 
     int locs1[3] = {3,5,7};
-    r = set_sub_bitstring(s,(int)0b00000111,locs1,3);
-    CHECK(r.content == (uint8_t)0b11111111);
+    result = set_sub_bitstring(state,(int)0b00000111,locs1,3);
+    CHECK(result.content == (uint8_t)0b11111111);
 
     int locs2[3] = {5,0,7};
-    r = set_sub_bitstring(s,(int)0b00000101,locs2,3);
-    CHECK(r.content == 0b11110110);
+    result = set_sub_bitstring(state,(int)0b00000101,locs2,3);
+    CHECK(result.content == 0b11110110);
 
 }
 
@@ -175,12 +176,12 @@ TEST_CASE("operators") {
 TEST_CASE("to_/from_vector") {
     using namespace quspin::basis;
 
-    bit_set<uint8_t> s(0b01010111);
+    bit_set<uint8_t> state(0b01010111);
 
     std::vector<dit_integer_t> bits = {1,1,1,0,1,0,1,0};
 
-    CHECK(bit_set<uint8_t>(bits) == s);
-    CHECK(s.to_vector() == bits);
+    CHECK(bit_set<uint8_t>(bits) == state);
+    CHECK(state.to_vector() == bits);
 
 }
 
