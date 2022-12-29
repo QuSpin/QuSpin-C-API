@@ -49,5 +49,4 @@ CMakeFiles/
 *.cmake
 CMakeCache.txt
 doctest/
-test_cpp
 install.txt
