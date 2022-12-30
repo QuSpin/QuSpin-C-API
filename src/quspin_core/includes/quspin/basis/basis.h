@@ -43,7 +43,7 @@ public:
             const J j = space->get_index(ref_state);
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
-            const typename Term::value_type mat_ele =  raw_mat_ele * std::conj(charater) * std::sqrt(double(norm_j) / norm_i);
+            const auto mat_ele = raw_mat_ele * std::conj(charater) * std::sqrt(double(norm_j) / norm_i);
             columns[j] = (columns.contains(j) ?  mat_ele : columns[j] + mat_ele);
         }
     }
@@ -59,7 +59,7 @@ public:
             J j = space->get_index(ref_state);
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
-            const typename Term::value_type mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
+            const auto mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
             rows[j] = (rows.contains(j) ? mat_ele : rows[j] + mat_ele);
         }
     }
@@ -110,7 +110,7 @@ public:
     template<typename J,typename Term>
     void calc_matrix(
         std::vector<Term>& terms,
-        Term::value_type values[],
+        typename Term::value_type values[],
         J rowptr[],
         J indices[]
     ) const {
@@ -138,7 +138,7 @@ public:
             auto state = space.get_state(row);
             // generate action on states
             for(const auto& term : terms){
-                pterm.op_dagger(state,col_states);
+                term.op_dagger(state,col_states);
             }
             // calculate location of states in basis
             this->ref_states_conj<typename Term::value_type>(col_states,columns);
@@ -182,10 +182,10 @@ public:
         using bitset_t = typename subspace_t::bitset_t;
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> col_states;
-        std::unordered_map<J,value_type> columns;
+        std::vector<std::pair<bitset_t,value_type>> row_states;
+        std::unordered_map<typename subspace_t::index_t,value_type> matrix_ele;
 
-        col_states.reserve(terms.size());
+        row_states.reserve(terms.size());
 
         for(typename subspace_t::index_t row=0;row < space->size();++row){
             row_states.clear();
