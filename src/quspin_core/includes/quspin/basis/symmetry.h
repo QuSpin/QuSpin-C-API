@@ -192,17 +192,17 @@ public:
     std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_char)
     {
         assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
-        std::copy(_lat_symm.begin(),_lat_symm.end(),lat_symm.begin());
-        std::copy(_loc_symm.begin(),_loc_symm.end(),loc_symm.begin());
-        std::copy(_lat_char.begin(),_lat_char.end(),lat_char.begin());
-        std::copy(_loc_char.begin(),_loc_char.end(),loc_char.begin());
+        lat_symm.insert(lat_symm.end(),_lat_symm.begin(),_lat_symm.end());
+        loc_symm.insert(loc_symm.end(),_loc_symm.begin(),_loc_symm.end());
+        lat_char.insert(lat_char.end(),_lat_char.begin(),_lat_char.end());
+        loc_char.insert(loc_char.end(),_loc_char.begin(),_loc_char.end());
     }
 
     symmetry(symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
-        std::copy(other.lat_symm.begin(),other.lat_symm.end(),lat_symm.begin());
-        std::copy(other.loc_symm.begin(),other.loc_symm.end(),loc_symm.begin());
-        std::copy(other.lat_char.begin(),other.lat_char.end(),lat_char.begin());
-        std::copy(other.loc_char.begin(),other.loc_char.end(),loc_char.begin());
+        lat_symm.insert(lat_symm.end(),other.lat_symm.begin(),other.lat_symm.end());
+        loc_symm.insert(loc_symm.end(),other.loc_symm.begin(),other.loc_symm.end());
+        lat_char.insert(lat_char.end(),other.lat_char.begin(),other.lat_char.end());
+        loc_char.insert(loc_char.end(),other.loc_char.begin(),other.loc_char.end());
     }
     ~symmetry() {}
 
@@ -241,7 +241,7 @@ public:
             for(int j=0;j<lat_symm.size();++j)
             {
                 const auto rr = lat_symm[i].app(r,sign);
-                if(rr == s) norm += real_value(sign * lat_char[j] * loc_char[i]);
+                if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
             }
         }
         return norm;
@@ -259,7 +259,7 @@ public:
                 const auto rr = lat_symm[i].app(r,sign);
 
                 if(rr >  s){return std::numeric_limits<double>::quiet_NaN();};
-                if(rr == s) norm += real_value(sign * lat_char[j] * loc_char[i]);
+                if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
             }
         }
 
