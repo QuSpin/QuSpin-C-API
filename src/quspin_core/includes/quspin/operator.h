@@ -22,7 +22,7 @@ namespace quspin {
 
 
 
-template<class T,int N>
+template<class T,std::size_t N>
 class N_body_dits
 {
     //
@@ -39,11 +39,12 @@ public:
     N_body_dits(const basis::dit_integer_t _lhss,std::vector<int> _locs,std::vector<T> &_data) : 
     lhss(_lhss)
     {
-        dim = (int)std::pow((double)_lhss,(double)N);
+        dim = 1; for(int i=0;i<N;i++){dim *= _lhss;}
+
         assert(_data.size() == dim*dim);
         assert(_locs.size() == N);
         // copy to contiguous pointers
-        std::copy(_data.begin(),_data.end(),data.begin());
+        data.insert(_data.begin(),_data.end(),data.begin());
         std::copy(_locs.begin(),_locs.end(),locs.begin());
         
         std::transform(data.begin(),data.end(),nonzero.begin(),
@@ -59,8 +60,8 @@ public:
     template<typename bitset_t>
     void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
-        for(int b=0;b<lhss;++b){ // loop over columns
-            const int i = lhss*a+b;
+        for(int b=0;b<dim;++b){ // loop over columns
+            const int i = dim*a+b;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs);
                 output.push_back(std::make_pair(r,data[i]));
@@ -71,8 +72,8 @@ public:
     template<typename bitset_t>
     void op_transpose(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
-        for(int b=0;b<lhss;++b){  // loop over rows
-            const int i = lhss*b+a;
+        for(int b=0;b<dim;++b){  // loop over rows
+            const int i = dim*b+a;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs);
                 output.push_back(std::make_pair(r,data[i]));
@@ -83,8 +84,8 @@ public:
     template<typename bitset_t>
     void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
-        for(int b=0;b<lhss;++b){ // loop over rows
-            const int i = lhss*b+a;
+        for(int b=0;b<dim;++b){ // loop over rows
+            const int i = dim*b+a;
             if(nonzero[i]){
                 const bitset_t r = basis::set_sub_bitstring(s,b,locs);
                 output.push_back(std::make_pair(r,conj(data[i])));
@@ -94,10 +95,7 @@ public:
 
 };
 
-
-
-
-template<class T,int N>
+template<class T,std::size_t N>
 class N_body_bits
 {
     //
@@ -105,8 +103,8 @@ private:
     enum {dim = integer_pow<N,2>::value};
 
     std::array<int,N> locs;
-    std::vector<T> data;
-    std::vector<bool> nonzero;
+    std::array<T,dim*dim> data;
+    std::array<bool,dim*dim> nonzero;
 
 public:
     typedef T value_type;
@@ -133,7 +131,6 @@ public:
     void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
 
-        #pragma unroll
         for(int b=0;b<dim;++b){ // loop over columns
             const int i = dim*a+b;
             if(nonzero[i]){
@@ -147,11 +144,10 @@ public:
     void op_transpose(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
 
-        #pragma unroll
         for(int b=0;b<dim;++b){  // loop over rows
             const int i = dim*b+a;
             if(nonzero[i]){
-                bitset_t r = basis::set_sub_bitstring<2>(s,b,locs);
+                bitset_t r = basis::set_sub_bitstring(s,b,locs);
                 output.push_back(std::make_pair(r,data[i]));
             }
         }
@@ -161,7 +157,6 @@ public:
     void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
 
-        #pragma unroll
         for(int b=0;b<dim;++b){ // loop over rows
             const int i = dim*b+a;
             if(nonzero[i]){
@@ -192,7 +187,7 @@ public:
     lhss(_perms.front().size()), nlocs(_locs.size())
     { 
 
-        std::copy(_locs.begin(),_locs.end(),locs.begin());
+        locs.insert(locs.end(),_locs.begin(),_locs.end());
 
         for(int i=0;i<nlocs;i++){
             datas.insert(datas.end(),_datas[i].begin(),_datas[i].end());
@@ -294,6 +289,82 @@ template void operator_string<double>::op<bs>(const bs& , std::vector<std::pair<
 template void operator_string<double>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 template void operator_string<double>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 
+template class N_body_dits<double,2>;
+template void N_body_dits<double,2>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void N_body_dits<double,2>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void N_body_dits<double,2>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+
+
+template class N_body_bits<double,2>;
+template void N_body_bits<double,2>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void N_body_bits<double,2>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+template void N_body_bits<double,2>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
+
+
+
+}
+
+TEST_CASE("operator_string.op"){
+    using namespace quspin;
+
+
+
+    // SzSz
+    std::vector<std::vector<double>> datas = {{-0.5,0.5},{-0.5,0.5}};
+    std::vector<std::vector<int>> perms = {{0,1},{0,1}};
+    std::vector<int> locs = {0,1};
+
+    operator_string<double> SzSz(locs,perms,datas);
+
+    // // SxSx
+    // datas = {{0.5,0.5},{0.5,0.5}};
+    // perms = {{1,0},{1,0}};
+    // locs = {0,1};
+
+    // operator_string<double> SxSx(locs,datas,perms);
+
+
+    // // SySy
+    // datas = {{-0.5,0.5},{0.5,-0.5}};
+    // perms = {{1,0},{1,0}};
+    // locs = {0,1};
+
+    // operator_string<double> SySy(locs,datas,perms);
+
+
+    
+}
+
+TEST_CASE("operator_string.op_dagger"){
+    
+}
+
+TEST_CASE("operator_string.op_transpose"){
+    
+}
+
+TEST_CASE("N_body_bits<double,2>.op"){
+
+}
+
+TEST_CASE("N_body_bits<double,2>.op_dagger"){
+    
+}
+
+TEST_CASE("N_body_bits<double,2>.op_transpose"){
+    
+}
+
+TEST_CASE("N_body_dits<double,2>.op"){
+
+}
+
+TEST_CASE("N_body_dits<double,2>.op_dagger"){
+    
+}
+
+TEST_CASE("N_body_dits<double,2>.op_transpose"){
+    
 }
 
 #endif
