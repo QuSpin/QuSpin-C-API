@@ -33,11 +33,7 @@ public:
     symmetry_t get_symmetries() const {return symmetry;}
 
     template<typename Container,typename Map, typename J>
-    void ref_states_conj(
-        const J i,
-        const Container& col_states, 
-              Map& columns
-    ) const {
+    void ref_states_conj(const J i, const Container& col_states,  Map& columns) const {
         for(const auto& [state,raw_mat_ele] : col_states){
             const auto& [ref_state,charater] = symmetry.get_refstate(state);
             const J j = space->get_index(ref_state);
@@ -49,11 +45,7 @@ public:
     }
 
     template<typename Container,typename Map, typename J>
-    void ref_states(
-        const J i,
-        const Container& row_states, 
-              Map& rows
-    ) const {
+    void ref_states(const J i, const Container& row_states, Map& rows) const {
         for(const auto& [state,raw_mat_ele] : row_states){
             const auto& [ref_state,charater] = symmetry.get_refstate(state);
             J j = space->get_index(ref_state);
@@ -65,10 +57,7 @@ public:
     }
 
     template<typename J,typename Term>
-    void calc_rowptr(
-        std::vector<Term>& terms,
-        J rowptr[]
-    ) const {
+    void calc_rowptr(std::vector<Term>& terms, J rowptr[]) const {
 
         J n_row = space -> size();
 
@@ -108,13 +97,7 @@ public:
     }
 
     template<typename J,typename Term>
-    void calc_matrix(
-        std::vector<Term>& terms,
-        typename Term::value_type values[],
-        J rowptr[],
-        J indices[]
-    ) const {
-
+    void calc_matrix(std::vector<Term>& terms, typename Term::value_type values[], J rowptr[], J indices[]) const {
 
         using bitset_t = typename subspace_t::bitset_t;
         using value_type = typename Term::value_type;
@@ -164,19 +147,18 @@ public:
     }
 
     template<typename Term, typename X, typename Y>
-    void on_the_fly(
-        std::vector<operator_string<typename Term::value_type>>& terms,
-        const Y a,
-        const X * x, 
-        const Y b, 
-        Y  * y
-    )const {
+    void on_the_fly(std::vector<Term>& terms, const Y a, const X * x, const Y b, Y  * y) const {
 
         if(b == Y(0.0)){
             std::fill(y,y+space->size(),0);
         }
         else{
-            for(typename subspace_t::index_t index=0;index < space->size();++index){ y[index] *= b; }
+            if(b!=Y(1)) std::transform(y,y+space->size(),y,
+                            [b](const Y value) -> Y
+                            {   
+                                return b * value;
+                            }
+                        );
         }
 
         using bitset_t = typename subspace_t::bitset_t;
@@ -206,10 +188,9 @@ public:
             matrix_ele.clear();
         }
     }
-
 };
 
-/*
+
 template<typename subspace_t>
 class basis
 {
@@ -228,41 +209,34 @@ public:
     std::shared_ptr<subspace_t> get_space() {return space;}
 
 
-    template<typename Container, typename J,typename typename Term::value_type>
-    void ref_states_conj(
-        const J i,
-        const Container& col_states, 
-        std::unordered_map<J,typename Term::value_type>& columns
-    ) const {
+    template<typename Container,typename Map, typename J>
+    void ref_states_conj(const J i, const Container& col_states, Map& columns) const {
         for(const auto& [state,mat_ele] : col_states){
             const J state_index = space->get_index(state);
             columns[state_index] = (columns.contains(state_index) ?  columns[state_index] + std::conj(mat_ele) : std::conj(mat_ele));
         }
     }
 
-    template<typename Container, typename J, typename typename Term::value_type>
-    void ref_states(
-        const J i,
-        const Container& row_states, 
-        std::unordered_map<J,typename Term::value_type>& rows    
-    ) const {
+    template<typename Container,typename Map, typename J>
+    void ref_states(const J i, const Container& row_states, Map& rows) const {
         for(const auto& [state,mat_ele] : row_states){
             const J state_index = space->get_index(state);
             rows[state_index] = (rows.contains(state_index) ? rows[state_index] + mat_ele : mat_ele);
         }
     }
 
-    template<typename J,typename typename Term::value_type>
-    void calc_rowptr(
-        std::vector<operator_string<typename Term::value_type>>& pterms,
-        std::vector<dense_term<typename Term::value_type>>& dterms,
-        J rowptr[]
-    ) const {
+    template<typename J,typename Term>
+    void calc_rowptr(std::vector<Term>& terms,J rowptr[]) const {
 
         J n_row = space -> size();
 
-        std::vector<std::pair<typename subspace_t::bitset_t,typename Term::value_type>> col_states;
-        std::unordered_map<J,typename Term::value_type> columns;
+        using bitset_t = typename subspace_t::bitset_t;
+        using value_type = typename Term::value_type;
+
+        std::vector<std::pair<bitset_t,value_type>> col_states;
+        std::unordered_map<J,value_type> columns;
+
+        col_states.reserve(terms.size());
 
         rowptr[0] = 0;
         for(J row = 0;row < n_row;++row)
@@ -271,11 +245,8 @@ public:
             columns.clear();
             auto state = space->get_state(row);
             // generate action on states
-            for(const auto& pterm : pterms){
-                pterm.op_dagger(state,col_states);
-            }
-            for(const auto& dterm : dterms){
-                dterm.op_dagger(state,col_states);
+            for(const auto& term : terms){
+                term.op_dagger(state,col_states);
             }
             // calculate location of states in basis
             this->ref_states_conj<typename Term::value_type>(col_states,columns);
@@ -293,21 +264,20 @@ public:
 
     }
 
-    template<typename J,typename typename Term::value_type>
-    void calc_matrix(
-        std::vector<operator_string<typename Term::value_type>>& pterms,
-        std::vector<dense_term<typename Term::value_type>>& dterms,
-        J rowptr[],
-        J indices[],
-        typename Term::value_type values[]
-    ) const {
+    template<typename J,typename Term>
+    void calc_matrix(std::vector<Term>& terms, typename Term::value_type values[], J rowptr[], J indices[]) const {
+
+        using bitset_t = typename subspace_t::bitset_t;
+        using value_type = typename Term::value_type;
+
+        std::vector<std::pair<bitset_t,value_type>> col_states;
+        std::vector<std::pair<J,value_type>> sorted_columns;
+        std::unordered_map<J,value_type> columns;
+
+        col_states.reserve(terms.size());
+        sorted_columns.reserve(terms.size());
 
         J n_row = space -> size();
-
-        std::vector<std::pair<typename subspace_t::bitset_t,typename Term::value_type>> col_states;
-        std::unordered_map<J,typename Term::value_type> columns;
-        std::vector<std::pair<J,typename Term::value_type>> sorted_columns;
-
 
         rowptr[0] = 0;
         for(J row = 0;row < n_row;++row)
@@ -318,14 +288,11 @@ public:
 
             auto state = space.get_state(row);
             // generate action on states
-            for(const auto& pterm : pterms){
-                pterm.op_dagger(state,col_states);
-            }
-            for(const auto& dterm : dterms){
-                dterm.op_dagger(state,col_states);
+            for(const auto& term : terms){
+                term.op_dagger(state,col_states);
             }
             // calculate location of states in basis
-            this->ref_states_conj(col_states,columns);
+            this->ref_states_conj<typename Term::value_type>(col_states,columns);
 
             // sort columns
             sorted_columns.insert(columns.begin(), columns.end());
@@ -347,40 +314,40 @@ public:
 
     }
 
-    template<typename typename Term::value_type, typename X, typename Y>
-    void on_the_fly(
-        std::vector<operator_string<typename Term::value_type>>& pterms,
-        std::vector<dense_term<typename Term::value_type>>& dterms,
-        const Y a,
-        const X * x, 
-        const Y b, 
-        Y  * y
-    )const {
+    template<typename Term, typename X, typename Y>
+    void on_the_fly(std::vector<Term>& terms, const Y a, const X * x, const Y b, Y  * y)const {
 
         if(b == Y(0.0)){
             std::fill(y,y+space->size(),0);
         }
         else{
-            for(size_t index=0;index < space->size();++index){ y[index] *= b; }
+            if(b!=Y(1)) std::transform(y,y+space->size(),y,
+                            [b](const Y value) -> Y
+                            {   
+                                return b * value;
+                            }
+                        );
         }
 
-        std::vector<std::pair<typename subspace_t::bitset_t,typename Term::value_type>> row_states;
-        std::unordered_map<size_t,typename Term::value_type> matrix_ele;
+        using bitset_t = typename subspace_t::bitset_t;
+        using value_type = typename Term::value_type;
 
-        for(size_t row=0;row < space->size();++row){
+        std::vector<std::pair<bitset_t,value_type>> row_states;
+        std::unordered_map<typename subspace_t::index_t,value_type> matrix_ele;
+
+        row_states.reserve(terms.size());
+
+        for(typename subspace_t::index_t row=0;row < space->size();++row){
             row_states.clear();
             matrix_ele.clear();
 
             auto state = space.get_state(row);
             // generate action on states
-            for(const auto& pterm : pterms){
-                pterm.op(state,row_states);
-            }
-            for(const auto& dterm : dterms){
-                dterm.op(state,row_states);
+            for(const auto& term : terms){
+                term.op(state,row_states);
             }
             // calculate location of states in basis
-            this->ref_state(row_states,matrix_ele);
+            this->ref_states<typename Term::value_type>(row_states,matrix_ele);
 
             Y total = 0;
             for(const auto& [col,nzval] : matrix_ele){total += nzval * x[col];}
@@ -389,11 +356,9 @@ public:
             matrix_ele.clear();
         }
     }
-
-
 };
 
-*/
+
 
 }// end namespace
 
