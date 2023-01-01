@@ -280,27 +280,33 @@ public:
 
 #ifdef QUSPIN_UNIT_TESTS
 
-namespace quspin {
+namespace quspin { // test cases
 
 typedef basis::bit_set<uint8_t> bs;
+typedef basis::dit_set<uint8_t> ds;
+
+// qubits
 
 template class operator_string<double>;
 template void operator_string<double>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 template void operator_string<double>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 template void operator_string<double>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 
-template class N_body_dits<double,2>;
-template void N_body_dits<double,2>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
-template void N_body_dits<double,2>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
-template void N_body_dits<double,2>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
-
-
 template class N_body_bits<double,2>;
 template void N_body_bits<double,2>::op<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 template void N_body_bits<double,2>::op_dagger<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 template void N_body_bits<double,2>::op_transpose<bs>(const bs& , std::vector<std::pair<bs,double>>&) const;
 
+// qudits
 
+template void operator_string<double>::op<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
+template void operator_string<double>::op_dagger<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
+template void operator_string<double>::op_transpose<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
+
+template class N_body_dits<double,2>;
+template void N_body_dits<double,2>::op<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
+template void N_body_dits<double,2>::op_dagger<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
+template void N_body_dits<double,2>::op_transpose<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
 
 }
 
@@ -316,10 +322,10 @@ TEST_CASE("operator_string.op"){
 
     operator_string<double> SzSz(locs,perms,datas);
 
-    // // SxSx
-    // datas = {{0.5,0.5},{0.5,0.5}};
-    // perms = {{1,0},{1,0}};
-    // locs = {0,1};
+    // 0.5*S+S-
+    datas = {{0.0,0.5},{1.0,0.0}};
+    perms = {{1,0},{1,0}};
+    locs = {0,1};
 
     // operator_string<double> SxSx(locs,datas,perms);
 
