@@ -204,6 +204,7 @@ private:
     
 public:
     typedef bit_set<I> bitset_t;
+    typedef J index_t;
     typedef K norm_t;
 
     bit_subspace(const J Ns_est) {
@@ -297,7 +298,7 @@ public:
 #ifdef QUSPIN_UNIT_TESTS
 
 
-namespace quspin::basis {
+namespace quspin::basis { // test cases
 
     template class bit_subspace<uint8_t,int,uint8_t>;
     template class bit_fullspace<uint8_t,int>;
