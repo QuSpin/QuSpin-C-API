@@ -104,6 +104,10 @@ public:
         return states[index].second;
     }
 
+    inline bool contains(const bitset_t& state) const {
+        return index_map.count(state.content)!=0;
+    }
+
     void append(const I new_state,const K new_norm){
         if(index_map.count(new_state) == 0){
             states.push_back(std::make_pair(new_state,new_norm));
@@ -231,6 +235,10 @@ public:
 
     inline K get_norm(const J index) const {
         return std::get<1>(states[index]);
+    }
+
+    inline bool contains(const bitset_t& state) const {
+        return index_map.count(state.content)!=0;
     }
 
     void append(const I new_state,const K new_norm){
