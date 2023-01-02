@@ -40,7 +40,7 @@ public:
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
             const auto mat_ele = raw_mat_ele * conj(charater) * std::sqrt(double(norm_j) / norm_i);
-            columns[j] = (columns.contains(j) ?  mat_ele : columns[j] + mat_ele);
+            columns[j] = (columns.count(j) != 0 ?  mat_ele : columns[j] + mat_ele);
         }
     }
 
@@ -52,7 +52,7 @@ public:
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
             const auto mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
-            rows[j] = (rows.contains(j) ? mat_ele : rows[j] + mat_ele);
+            rows[j] = (rows.count(j) != 0 ? mat_ele : rows[j] + mat_ele);
         }
     }
 
@@ -256,7 +256,7 @@ public:
     void ref_states_conj(const J i, const Container& col_states, Map& columns) const {
         for(const auto& [state,mat_ele] : col_states){
             const J state_index = space->get_index(state);
-            columns[state_index] = (columns.contains(state_index) ?  columns[state_index] + conj(mat_ele) : conj(mat_ele));
+            columns[state_index] = (columns.count(state_index) != 0 ?  columns[state_index] + conj(mat_ele) : conj(mat_ele));
         }
     }
 
@@ -264,7 +264,7 @@ public:
     void ref_states(const J i, const Container& row_states, Map& rows) const {
         for(const auto& [state,mat_ele] : row_states){
             const J state_index = space->get_index(state);
-            rows[state_index] = (rows.contains(state_index) ? rows[state_index] + mat_ele : mat_ele);
+            rows[state_index] = (rows.count(state_index) != 0 ? rows[state_index] + mat_ele : mat_ele);
         }
     }
 

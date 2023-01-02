@@ -174,10 +174,11 @@ class operator_string // generic operator
 private:
     const int lhss; // local hilbert space size for each term
     const int nlocs;  // number of local operators
-    std::vector<int> locs; // number of local operators in 
+    std::vector<int> locs; // number of local operators in
     std::vector<int> perms; // non-branching operators stored as permutations
     std::vector<int> inv_perms; // non-branching operators dagger stored as permutations
     std::vector<T> datas; // matrix elements for non-branching operators. 
+    std::vector<T> inv_datas; // matrix elements for dagger operator.
 
 public:
 
@@ -187,18 +188,31 @@ public:
     lhss(_perms.front().size()), nlocs(_locs.size())
     { 
 
+        assert(_locs.size() == _perms.size());
+        assert(_locs.size() == _datas.size());
+
         locs.insert(locs.end(),_locs.begin(),_locs.end());
 
-        for(int i=0;i<nlocs;i++){
-            datas.insert(datas.end(),_datas[i].begin(),_datas[i].end());
-            perms.insert(perms.end(),_perms[i].begin(),_perms[i].end());
-            std::vector<int> ip(_perms[i].size());
+        for(int i=0;i<_locs.size();i++){
 
-            for(int j=0;j<_perms[i].size();++j){
-                ip[_perms[i][j]] = j;
+            std::vector<int> perm(_perms[i].begin(),_perms[i].end()),inv_perm(_perms[i].size());
+            std::vector<T> data(_datas[i].begin(),_datas[i].end()),inv_data(_datas[i].size());
+
+            assert(perm.size() == lhss);
+            assert(data.size() == lhss);
+
+            int j = 0;
+            for(const int p : perm){
+                inv_perm[p] = j;
+                inv_data[p] = data[j];
+                j++;
             }
 
-            inv_perms.insert(inv_perms.begin(),ip.begin(),ip.end());
+            perms.insert(perms.end(),perm.begin(),perm.end());
+            inv_perms.insert(inv_perms.end(),inv_perm.begin(),inv_perm.end());
+
+            datas.insert(datas.end(),data.begin(),data.end());
+            inv_datas.insert(inv_datas.end(),inv_data.begin(),inv_data.end());
 
         }
     }
@@ -211,18 +225,21 @@ public:
         const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
-        bool nonzero=true;
+
+        bool nonzero = true;
+        size_t ptr =0;
+        
         for(int i=0;i<nlocs;++i){
-            const int a = quspin::basis::get_sub_bitstring(r,locs[i]);
-            const int b = perm[a];
-            m *= data[a];
-            r = basis::set_sub_bitstring(r,b,locs[i]);
+            const int s_loc = quspin::basis::get_sub_bitstring(r,locs[i]);
+            const size_t ind = ptr + s_loc;
+
+            m *= datas[ind];
+            r = basis::set_sub_bitstring(r,perms[ind],locs[i]);
 
             if(m == T(0)){nonzero=false; break;}
             
             // shift to next permutation
-            perm += lhss; 
-            data += lhss;
+            ptr += lhss;
         }
 
         if( nonzero ) output.push_back(std::make_pair(r,m));
@@ -230,22 +247,21 @@ public:
     
     template<typename bitset_t>
     void op_transpose(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
-        const int * perm = inv_perms.data();
-        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
+        
         bool nonzero = true;
-        for(int i=0;i<nlocs;++i){
+        size_t ptr = inv_perms.size()-lhss;
+
+        for(int i=nlocs-1;i > -1;--i){
             const int s_loc = basis::get_sub_bitstring(r,locs[i]);
-            const int r_loc = perm[s_loc];
-            r = basis::set_sub_bitstring(r,r_loc,locs[i]);
-            m *= data[s_loc];
+            const size_t ind = ptr + s_loc;
+
+            m *= inv_datas[ind];
+            r = basis::set_sub_bitstring(r,inv_perms[ind],locs[i]);
 
             if(m == T(0)){nonzero=false; break;}
-            
-            // shift to next permutation
-            perm += lhss; 
-            data += lhss;
+            ptr -= lhss;
         }
 
         if( nonzero ) output.push_back(std::make_pair(r,m));
@@ -253,22 +269,22 @@ public:
 
     template<typename bitset_t>
     void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
-        const int * perm = inv_perms.data();
-        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
-        bool nonzero=true;
-        for(int i=0;i<nlocs;++i){
+        
+        bool nonzero = true;
+        size_t ptr = inv_perms.size()-lhss;
+
+        for(int i=nlocs-1;i > -1;--i){
             const int s_loc = basis::get_sub_bitstring(r,locs[i]);
-            const int r_loc = perm[s_loc];
-            r = basis::set_sub_bitstring(r,r_loc,locs[i]);
-            m *= data[s_loc];
+            const size_t ind = ptr + s_loc;
+
+            m *= inv_datas[ind];
+            r = basis::set_sub_bitstring(r,inv_perms[ind],locs[i]);
 
             if(m == T(0)){nonzero=false; break;}
             
-            // shift to next permutation
-            perm += lhss; 
-            data += lhss;
+            ptr -= lhss;
         }
 
         if( nonzero ) output.push_back(std::make_pair(r,conj(m)));
@@ -299,10 +315,6 @@ template void N_body_bits<double,2>::op_transpose<bs>(const bs& , std::vector<st
 
 // qudits
 
-template void operator_string<double>::op<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
-template void operator_string<double>::op_dagger<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
-template void operator_string<double>::op_transpose<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
-
 template class N_body_dits<double,2>;
 template void N_body_dits<double,2>::op<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
 template void N_body_dits<double,2>::op_dagger<ds>(const ds& , std::vector<std::pair<ds,double>>&) const;
@@ -310,43 +322,119 @@ template void N_body_dits<double,2>::op_transpose<ds>(const ds& , std::vector<st
 
 }
 
+
+
 TEST_CASE("operator_string.op"){
     using namespace quspin;
+    operator_string<double> * H;
+
+    // qudits
+    std::vector<std::pair<ds,double>> dit_output;
+    basis::dit_set<uint8_t> dit_state({0,1,2,1},3);
+
+    H = new operator_string<double>({0,1},{{0,1,3},{0,1,3}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
+
+    H->op(dit_state,dit_output);
+    CHECK(dit_output.size() == 0);
+
+    delete H;
+
+    H = new operator_string<double>({0,2},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
+
+    dit_output.clear();
+    H->op(dit_state,dit_output);
+    CHECK(dit_output.size() == 1);
+    CHECK(dit_output[0].first.to_string() ==  "0 1 2 1 ");
+    CHECK(dit_output[0].second == -1.0);
+
+    delete H;
+
+    H = new operator_string<double>({0,2,3},{{0,1,2},{1,2,0},{2,0,1}}, {{1.0,2.0,3.0},{1.0,2.0,3.0},{1.0,2.0,3.0}});
+
+    dit_output.clear();
+    H->op(dit_state,dit_output);
+    CHECK(dit_output.size() == 1);
+    CHECK(dit_output[0].first.to_string() ==  "0 1 0 0 ");
+    CHECK(dit_output[0].second == 6.0);
+
+    delete H;
 
 
 
-    // SzSz
-    std::vector<std::vector<double>> datas = {{-0.5,0.5},{-0.5,0.5}};
-    std::vector<std::vector<int>> perms = {{0,1},{0,1}};
-    std::vector<int> locs = {0,1};
+    std::vector<std::pair<bs,double>> bit_output;
+    basis::bit_set<uint8_t> bit_state({0,1,1,0,1,0,0,1});
 
-    operator_string<double> SzSz(locs,perms,datas);
+    // \sigma_z \sigma_z
+    H = new operator_string<double>({0,1},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
+    H->op(bit_state,bit_output);
 
-    // 0.5*S+S-
-    datas = {{0.0,0.5},{1.0,0.0}};
-    perms = {{1,0},{1,0}};
-    locs = {0,1};
+    CHECK(bit_output.size() == 1);
+    CHECK(bit_output[0].first.to_string() == "0 1 1 0 1 0 0 1 ");
+    CHECK(bit_output[0].second == -1.0);
 
-    // operator_string<double> SxSx(locs,datas,perms);
+    delete H;
 
+    H = new operator_string<double>({0,3},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
+    H->op(bit_state,bit_output);
 
-    // // SySy
-    // datas = {{-0.5,0.5},{0.5,-0.5}};
-    // perms = {{1,0},{1,0}};
-    // locs = {0,1};
-
-    // operator_string<double> SySy(locs,datas,perms);
+    CHECK(bit_output.size() == 2);
+    CHECK(bit_output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
+    CHECK(bit_output[1].second == 1.0);
 
 
-    
+    H = new operator_string<double>({0,1,4},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
+    bit_output.clear();
+    H->op(bit_state,bit_output);
+
+    CHECK(bit_output.size() == 1);
+    CHECK(bit_output[0].first.to_string() ==  "0 1 1 0 0 0 0 1 ");
+    CHECK(bit_output[0].second == -1.0);
+
+    delete H;
+
+    H = new operator_string<double>({0,1,0},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
+    bit_output.clear();
+    H->op(bit_state,bit_output);
+
+    CHECK(bit_output.size() == 1);
+    CHECK(bit_output[0].first.to_string() ==  "1 1 1 0 1 0 0 1 ");
+    CHECK(bit_output[0].second == -0.5);
+
+    delete H;
+
+
 }
 
+
 TEST_CASE("operator_string.op_dagger"){
-    
+ 
 }
 
 TEST_CASE("operator_string.op_transpose"){
-    
+    using namespace quspin;
+
+    typedef double T;
+    operator_string<T> * H;
+    std::vector<std::pair<ds,T>> output;
+    basis::dit_set<uint8_t> state({2,10},16);
+
+    std::vector<int> perm;
+    std::vector<T> data;
+
+    for(int i=0;i<16;i++){
+        int ip = (i+1)%16;
+        perm.push_back(ip);
+        data.push_back(std::sqrt(ip));
+    }
+
+    H = new operator_string<T>({0,1},{perm,perm},{data,data});
+
+    // H->op_transpose(state,output);
+    // CHECK(output.size() == 1);
+    // CHECK(output[0].first.to_string() ==  "1 9 ");
+    // REQUIRE(output[0].second == doctest::Approx(std::sqrt(2*10)));
+
+
 }
 
 TEST_CASE("N_body_bits<double,2>.op"){
