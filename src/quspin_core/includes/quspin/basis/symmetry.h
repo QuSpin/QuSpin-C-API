@@ -48,12 +48,12 @@ public:
     ~dit_perm() {}
 
     template<typename T>
-    inline const dit_set<I> app(const dit_set<I>& s, T& coeff) const { 
+    inline dit_set<I> app(const dit_set<I>& s, T& coeff) const { 
         return dit_set<I>(benes::benes_bwd(&benes,s.content),s.lhss,s.mask,s.bits); 
     }
 
     template<typename T>
-    inline const dit_set<I> inv(const dit_set<I>& s, T& coeff) const { 
+    inline dit_set<I> inv(const dit_set<I>& s, T& coeff) const { 
         return dit_set<I>(benes::benes_fwd(&benes,s.content),s.lhss,s.mask,s.bits);  
     }
 };
@@ -63,26 +63,25 @@ class perm_dit // permutations of the dit states locally
 {
 private:
     int lhss;
-    std::vector<dit_integer_t> perm;
-    std::vector<dit_integer_t> inv_perm;
+    std::vector<int> perm;
+    std::vector<int> inv_perm;
     std::vector<int> locs;
 
 public:
-    perm_dit(const int _lhss, std::vector<dit_integer_t>& _perm, std::vector<int> _locs) : lhss(_lhss)
+    perm_dit(const int _lhss,const std::vector<std::vector<int>>& _perm,const std::vector<int> _locs) : lhss(_lhss)
     { 
-        std::copy(_perm.begin(),_perm.end(),perm.begin());
-        std::copy(_locs.begin(),_locs.end(),locs.begin());
-        inv_perm.resize(perm.size());
 
-        dit_integer_t * perm_ptr = perm.data();
-        dit_integer_t * inv_perm_ptr = inv_perm.data();
+        assert(_perm.size() == _locs.size());
+
+        locs.insert(locs.end(),_locs.begin(),_locs.end());
 
         for(int i=0;i<locs.size();++i){
-            for(dit_integer_t j=0;j<_lhss;++j){
-                inv_perm_ptr[perm_ptr[j]] = j;
-            }
-            perm_ptr += _lhss;
-            inv_perm_ptr += _lhss;
+            const std::vector<int> p = _perm.at(i);
+            std::vector<int> ip(p.size());
+            int j = 0;
+            for(const int ele : p){ip[ele] = j++;}
+            perm.insert(perm.end(),p.begin(),p.end());
+            inv_perm.insert(inv_perm.end(),ip.begin(),ip.end());
         }
 
     }
@@ -93,11 +92,11 @@ public:
         
         dit_set<I> r(s);
         
-        dit_integer_t * perm_ptr = perm.data();
+        const int * perm_ptr = perm.data();
 
-        for(int i=0;i<locs.size();++i){
-            const int bits = get_sub_bitstring(s,locs[i]);
-            r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
+        for(const int loc : locs){
+            const int bits = get_sub_bitstring(s,loc);
+            r = set_sub_bitstring(r,perm_ptr[bits],loc);
             perm_ptr += lhss;
         }
 
@@ -108,11 +107,11 @@ public:
     dit_set<I> inv(const dit_set<I>& s, T& coeff) const {
         dit_set<I> r(s);
         
-        dit_integer_t * perm_ptr = inv_perm.data();
+        const int * perm_ptr = inv_perm.data();
 
-        for(int i=0;i<locs.size();++i){
-            const int bits = get_sub_bitstring(s,locs[i]);
-            r = get_sub_bitstring(r,perm_ptr[bits],locs[i]);
+        for(const int loc : locs){
+            const int bits = get_sub_bitstring(s,loc);
+            r = set_sub_bitstring(r,perm_ptr[bits],loc);
             perm_ptr += lhss;
         }
         
@@ -143,12 +142,12 @@ public:
     ~bit_perm() {}
 
     template<typename T>
-    inline const bit_set<I> app(const bit_set<I>& s, T& coeff) const { 
+    inline bit_set<I> app(const bit_set<I>& s, T& coeff) const { 
         return  bit_set<I>(benes::benes_bwd(&benes,s.content)); 
     }
 
     template<typename T>
-    inline const bit_set<I> inv(const bit_set<I>& s, T& coeff) const { 
+    inline bit_set<I> inv(const bit_set<I>& s, T& coeff) const { 
         return bit_set<I>(benes::benes_fwd(&benes,s.content)); 
     }
 };
@@ -164,13 +163,13 @@ public:
     ~perm_bit() {}
 
     template<typename T>
-    inline bit_set<I> app(const bit_set<I> s, T& coeff) const {
+    inline bit_set<I> app(const bit_set<I>& s, T& coeff) const {
 
         return  bit_set<I>( s.content^mask );
     }
 
     template<typename T>
-    inline bit_set<I> inv(const I s, T& coeff) const {
+    inline bit_set<I> inv(const bit_set<I>& s, T& coeff) const {
         return bit_set<I>( s.content^mask );
     }
 };
@@ -192,17 +191,17 @@ public:
     std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_char)
     {
         assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
-        std::copy(_lat_symm.begin(),_lat_symm.end(),lat_symm.begin());
-        std::copy(_loc_symm.begin(),_loc_symm.end(),loc_symm.begin());
-        std::copy(_lat_char.begin(),_lat_char.end(),lat_char.begin());
-        std::copy(_loc_char.begin(),_loc_char.end(),loc_char.begin());
+        lat_symm.insert(lat_symm.end(),_lat_symm.begin(),_lat_symm.end());
+        loc_symm.insert(loc_symm.end(),_loc_symm.begin(),_loc_symm.end());
+        lat_char.insert(lat_char.end(),_lat_char.begin(),_lat_char.end());
+        loc_char.insert(loc_char.end(),_loc_char.begin(),_loc_char.end());
     }
 
     symmetry(symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
-        std::copy(other.lat_symm.begin(),other.lat_symm.end(),lat_symm.begin());
-        std::copy(other.loc_symm.begin(),other.loc_symm.end(),loc_symm.begin());
-        std::copy(other.lat_char.begin(),other.lat_char.end(),lat_char.begin());
-        std::copy(other.loc_char.begin(),other.loc_char.end(),loc_char.begin());
+        lat_symm.insert(lat_symm.end(),other.lat_symm.begin(),other.lat_symm.end());
+        loc_symm.insert(loc_symm.end(),other.loc_symm.begin(),other.loc_symm.end());
+        lat_char.insert(lat_char.end(),other.lat_char.begin(),other.lat_char.end());
+        loc_char.insert(loc_char.end(),other.loc_char.begin(),other.loc_char.end());
     }
     ~symmetry() {}
 
@@ -231,9 +230,12 @@ public:
         return std::make_pair(ss,coeff);
     }
 
-    double calc_norm(const dits_or_bits &s) const {
+    std::pair<dits_or_bits,T> calc_norm(const dits_or_bits &s) const {
         double norm = 0.0;
         T sign = T(1);
+
+
+        dits_or_bits ss(s);
 
         for(int i=0;i<loc_symm.size();++i) 
         {
@@ -241,10 +243,11 @@ public:
             for(int j=0;j<lat_symm.size();++j)
             {
                 const auto rr = lat_symm[i].app(r,sign);
-                if(rr == s) norm += real_value(sign * lat_char[j] * loc_char[i]);
+                if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
+                else if(rr > ss){ss = rr;}
             }
         }
-        return norm;
+        return std::make_pair(ss,norm);
     }
 
     double check_refstate(const dits_or_bits &s) const {
@@ -259,7 +262,7 @@ public:
                 const auto rr = lat_symm[i].app(r,sign);
 
                 if(rr >  s){return std::numeric_limits<double>::quiet_NaN();};
-                if(rr == s) norm += real_value(sign * lat_char[j] * loc_char[i]);
+                if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
             }
         }
 
@@ -271,20 +274,32 @@ public:
 }
 
 
+
 #ifdef QUSPIN_UNIT_TESTS
 
 
-namespace quspin::basis {
+namespace quspin::basis { // test cases
 
 template class dit_perm<uint8_t>;
+template dit_set<uint8_t> dit_perm<uint8_t>::app<double>(const dit_set<uint8_t>&, double&) const;
+template dit_set<uint8_t> dit_perm<uint8_t>::inv<double>(const dit_set<uint8_t>&, double&) const;
+
 template class perm_dit<uint8_t>;
+template dit_set<uint8_t> perm_dit<uint8_t>::app<double>(const dit_set<uint8_t>&, double&) const;
+template dit_set<uint8_t> perm_dit<uint8_t>::inv<double>(const dit_set<uint8_t>&, double&) const;
+
 template class bit_perm<uint8_t>;
+template bit_set<uint8_t> bit_perm<uint8_t>::app<double>(const bit_set<uint8_t>&, double&) const;
+template bit_set<uint8_t> bit_perm<uint8_t>::inv<double>(const bit_set<uint8_t>&, double&) const;
+
 template class perm_bit<uint8_t>;
+template bit_set<uint8_t> perm_bit<uint8_t>::app<double>(const bit_set<uint8_t>&, double&) const;
+template bit_set<uint8_t> perm_bit<uint8_t>::inv<double>(const bit_set<uint8_t>&, double&) const;
+
 template class symmetry<bit_perm<uint8_t>,perm_bit<uint8_t>,bit_set<uint8_t>,double>;
 
+
 }
-
-
 
 #endif
 

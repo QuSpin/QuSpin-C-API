@@ -104,6 +104,10 @@ public:
         return states[index].second;
     }
 
+    inline bool contains(const bitset_t& state) const {
+        return index_map.count(state.content)!=0;
+    }
+
     void append(const I new_state,const K new_norm){
         if(index_map.count(new_state) == 0){
             states.push_back(std::make_pair(new_state,new_norm));
@@ -204,6 +208,7 @@ private:
     
 public:
     typedef bit_set<I> bitset_t;
+    typedef J index_t;
     typedef K norm_t;
 
     bit_subspace(const J Ns_est) {
@@ -230,6 +235,10 @@ public:
 
     inline K get_norm(const J index) const {
         return std::get<1>(states[index]);
+    }
+
+    inline bool contains(const bitset_t& state) const {
+        return index_map.count(state.content)!=0;
     }
 
     void append(const I new_state,const K new_norm){
@@ -297,7 +306,7 @@ public:
 #ifdef QUSPIN_UNIT_TESTS
 
 
-namespace quspin::basis {
+namespace quspin::basis { // test cases
 
     template class bit_subspace<uint8_t,int,uint8_t>;
     template class bit_fullspace<uint8_t,int>;

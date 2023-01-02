@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 #include <sstream>
 
 #include "quspin/basis/types.h"
@@ -119,18 +120,18 @@ int get_sub_bitstring(const dit_set<I>& s,const int i){
     return integer<int,I>::cast( (s.content >> (i * s.bits)) & s.mask);
 }
 
-template<typename I>
-int get_sub_bitstring(const dit_set<I>& s,const int * locs,const int nlocs){
+template<typename I,std::size_t N>
+int get_sub_bitstring(const dit_set<I>& s,const std::array<int,N>& locs){
     int out = 0;
-    for(int i=nlocs-1;i>0;--i){
-        out += get_sub_bitstring(s,locs[i]) % s.lhss;
+    for(int i=N-1;i>0;--i){
+        out += get_sub_bitstring<I>(s,locs.at(i)) % s.lhss;
         out *= s.lhss;
         /* // implementation with padding for congituous blocks 
-        out |= bit_basis<int,I>(get_sub_bitstring(s,locs[i]));
+        out |= bit_basis<int,I>(get_sub_bitstring(s,locs.at(i)));
         out <<= s.bits;
         */
     }
-    out += get_sub_bitstring(s,locs[0]);
+    out += get_sub_bitstring(s,locs.at(0));
 
     return out;
 }
@@ -142,12 +143,12 @@ dit_set<I> set_sub_bitstring(const dit_set<I>& s,const int in,const int i){
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 
-template<typename I>
-dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const int * locs,const int nlocs){
+template<typename I,std::size_t N>
+dit_set<I> set_sub_bitstring(const dit_set<I>& s,int in,const std::array<int,N>& locs){
     I out = s.content;
     I in_I = I(in);
-    for(int i=0;i<nlocs;++i){
-        const int shift = s.bits * locs[i];
+    for(const int loc : locs){
+        const int shift = s.bits * loc;
         out ^= (((in_I % s.lhss) << shift ) ^ s.content)  &  ( s.mask << shift );
         in_I /= s.lhss;
     }
@@ -174,9 +175,12 @@ namespace quspin::basis { // explicit instantiation for code coverage
 
 template struct dit_set<uint8_t>; 
 template int get_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int);
-template int get_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int*, const int);
+template int get_sub_bitstring<uint8_t,2>(const dit_set<uint8_t>&,const std::array<int,2>&);
+template int get_sub_bitstring<uint8_t,3>(const dit_set<uint8_t>&,const std::array<int,3>&);
 template dit_set<uint8_t> set_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int, const int);
-template dit_set<uint8_t> set_sub_bitstring<uint8_t>(const dit_set<uint8_t>&,const int,const int *,const int);
+template dit_set<uint8_t> set_sub_bitstring<uint8_t,2>(const dit_set<uint8_t>&,const int,const std::array<int,2>&);
+template dit_set<uint8_t> set_sub_bitstring<uint8_t,3>(const dit_set<uint8_t>&,const int,const std::array<int,3>&);
+
 template bool operator< <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
 template bool operator> <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
 template bool operator== <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_t>&);
@@ -193,11 +197,11 @@ TEST_CASE("get_bit_substring") {
     CHECK(get_sub_bitstring(state,2) == 2);
     CHECK(get_sub_bitstring(state,3) == 1);
 
-    int l1[2] = {0,1};
-    int l2[3] = {0,2,1};
+    std::array<int,2> l1 = {0,1};
+    std::array<int,3> l2 = {0,2,1};
 
-    CHECK(get_sub_bitstring(state,l1,2) == 0 + 3 * 1);
-    CHECK(get_sub_bitstring(state,l2,3) == 0 + 3 * 2 + 9 * 1);
+    CHECK(get_sub_bitstring(state,l1) == 0 + 3 * 1);
+    CHECK(get_sub_bitstring(state,l2) == 0 + 3 * 2 + 9 * 1);
 
 }
 
@@ -212,14 +216,14 @@ TEST_CASE("set_sub_bitstring") {
     result = set_sub_bitstring(state,1,2);
     CHECK(result.content == 0b01010100);
 
-    int l1[2] = {0,1};
+    std::array<int,2> l1 = {0,1};
     int in1 = 1 + (3*2);
-    result = set_sub_bitstring(state,in1,l1,2);
+    result = set_sub_bitstring(state,in1,l1);
     CHECK(result.content == 0b01101001);
 
-    int l2[3] = {0,3,1};
+    std::array<int,3> l2 = {0,3,1};
     int in2 = 2 + (3*2) + (9*0);
-    result = set_sub_bitstring(state,in2,l2,3);
+    result = set_sub_bitstring(state,in2,l2);
     CHECK(result.content == 0b10100010);
 }
 
