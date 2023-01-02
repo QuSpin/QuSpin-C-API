@@ -203,6 +203,7 @@ public:
 
             int j = 0;
             for(const int p : perm){
+                assert((p >= 0) && (p < lhss));
                 inv_perm[p] = j;
                 inv_data[p] = data[j];
                 j++;
