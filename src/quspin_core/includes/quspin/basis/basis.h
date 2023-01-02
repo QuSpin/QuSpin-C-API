@@ -3,9 +3,12 @@
 
 #include <unordered_map>
 #include <algorithm>
-#include <vector>
 #include <utility>
+#include <vector>
 #include <memory>
+#include <queue>
+#include <cmath>
+
 
 #include "quspin/basis/space.h"
 #include "quspin/basis/symmetry.h"
@@ -57,7 +60,6 @@ public:
     void calc_rowptr(const std::vector<Term>& terms, J rowptr[]) const {
 
         J n_row = space -> size();
-
 
         using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
@@ -159,10 +161,11 @@ public:
         }
 
         using bitset_t = typename space_t::bitset_t;
+        using index_t = typename space_t::index_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> row_states;
-        std::unordered_map<typename space_t::index_t,value_type> matrix_ele;
+        std::unordered_map<index_t,value_type> matrix_ele;
 
         row_states.reserve(terms.size());
 
@@ -182,9 +185,58 @@ public:
             for(const auto& [col,nzval] : matrix_ele){total += nzval * x[col];}
             y[row] += a * total;
 
-            matrix_ele.clear();
         }
     }
+
+    template<typename Iterator>
+    void build_subspace(Iterator begin,Iterator end) {
+        for(auto it=begin;it != end;it++){
+            const auto norm = symmetry.check_refstate(*it);
+            if(!std::isnan(norm)){
+                space->append(*it,static_cast<typename norm_t>(norm));
+            }
+        }
+    }
+
+    template<typename Term>
+    void build_subspace(std::vector<Term> terms,const typename bitset_t seed_state) {
+        using bitset_t = typename space_t::bitset_t;
+        using value_type = typename Term::value_type;
+        
+        std::vector<std::pair<bitset_t,value_type>> row_states;
+        std::queue<bitset_t> stack;
+
+        {
+            const auto& [new_state,n] = symmetric.calc_norm(seed_state);
+            const typename norm_t norm = n;
+            if(norm > 0 && !space->contains(new_state)){
+                space->append(new_state,norm);
+                stack.push_back(new_state);
+            }
+
+        }
+
+        while(!stack.empty()){
+
+            const auto input_state = stack.front();
+            stack.pop();
+
+            row_states.clear();
+            for(const auto& term : terms){
+                term.op(input_state,row_states);
+            }
+
+            for(const auto& [output_state,_] : row_states){
+                const auto& [new_state,n] = symmetry.calc_norm(output_state);
+                const typename norm_t norm = n;
+                if(norm > 0 && !space->contains(new_state)){
+                    space->append(new_state,norm);
+                    stack.push(new_state);
+                }
+            }
+        }
+    }
+
 };
 
 
@@ -349,6 +401,43 @@ public:
             y[row] += a * total;
 
             matrix_ele.clear();
+        }
+    }
+
+    template<typename Iterator>
+    void build_subspace(Iterator begin,Iterator end) {
+        // generate basis states by looping over iterator
+        for(auto it=begin;it != end;it++){
+            space->append(*it,static_cast<typename norm_t>(1));
+        }
+    }
+
+    template<typename Term>
+    void build_subspace(std::vector<Term> terms,const typename bitset_t seed_state) {
+        // use list of operators to generate all the possible basis states
+        using bitset_t = typename space_t::bitset_t;
+        using value_type = typename Term::value_type;
+        
+        std::queue<bitset_t> stack;
+
+        stack.push(seed_state);
+
+        while(!stack.empty()){
+
+            const auto input_state = stack.front();
+            stack.pop();
+
+            std::vector<std::pair<bitset_t,value_type>> row_states(2*terms.size());
+            for(const auto& term : terms){
+                term.op(input_state,row_states);
+            }
+
+            for(const auto& [new_state,_] : row_states){
+                if(norm > 0 && !space->contains(new_state)){
+                    space->append(new_state,1);
+                    stack.push(new_state);
+                }
+            }
         }
     }
 };
