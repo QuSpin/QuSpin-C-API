@@ -435,6 +435,7 @@ TEST_CASE("operator_string.op_transpose"){
     // REQUIRE(output[0].second == doctest::Approx(std::sqrt(2*10)));
 
 
+
 }
 
 TEST_CASE("N_body_bits<double,2>.op"){
