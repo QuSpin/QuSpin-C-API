@@ -61,7 +61,6 @@ public:
 
         J n_row = space -> size();
 
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> col_states;
@@ -98,7 +97,6 @@ public:
     template<typename Term,typename J>
     void calc_matrix(const std::vector<Term>& terms, typename Term::value_type values[], J rowptr[], J indices[]) const {
 
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> col_states;
@@ -160,7 +158,6 @@ public:
                         );
         }
 
-        using bitset_t = typename space_t::bitset_t;
         using index_t = typename space_t::index_t;
         using value_type = typename Term::value_type;
 
@@ -193,22 +190,21 @@ public:
         for(auto it=begin;it != end;it++){
             const auto norm = symmetry.check_refstate(*it);
             if(!std::isnan(norm)){
-                space->append(*it,static_cast<typename norm_t>(norm));
+                space->append(*it,static_cast<norm_t>(norm));
             }
         }
     }
 
     template<typename Term>
-    void build_subspace(std::vector<Term> terms,const typename bitset_t seed_state) {
-        using bitset_t = typename space_t::bitset_t;
+    void build_subspace(std::vector<Term> terms,const bitset_t seed_state) {
         using value_type = typename Term::value_type;
         
         std::vector<std::pair<bitset_t,value_type>> row_states;
         std::queue<bitset_t> stack;
 
         {
-            const auto& [new_state,n] = symmetric.calc_norm(seed_state);
-            const typename norm_t norm = n;
+            const auto& [new_state,n] = symmetry.calc_norm(seed_state);
+            const norm_t norm = n;
             if(norm > 0 && !space->contains(new_state)){
                 space->append(new_state,norm);
                 stack.push_back(new_state);
@@ -228,7 +224,7 @@ public:
 
             for(const auto& [output_state,_] : row_states){
                 const auto& [new_state,n] = symmetry.calc_norm(output_state);
-                const typename norm_t norm = n;
+                const norm_t norm = n;
                 if(norm > 0 && !space->contains(new_state)){
                     space->append(new_state,norm);
                     stack.push(new_state);
@@ -277,7 +273,6 @@ public:
 
         J n_row = space -> size();
 
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> col_states;
@@ -314,7 +309,6 @@ public:
     template<typename Term,typename J>
     void calc_matrix(const std::vector<Term>& terms, typename Term::value_type values[], J rowptr[], J indices[]) const {
 
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> col_states;
@@ -376,7 +370,6 @@ public:
                         );
         }
 
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
         std::vector<std::pair<bitset_t,value_type>> row_states;
@@ -408,14 +401,13 @@ public:
     void build_subspace(Iterator begin,Iterator end) {
         // generate basis states by looping over iterator
         for(auto it=begin;it != end;it++){
-            space->append(*it,static_cast<typename norm_t>(1));
+            space->append(*it,static_cast<norm_t>(1));
         }
     }
 
     template<typename Term>
-    void build_subspace(std::vector<Term> terms,const typename bitset_t seed_state) {
+    void build_subspace(std::vector<Term> terms,const bitset_t seed_state) {
         // use list of operators to generate all the possible basis states
-        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
         
         std::queue<bitset_t> stack;
@@ -433,7 +425,7 @@ public:
             }
 
             for(const auto& [new_state,_] : row_states){
-                if(norm > 0 && !space->contains(new_state)){
+                if(!space->contains(new_state)){
                     space->append(new_state,1);
                     stack.push(new_state);
                 }
