@@ -332,7 +332,7 @@ TEST_CASE("operator_string.op"){
     std::vector<std::pair<ds,double>> dit_output;
     basis::dit_set<uint8_t> dit_state({0,1,2,1},3);
 
-    H = new operator_string<double>({0,1},{{0,1,3},{0,1,3}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
+    H = new operator_string<double>({0,1},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
 
     H->op(dit_state,dit_output);
     CHECK(dit_output.size() == 0);
@@ -360,6 +360,7 @@ TEST_CASE("operator_string.op"){
     delete H;
 
 
+    // qubits
 
     std::vector<std::pair<bs,double>> bit_output;
     basis::bit_set<uint8_t> bit_state({0,1,1,0,1,0,0,1});
@@ -429,12 +430,10 @@ TEST_CASE("operator_string.op_transpose"){
 
     H = new operator_string<T>({0,1},{perm,perm},{data,data});
 
-    // H->op_transpose(state,output);
-    // CHECK(output.size() == 1);
-    // CHECK(output[0].first.to_string() ==  "1 9 ");
-    // REQUIRE(output[0].second == doctest::Approx(std::sqrt(2*10)));
-
-
+    H->op_transpose(state,output);
+    CHECK(output.size() == 1);
+    CHECK(output[0].first.to_string() ==  "1 9 ");
+    REQUIRE(output[0].second == doctest::Approx(std::sqrt(2*10)));
 
 }
 
