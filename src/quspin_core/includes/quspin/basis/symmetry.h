@@ -230,9 +230,12 @@ public:
         return std::make_pair(ss,coeff);
     }
 
-    double calc_norm(const dits_or_bits &s) const {
+    std::pair<dits_or_bits,T> calc_norm(const dits_or_bits &s) const {
         double norm = 0.0;
         T sign = T(1);
+
+
+        dits_or_bits ss(s);
 
         for(int i=0;i<loc_symm.size();++i) 
         {
@@ -241,9 +244,10 @@ public:
             {
                 const auto rr = lat_symm[i].app(r,sign);
                 if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
+                else if(rr > ss){ss = rr;}
             }
         }
-        return norm;
+        return std::make_pair(ss,norm);
     }
 
     double check_refstate(const dits_or_bits &s) const {
