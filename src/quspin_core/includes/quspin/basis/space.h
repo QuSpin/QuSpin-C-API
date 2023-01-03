@@ -315,6 +315,10 @@ namespace quspin::basis { // test cases
     
 }
 
+TEST_SUITE("quspin/basis/space.h") {
+    using namespace quspin::basis;
+}
+
 #endif
 
 #endif

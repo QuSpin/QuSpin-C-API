@@ -44,44 +44,41 @@ template int bit_count<uint8_t>(uint8_t,const int);
 
 }
 
-
-TEST_CASE("bit_pos"){
+TEST_SUITE("quspin/basis/bitbasis/utils.h") {
   using namespace quspin::basis;
-  uint8_t val = 0b10110010;
-  int pos[8] = {0,0,0,0,0,0,0,0};
 
-  int npos = bit_pos<uint8_t>(val,pos);
+  TEST_CASE("bit_pos"){
+    uint8_t val = 0b10110010;
+    int pos[8] = {0,0,0,0,0,0,0,0};
 
-  CHECK(npos == 4);
-  CHECK(pos[0] == 1);
-  CHECK(pos[1] == 4);
-  CHECK(pos[2] == 5);
-  CHECK(pos[3] == 7);
-  CHECK(pos[4] == 0);
-  CHECK(pos[5] == 0);
-  CHECK(pos[6] == 0);
-  CHECK(pos[7] == 0);
+    int npos = bit_pos<uint8_t>(val,pos);
 
-}
+    CHECK(npos == 4);
+    CHECK(pos[0] == 1);
+    CHECK(pos[1] == 4);
+    CHECK(pos[2] == 5);
+    CHECK(pos[3] == 7);
+    CHECK(pos[4] == 0);
+    CHECK(pos[5] == 0);
+    CHECK(pos[6] == 0);
+    CHECK(pos[7] == 0);
 
+  }
 
+  TEST_CASE("bit_count"){
+    using namespace quspin::basis;
+    uint8_t val = 0b10110010;
 
-TEST_CASE("bit_count"){
-  using namespace quspin::basis;
-  uint8_t val = 0b10110010;
-
-  CHECK(bit_count<uint8_t>(val,0) == 0);
-  CHECK(bit_count<uint8_t>(val,1) == 0);
-  CHECK(bit_count<uint8_t>(val,2) == 1);
-  CHECK(bit_count<uint8_t>(val,3) == 1);
-  CHECK(bit_count<uint8_t>(val,4) == 1);
-  CHECK(bit_count<uint8_t>(val,5) == 2);
-  CHECK(bit_count<uint8_t>(val,6) == 3);
-  CHECK(bit_count<uint8_t>(val,7) == 3);
-  CHECK(bit_count<uint8_t>(val,8) == 4);
-
-
-
+    CHECK(bit_count<uint8_t>(val,0) == 0);
+    CHECK(bit_count<uint8_t>(val,1) == 0);
+    CHECK(bit_count<uint8_t>(val,2) == 1);
+    CHECK(bit_count<uint8_t>(val,3) == 1);
+    CHECK(bit_count<uint8_t>(val,4) == 1);
+    CHECK(bit_count<uint8_t>(val,5) == 2);
+    CHECK(bit_count<uint8_t>(val,6) == 3);
+    CHECK(bit_count<uint8_t>(val,7) == 3);
+    CHECK(bit_count<uint8_t>(val,8) == 4);
+  }
 }
 
 #endif

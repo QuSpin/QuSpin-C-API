@@ -321,58 +321,57 @@ template uint8_t benes_fwd<uint8_t>(const tr_benes<uint8_t>*, uint8_t);
 template uint8_t benes_bwd<uint8_t>(const tr_benes<uint8_t>*, uint8_t);
 
 }
-
-TEST_CASE("ta_subword set/get"){
+TEST_SUITE("quspin/basis/bitbasis/benes.h"){
   using namespace quspin::basis::benes;
 
-  ta_subword<uint8_t> subword;
+  TEST_CASE("ta_subword set/get"){
 
-  for(int i=0;i<quspin::basis::bit_info<uint8_t>::ld_bits;++i){
-      subword[i] = i;
-      CHECK(subword[i]==i);
+    ta_subword<uint8_t> subword;
+
+    for(int i=0;i<quspin::basis::bit_info<uint8_t>::ld_bits;++i){
+        subword[i] = i;
+        CHECK(subword[i]==i);
+    }
+
   }
 
-}
+  TEST_CASE("ta_index set/get"){
+    ta_index<uint8_t> index;
 
-TEST_CASE("ta_index set/get"){
-  using namespace quspin::basis::benes;
+    for(int i=0;i<quspin::basis::bit_info<uint8_t>::bits;++i){
+        index[i] = i;
+        CHECK(index[i]==i);
+    }
 
-  ta_index<uint8_t> index;
-
-  for(int i=0;i<quspin::basis::bit_info<uint8_t>::bits;++i){
-      index[i] = i;
-      CHECK(index[i]==i);
   }
 
-}
+  TEST_CASE("invert_perm"){
+    ta_index<uint8_t> i1;
+    ta_index<uint8_t> i2;
 
-TEST_CASE("invert_perm"){
-  using namespace quspin::basis::benes;
+    for(int i=0;i<quspin::basis::bit_info<uint8_t>::bits;++i){
+        i1[i] = no_index;
+    }
 
-  ta_index<uint8_t> i1;
-  ta_index<uint8_t> i2;
+    i1[0] = 1;
+    i1[1] = 3;
+    i1[2] = 0;
+    i1[3] = 2;
 
-  for(int i=0;i<quspin::basis::bit_info<uint8_t>::bits;++i){
-      i1[i] = no_index;
+    invert_perm<uint8_t>(i1,i2);
+
+    CHECK(i2[0]==2);
+    CHECK(i2[1]==0);
+    CHECK(i2[2]==3);
+    CHECK(i2[3]==1);
+    CHECK(i2[4]==no_index);
+    CHECK(i2[5]==no_index);
+    CHECK(i2[6]==no_index);
+    CHECK(i2[7]==no_index);
+
   }
-
-  i1[0] = 1;
-  i1[1] = 3;
-  i1[2] = 0;
-  i1[3] = 2;
-
-  invert_perm<uint8_t>(i1,i2);
-
-  CHECK(i2[0]==2);
-  CHECK(i2[1]==0);
-  CHECK(i2[2]==3);
-  CHECK(i2[3]==1);
-  CHECK(i2[4]==no_index);
-  CHECK(i2[5]==no_index);
-  CHECK(i2[6]==no_index);
-  CHECK(i2[7]==no_index);
-
 }
+
 
 
 #endif

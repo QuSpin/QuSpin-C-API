@@ -500,6 +500,11 @@ template void basis<dit_space_t>::on_the_fly<Term,T,T>(const std::vector<Term>& 
 }
 
 
+TEST_SUITE("quspin/basis/basis.h") {
+
+    
+}
+
 #endif
 
 #endif
