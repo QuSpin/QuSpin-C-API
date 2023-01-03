@@ -392,7 +392,7 @@ TEST_SUITE("quspin/operators.h") {
 
     }
 
-    TEST_CASE("N_body_bits<double,2>"){        
+    TEST_CASE("N_body_bits<double,2>"){
         N_body_bits<double,2> * H;
         std::vector<std::pair<bs,double>> output;
         basis::bit_set<uint8_t> state({0,1,1,0,1,0,0,1});
