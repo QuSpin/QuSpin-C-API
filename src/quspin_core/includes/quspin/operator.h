@@ -285,9 +285,9 @@ template void N_body_dits<double,2>::op_dagger<ds>(const ds& , std::vector<std::
 
 
 TEST_SUITE("quspin/operators.h") {
-    
+    using namespace quspin;
+
     TEST_CASE("operator_string.op"){
-        using namespace quspin;
         operator_string<double> * H;
 
         // qudits
@@ -369,8 +369,6 @@ TEST_SUITE("quspin/operators.h") {
     }
 
     TEST_CASE("operator_string.op_dagger"){
-        using namespace quspin;
-
         typedef double T;
         operator_string<T> * H;
         std::vector<std::pair<ds,T>> output;
@@ -394,9 +392,7 @@ TEST_SUITE("quspin/operators.h") {
 
     }
 
-    TEST_CASE("N_body_bits<double,2>"){
-        using namespace quspin;
-        
+    TEST_CASE("N_body_bits<double,2>"){        
         N_body_bits<double,2> * H;
         std::vector<std::pair<bs,double>> output;
         basis::bit_set<uint8_t> state({0,1,1,0,1,0,0,1});
@@ -447,10 +443,7 @@ TEST_SUITE("quspin/operators.h") {
 
     }
 
-
     TEST_CASE("N_body_dits<double,2>"){
-        using namespace quspin;
-
         std::vector<double> H_loc = { 
             1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  
             0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  
