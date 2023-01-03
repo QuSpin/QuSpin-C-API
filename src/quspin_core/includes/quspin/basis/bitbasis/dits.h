@@ -189,10 +189,9 @@ template bool operator== <uint8_t>(const dit_set<uint8_t>&, const dit_set<uint8_
 
 
 TEST_SUITE("quspin/basis/bitbasis/dits.h") {
+    using namespace quspin::basis;
 
     TEST_CASE("get_bit_substring") {
-        using namespace quspin::basis;
-
         dit_set<uint8_t> state(0b01100100,3); // possible states: 00 01 10
 
         CHECK(get_sub_bitstring(state,0) == 0);
@@ -209,8 +208,6 @@ TEST_SUITE("quspin/basis/bitbasis/dits.h") {
     }
 
     TEST_CASE("set_sub_bitstring") {
-        using namespace quspin::basis;
-
         dit_set<uint8_t> state(0b01100100,3); // possible states: 00 01 10
 
         dit_set<uint8_t> result = set_sub_bitstring(state,1,0);
@@ -231,8 +228,6 @@ TEST_SUITE("quspin/basis/bitbasis/dits.h") {
     }
 
     TEST_CASE("operators") {
-        using namespace quspin::basis;
-
         dit_set<uint8_t> s1(0b1010111,3);
         dit_set<uint8_t> s2(0b1010111,3);
         dit_set<uint8_t> s3(0b1011111,3);
@@ -245,8 +240,6 @@ TEST_SUITE("quspin/basis/bitbasis/dits.h") {
     }
 
     TEST_CASE("from_/to_vector") {
-        using namespace quspin::basis;
-
         dit_set<uint8_t> s(0b01100100,3);
         std::vector<dit_integer_t> dits = {0,1,2,1};
         
@@ -255,8 +248,6 @@ TEST_SUITE("quspin/basis/bitbasis/dits.h") {
     }
 
     TEST_CASE("to_string") {
-        using namespace quspin::basis;
-
         dit_set<uint8_t> s(0b01100100,3);
         std::string dits = "0 1 2 1 "; // note reverse order
         CHECK(s.to_string() == dits);
