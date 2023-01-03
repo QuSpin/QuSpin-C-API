@@ -46,6 +46,7 @@ public:
         benes::gen_benes(&benes,index);
 
     }
+    dit_perm(const dit_perm<I>& other) : benes(other.benes) {}
 
     ~dit_perm() {}
 
@@ -82,6 +83,8 @@ public:
         benes::gen_benes(&benes,index);
 
     }
+    bit_perm(const bit_perm<I>& other) : benes(other.benes) {}
+
     ~bit_perm() {}
 
     template<typename T>
@@ -100,13 +103,13 @@ template <typename I>
 class perm_dit // permutations of the dit states locally
 {
 private:
-    int lhss;
+    const int lhss;
     std::vector<int> perm;
     std::vector<int> inv_perm;
     std::vector<int> locs;
 
 public:
-    perm_dit(const int _lhss,const std::vector<std::vector<int>>& _perm,const std::vector<int> _locs) : lhss(_lhss)
+    perm_dit(const std::vector<std::vector<int>>& _perm,const std::vector<int>& _locs) : lhss(_perm.front().size())
     { 
 
         assert(_perm.size() == _locs.size());
@@ -116,12 +119,19 @@ public:
         for(int i=0;i<locs.size();++i){
             const std::vector<int> p = _perm.at(i);
             std::vector<int> ip(p.size());
+            assert(p.size() == lhss);
+
             int j = 0;
             for(const int ele : p){ip[ele] = j++;}
+
             perm.insert(perm.end(),p.begin(),p.end());
             inv_perm.insert(inv_perm.end(),ip.begin(),ip.end());
         }
-
+    }
+    perm_dit(const perm_dit<I>& other): lhss(other.lhss) {
+        locs.insert(locs.end(),other.locs.begin(),other.locs.end());
+        perm.insert(perm.end(),other.perm.begin(),other.perm.end());
+        inv_perm.insert(inv_perm.end(),other.inv_perm.begin(),other.inv_perm.end());
     }
     ~perm_dit() {}
 
@@ -179,7 +189,6 @@ public:
     }
 };
 
-
 template<typename lat_perm_t,typename loc_perm_t,typename dits_or_bits,typename T>
 class symmetry
 {
@@ -189,25 +198,23 @@ private:
     std::vector<T> lat_char;
     std::vector<T> loc_char;
 
-
-
 public:
-    symmetry(std::vector<lat_perm_t> &_lat_symm,std::vector<T> &_lat_char,
-    std::vector<loc_perm_t> &_loc_symm,std::vector<T> &_loc_char)
+    symmetry(const std::vector<lat_perm_t> &_lat_symm,const std::vector<T> &_lat_char,
+        const std::vector<loc_perm_t> &_loc_symm,const std::vector<T> &_loc_char)
     {
-        assert((lat_symm.size() == lat_char.size()) && (loc_symm.size() == loc_char.size()));
-        lat_symm.insert(lat_symm.end(),_lat_symm.begin(),_lat_symm.end());
-        loc_symm.insert(loc_symm.end(),_loc_symm.begin(),_loc_symm.end());
-        lat_char.insert(lat_char.end(),_lat_char.begin(),_lat_char.end());
-        loc_char.insert(loc_char.end(),_loc_char.begin(),_loc_char.end());
+        assert(_lat_symm.size() == _lat_char.size());
+        assert(_loc_symm.size() == _loc_char.size());
+
+        for(int i=0;i<lat_symm.size();i++){
+            lat_symm.emplace_back(_lat_symm[i]);
+            lat_char.emplace_back(_lat_char[i]);
+            loc_symm.emplace_back(_loc_symm[i]);
+            loc_char.emplace_back(_loc_char[i]);
+        }
     }
 
-    symmetry(symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other){
-        lat_symm.insert(lat_symm.end(),other.lat_symm.begin(),other.lat_symm.end());
-        loc_symm.insert(loc_symm.end(),other.loc_symm.begin(),other.loc_symm.end());
-        lat_char.insert(lat_char.end(),other.lat_char.begin(),other.lat_char.end());
-        loc_char.insert(loc_char.end(),other.loc_char.begin(),other.loc_char.end());
-    }
+    symmetry(const symmetry<lat_perm_t,loc_perm_t,dits_or_bits,T>& other) :
+    symmetry(other.lat_symm,other.lat_char,other.loc_symm,other.loc_char) {}
     ~symmetry() {}
 
     size_t size() const {return lat_symm.size() * loc_symm.size();}
@@ -334,7 +341,7 @@ TEST_SUITE("quspin/basis/symmetry.h"){
 
     }
 
-    TEST_CASE("bit_perm"){
+    TEST_CASE("dit_perm"){
         std::vector<int> perm = {1,3,2,0};
         std::vector<int> inv = {3,0,2,1};
         dit_set<uint8_t> dit_state({0,1,2,0},3);
@@ -358,6 +365,57 @@ TEST_SUITE("quspin/basis/symmetry.h"){
         CHECK(result.to_string() == "0 1 2 0 ");
 
     }
+
+    TEST_CASE("perm_bit"){
+        const uint8_t mask = 0b00110101;
+        perm_bit<uint8_t> pb(mask);
+        bit_set<uint8_t> bit_state({0,1,0,1,1,1,0,0});
+        double coeff = 1.0;
+
+        auto result = pb.app(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
+
+        result = pb.inv(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
+
+        result = pb.app(pb.inv(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+        result = pb.inv(pb.app(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+    }
+
+    TEST_CASE("perm_dit"){
+        std::vector<int> perm = {1,2,0};
+        std::vector<int> inv  = {2,0,1};
+        dit_set<uint8_t> dit_state({0,1,2,0},3);
+        perm_dit<uint8_t> dp({perm, perm}, {1,3});
+        double coeff = 1.0;
+
+        auto result = dp.app(dit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 2 2 1 ");
+
+        result = dp.inv(dit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 0 2 2 ");
+
+        result = dp.app(dp.inv(dit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 2 0 ");
+
+        result = dp.inv(dp.app(dit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 2 0 ");
+
+
+    }
+   
 }
 
 
