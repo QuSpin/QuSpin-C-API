@@ -34,7 +34,7 @@ struct bit_set { // thin wrapper used for convience
         }
     }
 
-    std::vector<dit_integer_t> to_vector(const int length=0){
+    std::vector<dit_integer_t> to_vector(const int length=0) const {
         const int niter = (length>0 ? length : bit_info<I>::bits/bits);
 
         std::vector<dit_integer_t> out(niter);
@@ -44,11 +44,11 @@ struct bit_set { // thin wrapper used for convience
         return out;
     }
 
-    std::string to_string(const int length=0){
+    std::string to_string(const int length=0)const {
         auto bit_vec = to_vector(length);
         std::stringstream out;
         for(auto ele : bit_vec){
-            out << (int)ele; 
+            out << (int)ele << " "; 
         }
         return out.str();
     }
@@ -207,7 +207,7 @@ TEST_CASE("to_string") {
 
     bit_set<uint8_t> s(0b01100100);
 
-    std::string bits = "00100110"; // note reverse order
+    std::string bits = "0 0 1 0 0 1 1 0 "; // note reverse order
     
     CHECK(s.to_string() == bits);
 }

@@ -93,7 +93,7 @@ struct dit_set { // thin wrapper used for convience
         }
     }
 
-    std::vector<dit_integer_t> to_vector(const int length=0){
+    std::vector<dit_integer_t> to_vector(const int length=0) const {
         const int niter = (length>0 ? length : bit_info<I>::bits/bits);
 
         std::vector<dit_integer_t> out(niter);
@@ -104,11 +104,11 @@ struct dit_set { // thin wrapper used for convience
         return out;
     }
 
-    std::string to_string(const int length=0){
+    std::string to_string(const int length=0) const {
         auto dit_vec = to_vector(length);
         std::stringstream out;
         for(auto ele : dit_vec){
-            out << (int)ele; 
+            out << (int)ele << " "; 
         }
         return out.str();
     }
@@ -255,7 +255,7 @@ TEST_CASE("to_string") {
     using namespace quspin::basis;
 
     dit_set<uint8_t> s(0b01100100,3);
-    std::string dits = "0121"; // note reverse order
+    std::string dits = "0 1 2 1 "; // note reverse order
     CHECK(s.to_string() == dits);
 }
 
