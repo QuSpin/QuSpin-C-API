@@ -124,92 +124,94 @@ template bool operator== <uint8_t>(const bit_set<uint8_t>&, const bit_set<uint8_
 
 }
 
+TEST_SUITE("quspin/basis/bitbasis/bits.h") {
 
-TEST_CASE("get_bit_substring") {
+    TEST_CASE("get_bit_substring") {
 
-    using namespace quspin::basis;
+        using namespace quspin::basis;
 
-    bit_set<uint8_t> state(0b01010111);
+        bit_set<uint8_t> state(0b01010111);
 
-    CHECK(get_sub_bitstring(state,0) == 1);
-    CHECK(get_sub_bitstring(state,3) == 0);
-    CHECK(get_sub_bitstring(state,7) == 0);
-    CHECK(get_sub_bitstring(state,9) == 0);
+        CHECK(get_sub_bitstring(state,0) == 1);
+        CHECK(get_sub_bitstring(state,3) == 0);
+        CHECK(get_sub_bitstring(state,7) == 0);
+        CHECK(get_sub_bitstring(state,9) == 0);
 
-    std::array<int,2> l1 = {0,1};
-    std::array<int,4> l2 = {0,6,4,3};
+        std::array<int,2> l1 = {0,1};
+        std::array<int,4> l2 = {0,6,4,3};
 
-    CHECK(get_sub_bitstring(state,l1) == 0b11);
-    CHECK(get_sub_bitstring(state,l2) == 0b0111);
+        CHECK(get_sub_bitstring(state,l1) == 0b11);
+        CHECK(get_sub_bitstring(state,l2) == 0b0111);
 
-}
+    }
 
-TEST_CASE("set_sub_bitstring") {
+    TEST_CASE("set_sub_bitstring") {
 
-    using namespace quspin::basis;
+        using namespace quspin::basis;
 
-    bit_set<uint8_t> state(0b01010111);
+        bit_set<uint8_t> state(0b01010111);
 
-    bit_set<uint8_t> result = set_sub_bitstring(state,0,0);
-    CHECK(result.content == 0b01010110);
+        bit_set<uint8_t> result = set_sub_bitstring(state,0,0);
+        CHECK(result.content == 0b01010110);
 
-    result = set_sub_bitstring(state,1,1);
-    CHECK(result.content == 0b01010111);
+        result = set_sub_bitstring(state,1,1);
+        CHECK(result.content == 0b01010111);
 
-    result = set_sub_bitstring(state,0,1);
-    CHECK(result.content == 0b01010101);
-    
-    result = set_sub_bitstring(state,1,3);
-    CHECK(result.content == 0b01011111);
+        result = set_sub_bitstring(state,0,1);
+        CHECK(result.content == 0b01010101);
+        
+        result = set_sub_bitstring(state,1,3);
+        CHECK(result.content == 0b01011111);
 
-    result = set_sub_bitstring(state,1,5);
-    CHECK(result.content == 0b01110111);
+        result = set_sub_bitstring(state,1,5);
+        CHECK(result.content == 0b01110111);
 
-    std::array<int,3> locs1 = {3,5,7};
-    result = set_sub_bitstring(state,(int)0b00000111,locs1);
-    CHECK(result.content == 0b11111111);
+        std::array<int,3> locs1 = {3,5,7};
+        result = set_sub_bitstring(state,(int)0b00000111,locs1);
+        CHECK(result.content == 0b11111111);
 
-    std::array<int,3> locs2 = {5,0,7};
-    result = set_sub_bitstring(state,(int)0b00000101,locs2);
-    CHECK(result.content == 0b11110110);
+        std::array<int,3> locs2 = {5,0,7};
+        result = set_sub_bitstring(state,(int)0b00000101,locs2);
+        CHECK(result.content == 0b11110110);
 
-}
+    }
 
-TEST_CASE("operators") {
-    using namespace quspin::basis;
+    TEST_CASE("operators") {
+        using namespace quspin::basis;
 
-    bit_set<uint8_t> s1(0b1010111);
-    bit_set<uint8_t> s2(0b1010111);
-    bit_set<uint8_t> s3(0b1011111);
-    bit_set<uint8_t> s4(0b1010011);
-
-
-    CHECK(s1==s2);
-    CHECK(s3>s1);
-    CHECK(s4<s1);
-}
+        bit_set<uint8_t> s1(0b1010111);
+        bit_set<uint8_t> s2(0b1010111);
+        bit_set<uint8_t> s3(0b1011111);
+        bit_set<uint8_t> s4(0b1010011);
 
 
-TEST_CASE("to_/from_vector") {
-    using namespace quspin::basis;
+        CHECK(s1==s2);
+        CHECK(s3>s1);
+        CHECK(s4<s1);
+    }
 
-    bit_set<uint8_t> state(0b01010111);
 
-    std::vector<dit_integer_t> bits = {1,1,1,0,1,0,1,0};
+    TEST_CASE("to_/from_vector") {
+        using namespace quspin::basis;
 
-    CHECK(bit_set<uint8_t>(bits) == state);
-    CHECK(state.to_vector() == bits);
+        bit_set<uint8_t> state(0b01010111);
 
-}
+        std::vector<dit_integer_t> bits = {1,1,1,0,1,0,1,0};
 
-TEST_CASE("to_string") {
-    using namespace quspin::basis;
+        CHECK(bit_set<uint8_t>(bits) == state);
+        CHECK(state.to_vector() == bits);
 
-    bit_set<uint8_t> s(0b01100100);
+    }
 
-    std::string bits = "0 0 1 0 0 1 1 0 "; // note reverse order
-    
-    CHECK(s.to_string() == bits);
+    TEST_CASE("to_string") {
+        using namespace quspin::basis;
+
+        bit_set<uint8_t> s(0b01100100);
+
+        std::string bits = "0 0 1 0 0 1 1 0 "; // note reverse order
+        
+        CHECK(s.to_string() == bits);
+    }
 }
 
 #endif

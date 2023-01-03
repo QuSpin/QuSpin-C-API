@@ -301,6 +301,14 @@ template class symmetry<bit_perm<uint8_t>,perm_bit<uint8_t>,bit_set<uint8_t>,dou
 
 }
 
+TEST_SUITE("quspin/basis/symmetry.h"){
+    TEST_CASE("bit_perm"){
+        using namespace quspin::basis;
+    }
+}
+
+
+
 #endif
 
 #endif

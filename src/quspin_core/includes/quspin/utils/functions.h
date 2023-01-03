@@ -31,16 +31,19 @@ struct integer_pow<base,0>{
 
 #ifdef QUSPIN_UNIT_TESTS
 
+TEST_SUITE("quspin/utils/functions.h"){
+    TEST_CASE("integer_pow"){
+        using namespace quspin;
 
-TEST_CASE("integer_pow"){
-    using namespace quspin;
-
-    CHECK(integer_pow<2,4>::value == 16);
-    CHECK(integer_pow<3,3>::value == 27);
-    CHECK(integer_pow<10,3>::value == 1000);
-    CHECK(integer_pow<5,5>::value == 3125);
-    
+        CHECK(integer_pow<2,4>::value == 16);
+        CHECK(integer_pow<3,3>::value == 27);
+        CHECK(integer_pow<10,3>::value == 1000);
+        CHECK(integer_pow<5,5>::value == 3125);
+        
+    }
 }
+
+
 
 #endif
 

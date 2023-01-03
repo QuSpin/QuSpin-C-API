@@ -284,213 +284,216 @@ template void N_body_dits<double,2>::op_dagger<ds>(const ds& , std::vector<std::
 }
 
 
+TEST_SUITE("quspin/operators.h") {
+    
+    TEST_CASE("operator_string.op"){
+        using namespace quspin;
+        operator_string<double> * H;
 
-TEST_CASE("operator_string.op"){
-    using namespace quspin;
-    operator_string<double> * H;
+        // qudits
+        std::vector<std::pair<ds,double>> dit_output;
+        basis::dit_set<uint8_t> dit_state({0,1,2,1},3);
 
-    // qudits
-    std::vector<std::pair<ds,double>> dit_output;
-    basis::dit_set<uint8_t> dit_state({0,1,2,1},3);
+        H = new operator_string<double>({0,1},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
 
-    H = new operator_string<double>({0,1},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
+        H->op(dit_state,dit_output);
+        CHECK(dit_output.size() == 0);
 
-    H->op(dit_state,dit_output);
-    CHECK(dit_output.size() == 0);
+        delete H;
 
-    delete H;
+        H = new operator_string<double>({0,2},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
 
-    H = new operator_string<double>({0,2},{{0,1,2},{0,1,2}}, {{-1.0,0.0,1.0},{-1.0,0.0,1.0}});
+        dit_output.clear();
+        H->op(dit_state,dit_output);
+        CHECK(dit_output.size() == 1);
+        CHECK(dit_output[0].first.to_string() ==  "0 1 2 1 ");
+        CHECK(dit_output[0].second == -1.0);
 
-    dit_output.clear();
-    H->op(dit_state,dit_output);
-    CHECK(dit_output.size() == 1);
-    CHECK(dit_output[0].first.to_string() ==  "0 1 2 1 ");
-    CHECK(dit_output[0].second == -1.0);
+        delete H;
 
-    delete H;
+        H = new operator_string<double>({0,2,3},{{0,1,2},{1,2,0},{2,0,1}}, {{1.0,2.0,3.0},{1.0,2.0,3.0},{1.0,2.0,3.0}});
 
-    H = new operator_string<double>({0,2,3},{{0,1,2},{1,2,0},{2,0,1}}, {{1.0,2.0,3.0},{1.0,2.0,3.0},{1.0,2.0,3.0}});
+        dit_output.clear();
+        H->op(dit_state,dit_output);
+        CHECK(dit_output.size() == 1);
+        CHECK(dit_output[0].first.to_string() ==  "0 1 0 0 ");
+        CHECK(dit_output[0].second == 6.0);
 
-    dit_output.clear();
-    H->op(dit_state,dit_output);
-    CHECK(dit_output.size() == 1);
-    CHECK(dit_output[0].first.to_string() ==  "0 1 0 0 ");
-    CHECK(dit_output[0].second == 6.0);
-
-    delete H;
-
-
-    // qubits
-
-    std::vector<std::pair<bs,double>> bit_output;
-    basis::bit_set<uint8_t> bit_state({0,1,1,0,1,0,0,1});
-
-    // \sigma_z \sigma_z
-    H = new operator_string<double>({0,1},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
-    H->op(bit_state,bit_output);
-
-    CHECK(bit_output.size() == 1);
-    CHECK(bit_output[0].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(bit_output[0].second == -1.0);
-
-    delete H;
-
-    H = new operator_string<double>({0,3},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
-    H->op(bit_state,bit_output);
-
-    CHECK(bit_output.size() == 2);
-    CHECK(bit_output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(bit_output[1].second == 1.0);
+        delete H;
 
 
-    H = new operator_string<double>({0,1,4},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
-    bit_output.clear();
-    H->op(bit_state,bit_output);
+        // qubits
 
-    CHECK(bit_output.size() == 1);
-    CHECK(bit_output[0].first.to_string() ==  "0 1 1 0 0 0 0 1 ");
-    CHECK(bit_output[0].second == -1.0);
+        std::vector<std::pair<bs,double>> bit_output;
+        basis::bit_set<uint8_t> bit_state({0,1,1,0,1,0,0,1});
 
-    delete H;
+        // \sigma_z \sigma_z
+        H = new operator_string<double>({0,1},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
+        H->op(bit_state,bit_output);
 
-    H = new operator_string<double>({0,1,0},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
-    bit_output.clear();
-    H->op(bit_state,bit_output);
+        CHECK(bit_output.size() == 1);
+        CHECK(bit_output[0].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(bit_output[0].second == -1.0);
 
-    CHECK(bit_output.size() == 1);
-    CHECK(bit_output[0].first.to_string() ==  "1 1 1 0 1 0 0 1 ");
-    CHECK(bit_output[0].second == -0.5);
+        delete H;
 
-    delete H;
+        H = new operator_string<double>({0,3},{{0,1},{0,1}}, {{-1.0,1.0},{-1.0,1.0}});
+        H->op(bit_state,bit_output);
+
+        CHECK(bit_output.size() == 2);
+        CHECK(bit_output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(bit_output[1].second == 1.0);
 
 
-}
+        H = new operator_string<double>({0,1,4},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
+        bit_output.clear();
+        H->op(bit_state,bit_output);
 
-TEST_CASE("operator_string.op_dagger"){
-    using namespace quspin;
+        CHECK(bit_output.size() == 1);
+        CHECK(bit_output[0].first.to_string() ==  "0 1 1 0 0 0 0 1 ");
+        CHECK(bit_output[0].second == -1.0);
 
-    typedef double T;
-    operator_string<T> * H;
-    std::vector<std::pair<ds,T>> output;
-    basis::dit_set<uint8_t> state({2,10},16);
+        delete H;
 
-    std::vector<int> perm;
-    std::vector<T> data;
+        H = new operator_string<double>({0,1,0},{{0,1},{0,1},{1,0}}, {{-1.0,1.0},{-1.0,1.0},{0.5,1.0}});
+        bit_output.clear();
+        H->op(bit_state,bit_output);
 
-    for(int i=0;i<16;i++){
-        int ip = (i+1)%16;
-        perm.push_back(ip);
-        data.push_back(std::sqrt(ip));
+        CHECK(bit_output.size() == 1);
+        CHECK(bit_output[0].first.to_string() ==  "1 1 1 0 1 0 0 1 ");
+        CHECK(bit_output[0].second == -0.5);
+
+        delete H;
+
+
     }
 
-    H = new operator_string<T>({0,1},{perm,perm},{data,data});
+    TEST_CASE("operator_string.op_dagger"){
+        using namespace quspin;
 
-    H->op_dagger(state,output);
-    CHECK(output.size() == 1);
-    CHECK(output[0].first.to_string() ==  "1 9 ");
-    CHECK(output[0].second == doctest::Approx(std::sqrt(2*10)));
+        typedef double T;
+        operator_string<T> * H;
+        std::vector<std::pair<ds,T>> output;
+        basis::dit_set<uint8_t> state({2,10},16);
 
-}
+        std::vector<int> perm;
+        std::vector<T> data;
 
-TEST_CASE("N_body_bits<double,2>"){
-    using namespace quspin;
-    
-    N_body_bits<double,2> * H;
-    std::vector<std::pair<bs,double>> output;
-    basis::bit_set<uint8_t> state({0,1,1,0,1,0,0,1});
+        for(int i=0;i<16;i++){
+            int ip = (i+1)%16;
+            perm.push_back(ip);
+            data.push_back(std::sqrt(ip));
+        }
 
+        H = new operator_string<T>({0,1},{perm,perm},{data,data});
 
-    std::vector<double> H_loc = {
-        0.25,   0.0,   0.0,  0.0,
-        0.0 , -0.25,   0.5,  0.0,
-        0.0 ,   0.5, -0.25,  0.0,
-        0.0 ,   0.0,   0.0, 0.25
-    };
+        H->op_dagger(state,output);
+        CHECK(output.size() == 1);
+        CHECK(output[0].first.to_string() ==  "1 9 ");
+        CHECK(output[0].second == doctest::Approx(std::sqrt(2*10)));
 
-    H = new N_body_bits<double,2>({0,1},H_loc);
+    }
 
-
-    H->op(state,output);
-
-    REQUIRE(output.size() == 2);
-    CHECK(output[0].first.to_string() == "1 0 1 0 1 0 0 1 ");
-    CHECK(output[0].second == 0.5);
-    CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(output[1].second == -0.25);
-
-    output.clear();
-    H->op_dagger(state,output);
-
-    REQUIRE(output.size() == 2);
-    CHECK(output[0].first.to_string() == "1 0 1 0 1 0 0 1 ");
-    CHECK(output[0].second == 0.5);
-
-    CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(output[1].second == -0.25);
-
-    delete H;
-
-    H = new N_body_bits<double,2>({0,3},H_loc);
-
-    output.clear();
-    H->op(state,output);
-    H->op_dagger(state,output);
-    REQUIRE(output.size()==2);
-    CHECK(output[0].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(output[0].second == 0.25);
-    CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
-    CHECK(output[1].second == 0.25);
-
-    delete H;
-
-}
+    TEST_CASE("N_body_bits<double,2>"){
+        using namespace quspin;
+        
+        N_body_bits<double,2> * H;
+        std::vector<std::pair<bs,double>> output;
+        basis::bit_set<uint8_t> state({0,1,1,0,1,0,0,1});
 
 
-TEST_CASE("N_body_dits<double,2>"){
-    using namespace quspin;
+        std::vector<double> H_loc = {
+            0.25,   0.0,   0.0,  0.0,
+            0.0 , -0.25,   0.5,  0.0,
+            0.0 ,   0.5, -0.25,  0.0,
+            0.0 ,   0.0,   0.0, 0.25
+        };
 
-     std::vector<double> H_loc = { 
-        1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  
-        0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  
-        0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  
-        0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  
-        0.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,  
-        0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  
-        0.,  0.,  0.,  0.,  1.,  0., -1.,  0.,  0.,  
-        0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  
-        0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.
-    };
-    using namespace quspin;
-    N_body_dits<double,2> * H;
+        H = new N_body_bits<double,2>({0,1},H_loc);
 
-    // qudits
-    std::vector<std::pair<ds,double>> output;
-    basis::dit_set<uint8_t> state({0,1,2,1},3);
 
-    H = new N_body_dits<double,2>(3,{0,1},H_loc);
+        H->op(state,output);
 
-    H->op(state,output);
+        REQUIRE(output.size() == 2);
+        CHECK(output[0].first.to_string() == "1 0 1 0 1 0 0 1 ");
+        CHECK(output[0].second == 0.5);
+        CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(output[1].second == -0.25);
 
-    CHECK(output.size()==1);
-    CHECK(output[0].first.to_string() == "1 0 2 1 ");
-    CHECK(output[0].second == 1.0);
+        output.clear();
+        H->op_dagger(state,output);
 
-    delete H;
+        REQUIRE(output.size() == 2);
+        CHECK(output[0].first.to_string() == "1 0 1 0 1 0 0 1 ");
+        CHECK(output[0].second == 0.5);
 
-    H = new N_body_dits<double,2>(3,{0,2},H_loc);
+        CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(output[1].second == -0.25);
 
-    output.clear();
-    H->op(state,output);
+        delete H;
 
-    REQUIRE(output.size()==2);
-    CHECK(output[0].first.to_string() == "1 1 1 1 ");
-    CHECK(output[0].second == 1.0);
-    CHECK(output[1].first.to_string() == "0 1 2 1 ");
-    CHECK(output[1].second == -1.0);
-    
-    delete H;
-    
+        H = new N_body_bits<double,2>({0,3},H_loc);
+
+        output.clear();
+        H->op(state,output);
+        H->op_dagger(state,output);
+        REQUIRE(output.size()==2);
+        CHECK(output[0].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(output[0].second == 0.25);
+        CHECK(output[1].first.to_string() == "0 1 1 0 1 0 0 1 ");
+        CHECK(output[1].second == 0.25);
+
+        delete H;
+
+    }
+
+
+    TEST_CASE("N_body_dits<double,2>"){
+        using namespace quspin;
+
+        std::vector<double> H_loc = { 
+            1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  
+            0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  
+            0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  
+            0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  
+            0.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,  
+            0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  
+            0.,  0.,  0.,  0.,  1.,  0., -1.,  0.,  0.,  
+            0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  
+            0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.
+        };
+        using namespace quspin;
+        N_body_dits<double,2> * H;
+
+        // qudits
+        std::vector<std::pair<ds,double>> output;
+        basis::dit_set<uint8_t> state({0,1,2,1},3);
+
+        H = new N_body_dits<double,2>(3,{0,1},H_loc);
+
+        H->op(state,output);
+
+        CHECK(output.size()==1);
+        CHECK(output[0].first.to_string() == "1 0 2 1 ");
+        CHECK(output[0].second == 1.0);
+
+        delete H;
+
+        H = new N_body_dits<double,2>(3,{0,2},H_loc);
+
+        output.clear();
+        H->op(state,output);
+
+        REQUIRE(output.size()==2);
+        CHECK(output[0].first.to_string() == "1 1 1 1 ");
+        CHECK(output[0].second == 1.0);
+        CHECK(output[1].first.to_string() == "0 1 2 1 ");
+        CHECK(output[1].second == -1.0);
+        
+        delete H;
+        
+    }
+
 }
 
 
