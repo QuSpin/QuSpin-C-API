@@ -413,7 +413,6 @@ TEST_SUITE("quspin/basis/symmetry.h"){
         CHECK(coeff == 1.0);
         CHECK(result.to_string() == "0 1 2 0 ");
 
-
     }
    
 }
