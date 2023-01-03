@@ -45,9 +45,9 @@ template int bit_count<uint8_t>(uint8_t,const int);
 }
 
 TEST_SUITE("quspin/basis/bitbasis/utils.h") {
+  using namespace quspin::basis;
 
   TEST_CASE("bit_pos"){
-    using namespace quspin::basis;
     uint8_t val = 0b10110010;
     int pos[8] = {0,0,0,0,0,0,0,0};
 
