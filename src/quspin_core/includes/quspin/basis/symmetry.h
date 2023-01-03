@@ -22,16 +22,18 @@ private:
     benes::tr_benes<I> benes;
 
 public:
-    dit_perm(const int lhss,const int * perm,const int length) {
-        benes::ta_index<I> index;
-        for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
-
+    dit_perm(const int lhss,const std::vector<int>& perm) {
         
         // number of bits to store lhss worth of data:
         const dit_integer_t bits = constants::bits[lhss];
 
+        assert(perm.size() <= bit_info<I>::bits/bits);
+
+        benes::ta_index<I> index;
+        for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
+
         // permute chucks of bits of length 'bits' 
-        for(int i=0;i<length;i++){
+        for(int i=0;i<perm.size();i++){
             const int dst = perm[i];
             const int src = i;
             for(int j=0;j<bits;j++){
@@ -49,14 +51,50 @@ public:
 
     template<typename T>
     inline dit_set<I> app(const dit_set<I>& s, T& coeff) const { 
-        return dit_set<I>(benes::benes_bwd(&benes,s.content),s.lhss,s.mask,s.bits); 
+        return dit_set<I>(benes::benes_fwd(&benes,s.content),s.lhss,s.mask,s.bits); 
     }
 
     template<typename T>
     inline dit_set<I> inv(const dit_set<I>& s, T& coeff) const { 
-        return dit_set<I>(benes::benes_fwd(&benes,s.content),s.lhss,s.mask,s.bits);  
+        return dit_set<I>(benes::benes_bwd(&benes,s.content),s.lhss,s.mask,s.bits);  
     }
 };
+
+template <typename I>
+class bit_perm // permutation of bit locations
+{
+private:
+    benes::tr_benes<I> benes;
+
+public:
+    bit_perm(const std::vector<int>& perm) 
+    {
+        assert(perm.size() <= bit_info<I>::bits);
+
+        benes::ta_index<I> index;
+        for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
+
+        // benes permutation is agnostic to lhss
+        for(int i=0;i<perm.size();i++){
+            index[i] = perm[i];  
+        }
+
+        benes::gen_benes(&benes,index);
+
+    }
+    ~bit_perm() {}
+
+    template<typename T>
+    inline bit_set<I> app(const bit_set<I>& s, T& coeff) const { 
+        return  bit_set<I>(benes::benes_fwd(&benes,s.content)); 
+    }
+
+    template<typename T>
+    inline bit_set<I> inv(const bit_set<I>& s, T& coeff) const { 
+        return bit_set<I>(benes::benes_bwd(&benes,s.content)); 
+    }
+};
+
 
 template <typename I>
 class perm_dit // permutations of the dit states locally
@@ -116,39 +154,6 @@ public:
         }
         
         return r;
-    }
-};
-
-template <typename I>
-class bit_perm // permutation of bit locations
-{
-private:
-    benes::tr_benes<I> benes;
-
-public:
-    bit_perm(const int * perm,const int length) 
-    {
-        benes::ta_index<I> index;
-        for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
-
-        // benes permutation is agnostic to lhss
-        for(int i=0;i<length;i++){
-            index[i] = perm[i];  
-        }
-
-        benes::gen_benes(&benes,index);
-
-    }
-    ~bit_perm() {}
-
-    template<typename T>
-    inline bit_set<I> app(const bit_set<I>& s, T& coeff) const { 
-        return  bit_set<I>(benes::benes_bwd(&benes,s.content)); 
-    }
-
-    template<typename T>
-    inline bit_set<I> inv(const bit_set<I>& s, T& coeff) const { 
-        return bit_set<I>(benes::benes_fwd(&benes,s.content)); 
     }
 };
 
@@ -302,8 +307,56 @@ template class symmetry<bit_perm<uint8_t>,perm_bit<uint8_t>,bit_set<uint8_t>,dou
 }
 
 TEST_SUITE("quspin/basis/symmetry.h"){
+    using namespace quspin::basis;
+
     TEST_CASE("bit_perm"){
-        using namespace quspin::basis;
+        std::vector<int> perm = {1,3,2,0};
+        std::vector<int> inv = {3,0,2,1};
+        bit_set<uint8_t> bit_state({0,1,0,1,1,1,0,0});
+        bit_perm<uint8_t> bp(perm);
+        double coeff = 1.0;
+
+        auto result = bp.app(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 1 0 0 1 1 0 0 ");
+
+        result = bp.inv(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 0 0 1 1 1 0 0 ");
+
+        result = bp.app(bp.inv(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+        result = bp.inv(bp.app(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+    }
+
+    TEST_CASE("bit_perm"){
+        std::vector<int> perm = {1,3,2,0};
+        std::vector<int> inv = {3,0,2,1};
+        dit_set<uint8_t> dit_state({0,1,2,0},3);
+        dit_perm<uint8_t> dp(3,perm);
+        double coeff = 1.0;
+
+        auto result = dp.app(dit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 0 2 0 ");
+
+        result = dp.inv(dit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 0 2 1 ");
+
+        result = dp.app(dp.inv(dit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 2 0 ");
+
+        result = dp.inv(dp.app(dit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 2 0 ");
+
     }
 }
 
