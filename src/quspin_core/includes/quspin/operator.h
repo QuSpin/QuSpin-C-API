@@ -64,8 +64,8 @@ public:
     }
     ~N_body_dits(){}
 
-    template<typename bitset_t>
-    void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op(const bitset_t& s, contianer_t &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
         for(int b=0;b<dim;++b){ // loop over columns
             const int i = dim*a+b;
@@ -76,8 +76,8 @@ public:
         }
     }
 
-    template<typename bitset_t>
-    void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op_dagger(const bitset_t& s, contianer_t &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
         for(int b=0;b<dim;++b){ // loop over rows
             const int i = dim*b+a;
@@ -122,8 +122,8 @@ public:
     }
     ~N_body_bits(){}
 
-    template<typename bitset_t>
-    void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op(const bitset_t& s, contianer_t &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
 
         for(int b=0;b<dim;++b){ // loop over columns
@@ -135,8 +135,8 @@ public:
         }
     }
 
-    template<typename bitset_t>
-    void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op_dagger(const bitset_t& s, contianer_t &output) const {
         const int a = basis::get_sub_bitstring(s,locs);
 
         for(int b=0;b<dim;++b){ // loop over rows
@@ -202,8 +202,8 @@ public:
     
     ~operator_string(){}
 
-    template<typename bitset_t>
-    void op(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op(const bitset_t& s, contianer_t &output) const {
         const int * perm = perms.data();
         const T * data = datas.data();
         T m = T(1.0);
@@ -228,8 +228,8 @@ public:
         if( nonzero ) output.push_back(std::make_pair(r,m));
     }
     
-    template<typename bitset_t>
-    void op_dagger(const bitset_t& s, std::vector<std::pair<bitset_t,T>> &output) const {
+    template<typename bitset_t,typename contianer_t>
+    void op_dagger(const bitset_t& s, contianer_t &output) const {
         T m = T(1.0);
         bitset_t r(s);
         
