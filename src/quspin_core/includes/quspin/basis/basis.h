@@ -411,13 +411,13 @@ public:
     }
 
     template<typename Term>
-    void build_subspace(const Term* terms,const int nterms,const bitset_t seed_state) {
+    void build_subspace(const Term* terms,const int nterms,const int* seed_state,const int N,const int lhss) {
         // use list of operators to generate all the possible basis states
         using value_type = typename Term::value_type;
         
+        const std::vector<int> seed_vec(seed_state,seed_state+N);
         std::queue<bitset_t> stack;
-
-        stack.push(seed_state);
+        stack.push(bitset_t(seed_vec,lhss));
 
         while(!stack.empty()){
 
