@@ -242,7 +242,7 @@ public:
         return std::make_pair(ss,coeff);
     }
 
-    std::pair<dits_or_bits,T> calc_norm(const dits_or_bits &s) const {
+    std::pair<dits_or_bits,double> calc_norm(const dits_or_bits &s) const {
         double norm = 0.0;
         T sign = T(1);
 
