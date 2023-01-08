@@ -7,11 +7,6 @@
 namespace quspin {
 
 
-template<typename T> T real(const T v){return v;}
-template<typename T> T real(const std::complex<T>& v){return v.real();}
-template<typename T> T conj(const T v){return v;}
-template<typename T> T conj(const std::complex<T>& v){return std::conj(v);}
-
 template<int base,std::size_t N>
 struct integer_pow {
     enum {value = base * integer_pow<base,N-1>::value};
