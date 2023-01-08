@@ -1,2 +1,2 @@
-#cdef extern from "basis/basis.h":
-#    pass
+cdef extern from "quspin_abi/basis_abi.h":
+    pass
