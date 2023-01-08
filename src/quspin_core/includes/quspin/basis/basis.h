@@ -199,14 +199,14 @@ public:
     }
 
     template<typename Term>
-    void build_subspace(const Term* terms,const int nterms,const bitset_t seed_state) {
+    void build_subspace(const Term* terms,const int nterms,const std::vector<int>& seed_state,const int lhss) {
         using value_type = typename Term::value_type;
         
         std::vector<std::pair<bitset_t,value_type>> row_states;
         std::queue<bitset_t> stack;
 
         {
-            const auto& [new_state,n] = symmetry.calc_norm(seed_state);
+            const auto& [new_state,n] = symmetry.calc_norm(bitset_t(seed_state,lhss));
             const norm_t norm = n;
             if(norm > 0 && !space->contains(new_state)){
                 space->append(new_state,norm);
@@ -411,13 +411,12 @@ public:
     }
 
     template<typename Term>
-    void build_subspace(const Term* terms,const int nterms,const int* seed_state,const int N,const int lhss) {
+    void build_subspace(const Term* terms,const int nterms,const std::vector<int>& seed_state,const int lhss) {
         // use list of operators to generate all the possible basis states
         using value_type = typename Term::value_type;
         
-        const std::vector<int> seed_vec(seed_state,seed_state+N);
         std::queue<bitset_t> stack;
-        stack.push(bitset_t(seed_vec,lhss));
+        stack.push(bitset_t(seed_state,lhss));
 
         while(!stack.empty()){
 
