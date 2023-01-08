@@ -6,7 +6,6 @@
 
 namespace quspin {
 
-
 template<int base,std::size_t N>
 struct integer_pow {
     enum {value = base * integer_pow<base,N-1>::value};
@@ -23,6 +22,27 @@ struct integer_pow<base,0>{
 };
 
 }
+
+
+#ifdef USE_STD_COMPLEX
+
+#include <complex>
+
+namespace quspin {
+    template<class T>
+    std::complex<T> conj(const std::complex<T>&A){return std::conj(A);}
+
+    template<class T>
+    T conj(const T& A){return A;}
+
+    template<class T>
+    T real(const std::complex<T>&A){return A.real();}
+
+    template<class T>
+    T real(const T& A){return A;}
+
+}
+#endif
 
 #ifdef QUSPIN_UNIT_TESTS
 
