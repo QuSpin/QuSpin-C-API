@@ -56,13 +56,12 @@ static const quspin::basis::dit_integer_t mask[255] = {
 // local degrees of freedom stored in contiguous chunks of bits
 template<typename I>
 struct dit_set { // thin wrapper used for convience
-    
+    I content;
     int lhss;
     I mask;
     dit_integer_t bits;
 
     typedef I bitset_t;
-    I content;
 
     dit_set(I _content,const int _lhss, const I _mask, const dit_integer_t bits) : 
     content(_content), 
