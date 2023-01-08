@@ -13,6 +13,7 @@
 #include "quspin/basis/space.h"
 #include "quspin/basis/symmetry.h"
 #include "quspin/operator.h"
+#include "quspin/utils/functions.h"
 
 namespace quspin::basis {
 
@@ -25,10 +26,6 @@ private:
 
 public:
 
-    typedef typename space_t::bitset_t bitset_t;
-    typedef typename space_t::index_t index_t;
-    typedef typename space_t::norm_t norm_t;
-
     symmetric_basis(symmetry_t& _symmetry, std::shared_ptr<space_t> _space) : symmetry(_symmetry), space(_space) {}
     ~symmetric_basis() {}
 
@@ -40,7 +37,7 @@ public:
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
             const auto mat_ele = raw_mat_ele * conj(charater) * std::sqrt(double(norm_j) / norm_i);
-            columns[j] = (columns.count(j) != 0 ?  mat_ele : columns[j] + mat_ele);
+            columns[j] = (columns.count(j) != 0 ?  columns[j] + mat_ele : mat_ele );
         }
     }
 
@@ -52,18 +49,18 @@ public:
             const auto norm_j = space->get_norm(j);
             const auto norm_i = space->get_norm(i);
             const auto mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
-            rows[j] = (rows.count(j) != 0 ? mat_ele : rows[j] + mat_ele);
+            rows[j] = (rows.count(j) != 0 ?  rows[j] + mat_ele : mat_ele );
         }
     }
 
     template<typename Term,typename J>
     void calc_rowptr(const Term* terms,const int nterms, J rowptr[]) const {
 
-        J n_row = space -> size();
+        const J n_row = space -> size();
 
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> col_states;
+        std::vector<std::pair<typename space_t::bitset_t,value_type> > col_states;
         std::unordered_map<J,value_type> columns;
 
         col_states.reserve(nterms);
@@ -100,14 +97,14 @@ public:
 
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> col_states;
+        std::vector<std::pair<typename space_t::bitset_t,value_type>> col_states;
         std::vector<std::pair<J,value_type>> sorted_columns;
         std::unordered_map<J,value_type> columns;
 
         col_states.reserve(nterms);
         sorted_columns.reserve(nterms);
 
-        J n_row = space -> size();
+        const J n_row = space -> size();
 
         rowptr[0] = 0;
         for(J row = 0;row < n_row;++row)
@@ -163,8 +160,8 @@ public:
         using index_t = typename space_t::index_t;
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> row_states;
-        std::unordered_map<index_t,value_type> matrix_ele;
+        std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states;
+        std::unordered_map<typename space_t::index_t,value_type> matrix_ele;
 
         row_states.reserve(nterms);
 
@@ -193,24 +190,25 @@ public:
         for(auto it=begin;it != end;it++){
             const auto norm = symmetry.check_refstate(*it);
             if(!std::isnan(norm)){
-                space->append(*it,static_cast<norm_t>(norm));
+                space->append(*it,static_cast<typename space_t::norm_t>(norm));
             }
         }
     }
 
     template<typename Term>
-    void build_subspace(const Term* terms,const int nterms,const std::vector<int>& seed_state,const int lhss) {
+    void build_subspace(const Term* terms,const int nterms,const std::vector<int>& seed_vec,const int lhss) {
         using value_type = typename Term::value_type;
         
-        std::vector<std::pair<bitset_t,value_type>> row_states;
-        std::queue<bitset_t> stack;
+        std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states;
+        std::queue<typename space_t::bitset_t> stack;
 
         {
-            const auto& [new_state,n] = symmetry.calc_norm(bitset_t(seed_state,lhss));
-            const norm_t norm = n;
+            typename space_t::bitset_t seed_state(seed_vec,lhss);
+            const auto& [new_state,n] = symmetry.calc_norm(seed_state);
+            const typename space_t::norm_t norm = n;
             if(norm > 0 && !space->contains(new_state)){
-                space->append(new_state,norm);
-                stack.push_back(new_state);
+                space->append(new_state.content,norm);
+                stack.push(new_state);
             }
 
         }
@@ -228,9 +226,9 @@ public:
 
             for(const auto& [output_state,_] : row_states){
                 const auto& [new_state,n] = symmetry.calc_norm(output_state);
-                const norm_t norm = n;
+                const typename space_t::norm_t norm = n;
                 if(norm > 0 && !space->contains(new_state)){
-                    space->append(new_state,norm);
+                    space->append(new_state.content,norm);
                     stack.push(new_state);
                 }
             }
@@ -247,10 +245,6 @@ private:
     std::shared_ptr<space_t> space;
 
 public:
-
-    typedef typename space_t::bitset_t bitset_t;
-    typedef typename space_t::index_t index_t;
-    typedef typename space_t::norm_t norm_t;
 
     basis(std::shared_ptr<space_t> _space) : space(_space) {}
     ~basis() {}
@@ -279,7 +273,7 @@ public:
 
         using value_type = typename Term::value_type;
 
-        std::deque<std::pair<bitset_t,value_type>> col_states;
+        std::deque<std::pair<typename space_t::bitset_t,value_type>> col_states;
         std::unordered_map<J,value_type> columns;
 
         rowptr[0] = 0;
@@ -314,7 +308,7 @@ public:
 
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> col_states;
+        std::vector<std::pair<typename space_t::bitset_t,value_type>> col_states;
         std::vector<std::pair<J,value_type>> sorted_columns;
         std::unordered_map<J,value_type> columns;
 
@@ -376,7 +370,7 @@ public:
 
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<bitset_t,value_type>> row_states;
+        std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states;
         std::unordered_map<typename space_t::index_t,value_type> matrix_ele;
 
         row_states.reserve(nterms);
@@ -406,7 +400,7 @@ public:
     void build_subspace(Iterator begin,Iterator end) {
         // generate basis states by looping over iterator
         for(auto it=begin;it != end;it++){
-            space->append(*it,static_cast<norm_t>(1));
+            space->append(*it,static_cast<typename space_t::norm_t>(1));
         }
     }
 
@@ -415,15 +409,15 @@ public:
         // use list of operators to generate all the possible basis states
         using value_type = typename Term::value_type;
         
-        std::queue<bitset_t> stack;
-        stack.push(bitset_t(seed_state,lhss));
+        std::queue<typename space_t::bitset_t> stack;
+        stack.push(typename space_t::bitset_t(seed_state,lhss));
 
         while(!stack.empty()){
 
             const auto input_state = stack.front();
             stack.pop();
 
-            std::vector<std::pair<bitset_t,value_type>> row_states(2*nterms);
+            std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states(2*nterms);
             for(int i=0;i<nterms;++i){
                 const auto& term = terms[i];
                 term.op(input_state,row_states);
@@ -431,7 +425,7 @@ public:
 
             for(const auto& [new_state,_] : row_states){
                 if(!space->contains(new_state)){
-                    space->append(new_state,1);
+                    space->append(new_state.content,1);
                     stack.push(new_state);
                 }
             }
