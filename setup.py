@@ -5,15 +5,15 @@ import numpy as np
 import os,subprocess,sys
 
 def get_extension_kwargs():
-    if sys.platform == "win32":
+    if sys.platform in ['darwin','linux','linux2']:
         return dict(
-            extra_compile_args = ['/std:c++20'],
+            extra_compile_args =['--std=c++20'],
             extra_link_args = [],
             include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
         )
     else:
         return dict(
-            extra_compile_args = ['--std=c++20'],
+            extra_compile_args =  ['/std:c++20'],
             extra_link_args = [],
             include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
         )       
