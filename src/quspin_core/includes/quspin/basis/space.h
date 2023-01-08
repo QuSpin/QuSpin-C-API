@@ -217,8 +217,8 @@ public:
     }
     ~bit_subspace() {}
 
-    inline size_t size() const { return states.size();}
-    inline size_t get_Ns() const { return states.size();}
+    inline J size() const { return states.size();}
+    inline J get_Ns() const { return states.size();}
     inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {
