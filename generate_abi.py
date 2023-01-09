@@ -168,7 +168,7 @@ class basis:
         return switch_code_ctypes,cpp.emit_method("on_the_fly_switch_code_generator","static size_t",args,method_body,const_method=False)
 
     @staticmethod
-    def emit_on_the_fly_operator_string(codes, bitbasis:str):
+    def emit_on_the_fly_operator_string(codes:dict, bitbasis:str):
         cases = {}
         
         for code,(bits,I,T,X,Y) in codes.items():
@@ -199,7 +199,7 @@ class basis:
         return cpp.emit_method('on_the_fly_operator_string','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_calc_rowptr(codes, bitbasis:str):
+    def emit_calc_rowptr(codes:dict, bitbasis:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
@@ -221,7 +221,7 @@ class basis:
         return cpp.emit_method('calc_rowptr','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_calc_matrix(codes, bitbasis:str):
+    def emit_calc_matrix(codes:dict, bitbasis:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
@@ -247,7 +247,7 @@ class basis:
         return cpp.emit_method('calc_matrix','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_build_subspace_terms(codes, bitbasis:str):
+    def emit_build_subspace_terms(codes:dict, bitbasis:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
@@ -268,7 +268,26 @@ class basis:
         body = f'const size_t switch_code = term_switch_code_generator(bits,J_typenum,T_typenum);\n{switch}'
         return cpp.emit_method('calc_rowptr','size_t',args,body,const_method=False)
 
+    @staticmethod
+    def emit_get_state(inttypes:list, bitbasis:str):
+        args = [
+            cpp.emit_declare('state_index','const size_t'),
+            cpp.emit_declare('output', 'std::vector<int>&'),
+            cpp.emit_declare('length = 0','const int'),
+        ]
+        body = "if(0){}\n"    
+        for  ctype,jtype,ktype,bits in inttypes:
+            body += (
+            f'else if(_bits == {bits}){{\n'\
+            f'    auto state = reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->space->get_state(state_index);\n'\
+            f'    auto state_vec = state.to_vector(length);\n'
+            f'    output.insert(output.end(),state_vec.begin(),state_vec.end());\n'
+            f'}}\n'
+        )
+        
+        return cpp.emit_method("get_state","size_t",args,body,const_method=True)
 
+        
 def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
     on_the_fly_switch_codes,on_the_fly_switch_code_generator = basis.emit_on_the_fly_switch_code_generator(inttypes,symmetric_matrix_types)
     term_switch_codes,term_switch_code_generator = basis.emit_term_switch_code_generator(inttypes,index_types,symmetric_matrix_types)
@@ -283,10 +302,11 @@ def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
     ]
     
     public_list = [
-        basis.emit_calc_rowptr(term_switch_codes,"symmetric_bitbasis"),
-        basis.emit_calc_matrix(term_switch_codes,"symmetric_bitbasis"),
-        basis.emit_on_the_fly_operator_string(on_the_fly_switch_codes,"symmetric_bitbasis"),
-        basis.emit_build_subspace_terms(term_switch_codes,"symmetric_bitbasis")
+        basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis'),
+        basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis'),
+        basis.emit_on_the_fly_operator_string(on_the_fly_switch_codes,'symmetric_bitbasis'),
+        basis.emit_build_subspace_terms(term_switch_codes,'symmetric_bitbasis'),
+        basis.emit_get_state(inttypes,'symmetric_bitbasis')
     ]
     
     return private_list,public_list
@@ -342,7 +362,9 @@ def emit_symmetric_ditbasis_attr(inttypes:list) -> tuple:
         basis.emit_calc_rowptr(term_switch_codes,"symmetric_ditbasis"),
         basis.emit_calc_matrix(term_switch_codes,"symmetric_ditbasis"),
         basis.emit_on_the_fly_operator_string(on_the_fly_switch_codes,"symmetric_ditbasis"),
-        basis.emit_build_subspace_terms(term_switch_codes,"symmetric_ditbasis")
+        basis.emit_build_subspace_terms(term_switch_codes,"symmetric_ditbasis"),
+        basis.emit_get_state(inttypes,'symmetric_ditbasis')
+
     ]
     
     return private_list,public_list
@@ -447,11 +469,11 @@ def emit_basis_abi_body(inttypes:list) -> str:
 def emit_basis_abi_source(use_boost:bool) -> str:
     if use_boost:
         inttypes = [
-            ('quspin::basis::uint32_t'    ,"npy_intp", "quspin::basis::uint8_t",32   ),
-            ('quspin::basis::uint64_t'    ,"npy_intp", "quspin::basis::uint8_t",64   ),
-            ('quspin::basis::uint1024_t' ,"npy_intp", "int"                  ,1024 ),
-            ('quspin::basis::uint4096_t' ,"npy_intp", "int"                  ,4096 ),
-            ('quspin::basis::uint16384_t',"npy_intp" ,"int"                  ,16384),
+            ('quspin::basis::uint32_t'   ,"npy_intp", "quspin::basis::uint8_t",32   ),
+            ('quspin::basis::uint64_t'   ,"npy_intp", "quspin::basis::uint8_t",64   ),
+            ('quspin::basis::uint1024_t' ,"npy_intp", "int"                   ,1024 ),
+            ('quspin::basis::uint4096_t' ,"npy_intp", "int"                   ,4096 ),
+            ('quspin::basis::uint16384_t',"npy_intp", "int"                   ,16384),
         ]
     else:
         inttypes = [

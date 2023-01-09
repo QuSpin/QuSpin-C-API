@@ -524,6 +524,22 @@ public:
         
         }
     }
+
+    size_t get_state(const size_t state_index,std::vector<int>& output,const int length = 0) const 
+    {
+        if(0){}
+        else if(_bits == 32){
+            auto state = reinterpret_pointer_cast<symmetric_bitbasis_32>(basis_ptr)->space->get_state(state_index);
+            auto state_vec = state.to_vector(length);
+            output.insert(output.end(),state_vec.begin(),state_vec.end());
+        }
+        else if(_bits == 64){
+            auto state = reinterpret_pointer_cast<symmetric_bitbasis_64>(basis_ptr)->space->get_state(state_index);
+            auto state_vec = state.to_vector(length);
+            output.insert(output.end(),state_vec.begin(),state_vec.end());
+        }
+        
+    }
 };
 
 class symmetric_ditbasis_abi

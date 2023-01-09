@@ -1,2 +1,2 @@
-#cdef extern from "operator.h":
+#cdef extern from "quspin_abi/operator.h" namespace "quspin_abi":
 #    pass
