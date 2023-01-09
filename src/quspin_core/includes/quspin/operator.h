@@ -204,8 +204,6 @@ public:
 
     template<typename bitset_t,typename contianer_t>
     void op(const bitset_t& s, contianer_t &output) const {
-        const int * perm = perms.data();
-        const T * data = datas.data();
         T m = T(1.0);
         bitset_t r(s);
 
