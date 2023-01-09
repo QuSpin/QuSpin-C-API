@@ -6,19 +6,14 @@
 
 namespace quspin {
 
-template<int base,std::size_t N>
+template<size_t base,size_t N>
 struct integer_pow {
-    enum {value = base * integer_pow<base,N-1>::value};
+    enum pow : size_t {value = base * static_cast<size_t>(integer_pow<base,N-1>::value)};
 };
 
-template<int base>
-struct integer_pow<base,1>{
-    enum {value = base};
-};
-
-template<int base>
-struct integer_pow<base,0>{
-    enum {value = 1};
+template<size_t base>
+struct integer_pow<base,0u>{
+    enum pow : size_t {value = 1};
 };
 
 }

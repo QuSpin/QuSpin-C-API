@@ -168,14 +168,15 @@ class basis:
         return switch_code_ctypes,cpp.emit_method("on_the_fly_switch_code_generator","static size_t",args,method_body,const_method=False)
 
     @staticmethod
-    def emit_on_the_fly_operator_string(codes:dict, bitbasis:str):
+    def emit_on_the_fly(codes:dict, bitbasis:str,operator:str,template:str):
         cases = {}
         
         for code,(bits,I,T,X,Y) in codes.items():
             bit_basis = f'{bitbasis}_{bits}'
+            tmp = template.format(T=T)
             cases[code] = (
                 f'std::reinterpret_pointer_cast<{bit_basis}>(basis_ptr)->on_the_fly'\
-                f'((const quspin::operator_string<{T}>*)terms, '\
+                f'((const {tmp}*)terms, '\
                 f'nterms, '\
                 f'*(const {Y}*)a, '\
                 f'(const {X}*)input, '\
@@ -196,16 +197,17 @@ class basis:
         ]
         switch = cpp.emit_case('switch_code',cases,'return -1;')
         body = f'const size_t switch_code = on_the_fly_switch_code_generator(bits,T_typenum,X_typenum,Y_typenum);\n{switch}'
-        return cpp.emit_method('on_the_fly_operator_string','size_t',args,body,const_method=True)
+        return cpp.emit_method(f'on_the_fly_{operator}','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_calc_rowptr(codes:dict, bitbasis:str):
+    def emit_calc_rowptr(codes:dict, bitbasis:str,operator:str,template:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
+            tmp = template.format(T=T)
             cases[code] = (
                 f'std::reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->calc_rowptr'\
-                f'((const quspin::operator_string<{T}>*)terms, '\
+                f'((const {tmp}*)terms, '\
                 f'nterms, '\
                 f'({J}*)rowptr);'
             )
@@ -218,16 +220,17 @@ class basis:
         ]
         switch = cpp.emit_case('switch_code',cases,'return -1;')
         body = f'const size_t switch_code = term_switch_code_generator(bits,J_typenum,T_typenum);\n{switch}'
-        return cpp.emit_method('calc_rowptr','size_t',args,body,const_method=True)
+        return cpp.emit_method(f'calc_rowptr_{operator}','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_calc_matrix(codes:dict, bitbasis:str):
+    def emit_calc_matrix(codes:dict, bitbasis:str,operator:str,template:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
+            tmp = template.format(T=T)
             cases[code] = (
                 f'std::reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->calc_matrix'\
-                f'((const quspin::operator_string<{T}>*)terms, '\
+                f'((const {tmp}*)terms, '\
                 f'nterms, '\
                 f'({T}*)values, '\
                 f'({J}*)indices, '\
@@ -244,16 +247,17 @@ class basis:
         ]
         switch = cpp.emit_case('switch_code',cases,'return -1;')
         body = f'const size_t switch_code = term_switch_code_generator(bits,J_typenum,T_typenum);\n{switch}'
-        return cpp.emit_method('calc_matrix','size_t',args,body,const_method=True)
+        return cpp.emit_method(f'calc_matrix_{operator}','size_t',args,body,const_method=True)
 
     @staticmethod
-    def emit_build_subspace_terms(codes:dict, bitbasis:str):
+    def emit_build_subspace(codes:dict, bitbasis:str,operator:str,template:str):
         cases = {}
         
         for code,(bits,I,J,T) in codes.items():
+            tmp = template.format(T=T)
             cases[code] = (
                 f'std::reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->build_subspace'\
-                f'((const quspin::operator_string<{T}>*)terms, '\
+                f'((const {tmp}*)terms, '\
                 f'nterms, '\
                 f'seed_state, lhss);'
             )
@@ -266,7 +270,7 @@ class basis:
         ]
         switch = cpp.emit_case('switch_code',cases,'return -1;')
         body = f'const size_t switch_code = term_switch_code_generator(bits,J_typenum,T_typenum);\n{switch}'
-        return cpp.emit_method('calc_rowptr','size_t',args,body,const_method=False)
+        return cpp.emit_method(f'build_subspace_{operator}','size_t',args,body,const_method=False)
 
     @staticmethod
     def emit_get_state(inttypes:list, bitbasis:str):
@@ -302,10 +306,14 @@ def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
     ]
     
     public_list = [
-        basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis'),
-        basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis'),
-        basis.emit_on_the_fly_operator_string(on_the_fly_switch_codes,'symmetric_bitbasis'),
-        basis.emit_build_subspace_terms(term_switch_codes,'symmetric_bitbasis'),
+        basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),        
+        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
         basis.emit_get_state(inttypes,'symmetric_bitbasis')
     ]
     
@@ -359,10 +367,14 @@ def emit_symmetric_ditbasis_attr(inttypes:list) -> tuple:
     ]
     
     public_list = [
-        basis.emit_calc_rowptr(term_switch_codes,"symmetric_ditbasis"),
-        basis.emit_calc_matrix(term_switch_codes,"symmetric_ditbasis"),
-        basis.emit_on_the_fly_operator_string(on_the_fly_switch_codes,"symmetric_ditbasis"),
-        basis.emit_build_subspace_terms(term_switch_codes,"symmetric_ditbasis"),
+        basis.emit_calc_rowptr(term_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
+        basis.emit_calc_rowptr(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
         basis.emit_get_state(inttypes,'symmetric_ditbasis')
 
     ]
@@ -440,6 +452,13 @@ def emit_typedefs(inttypes:list):
        typedefs += [
                 cpp.emit_using(f'dit_subspace_{bits}',f'quspin::basis::dit_subspace<{ctype},{jtype},{ktype}>'),
                 cpp.emit_using(f'symmetric_ditbasis_{bits}',f'quspin::basis::symmetric_basis<dit_subspace_{bits},dit_symmetry<{ctype}>>'),
+       ]
+       
+       typedefs += [
+           cpp.emit_using('operator_string','quspin::operator_string<T>','template<typename T>'),
+           cpp.emit_using('two_body','quspin::N_body_bit_op<T,2>','template<typename T>'),
+           cpp.emit_using('two_body_dit_op','quspin::N_body_dit_op<T,2>','template<typename T>')
+
        ]
     
     return '\n\n'.join(typedefs)
