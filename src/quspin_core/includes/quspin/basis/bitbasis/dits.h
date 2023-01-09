@@ -138,7 +138,7 @@ int get_sub_bitstring(const dit_set<I>& s,const std::array<int,N>& locs){
 template<typename I>
 dit_set<I> set_sub_bitstring(const dit_set<I>& s,const int in,const int i){
     const int shift =  i * s.bits;
-    const I r = s.content ^ ( ( I(in) << shift ) ^ s.content) & (s.mask << shift);
+    const I r = s.content ^ (( ( I(in) << shift ) ^ s.content) & (s.mask << shift));
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 

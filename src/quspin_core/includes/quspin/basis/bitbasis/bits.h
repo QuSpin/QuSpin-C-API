@@ -76,7 +76,7 @@ int get_sub_bitstring(const bit_set<I>& s, const std::array<int,N>& locs){
 
 template<typename I>
 bit_set<I> set_sub_bitstring(const bit_set<I>& s,const int in,const int i){
-    return  bit_set<I>(s.content ^ ( (I(in & 1) << i ) ^ s.content) & (I(1) << i));
+    return  bit_set<I>(s.content ^ (( (I(in & 1) << i ) ^ s.content) & (I(1) << i)));
 }
 
 template<typename I,std::size_t N>
