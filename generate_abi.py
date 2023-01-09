@@ -279,16 +279,17 @@ class basis:
             cpp.emit_declare('output', 'std::vector<int>&'),
             cpp.emit_declare('length = 0','const int'),
         ]
-        body = "if(0){}\n"    
+        cases = {}
         for  ctype,jtype,ktype,bits in inttypes:
-            body += (
-            f'else if(bits == {bits}){{\n'\
+            cases[bits] = (
+            '{\n'
             f'    auto state = reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->space->get_state(state_index);\n'\
             f'    auto state_vec = state.to_vector(length);\n'
             f'    output.insert(output.end(),state_vec.begin(),state_vec.end());\n'
-            f'}}\n'
+            f'    break;\n'
+            '}'
         )
-        
+        body = cpp.emit_case('bits',cases,'throw std::runtime_error("unreachanble reached.");')
         return cpp.emit_method("get_state","void",args,body,const_method=True)
 
         
@@ -310,10 +311,10 @@ def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
         basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),        
         basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),
         basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','operator_string','quspin::operator_string<{T}>'),
-        basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
-        basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
-        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
-        basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        # basis.emit_calc_rowptr(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        # basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        # basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
+        # basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
         basis.emit_get_state(inttypes,'symmetric_bitbasis')
     ]
     
@@ -326,19 +327,32 @@ def emit_symmetric_bitbasis_constructor(inttypes:list) -> str:
         cpp.emit_declare('symmetry','std::shared_ptr<void>'),
         cpp.emit_declare('Ns_est = 0','const size_t'),
     ]
-    body = "if(0){}\n"    
+    # body = "if(0){}\n"    
+    # for  ctype,jtype,ktype,bits in inttypes:
+    #     body += (
+    #     f'else if(_bits == {bits}){{\n'\
+    #     f'    std::shared_ptr<bit_subspace_{bits}> _space = std::make_shared<bit_subspace_{bits}>(Ns_est);\n'\
+    #     f'    std::shared_ptr<bit_symmetry<{ctype}>> _symmetry = std::reinterpret_pointer_cast<bit_symmetry<{ctype}>>(symmetry);\n'\
+    #     f'    std::shared_ptr<symmetric_bitbasis_{bits}> _basis_ptr = std::make_shared<symmetric_bitbasis_{bits}>(*_symmetry,_space);\n'\
+    #     f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'\
+    #     f'}}\n'
+    # )
+
+    # body += 'else{throw std::runtime_error("number of bits not supported");}\n'
+    
+    cases = {}
     for  ctype,jtype,ktype,bits in inttypes:
-        body += (
-        f'else if(_bits == {bits}){{\n'\
+        cases[bits] = (
+        '{\n'
         f'    std::shared_ptr<bit_subspace_{bits}> _space = std::make_shared<bit_subspace_{bits}>(Ns_est);\n'\
         f'    std::shared_ptr<bit_symmetry<{ctype}>> _symmetry = std::reinterpret_pointer_cast<bit_symmetry<{ctype}>>(symmetry);\n'\
         f'    std::shared_ptr<symmetric_bitbasis_{bits}> _basis_ptr = std::make_shared<symmetric_bitbasis_{bits}>(*_symmetry,_space);\n'\
         f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'\
-        f'}}\n'
-    )
+        f'    break;\n'\
+        '}'
+        )
 
-    body +='else{throw std::runtime_error("number of bits not supported");}\n'
-    
+    body = cpp.emit_case("_bits",cases,'throw std::runtime_error("number of bits not supported");')
 
     return cpp.emit_constructor('symmetric_bitbasis_abi',args=args,body=body,
                                 preconstruct='bits(_bits)')
@@ -371,10 +385,10 @@ def emit_symmetric_ditbasis_attr(inttypes:list) -> tuple:
         basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
         basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
         basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','operator_string','quspin::operator_string<{T}>'),
-        basis.emit_calc_rowptr(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
-        basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
-        basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
-        basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        # basis.emit_calc_rowptr(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        # basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        # basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
+        # basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
         basis.emit_get_state(inttypes,'symmetric_ditbasis')
 
     ]

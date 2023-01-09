@@ -52,3 +52,4 @@ CMakeFiles/
 CMakeCache.txt
 doctest/
 install.txt
+**/.DS_Store
