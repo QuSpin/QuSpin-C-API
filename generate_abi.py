@@ -94,12 +94,12 @@ class cpp:
 
 class basis:
     @staticmethod
-    def emit_term_switch_code_generator(inttypes:list,index_types:list,matrix_types:list):
+    def emit_term_switch_code_generator(int_types:list,boost_types:list,index_types:list,matrix_types:list):
         cases = {}
         switch_code = 0
         switch_code_ctypes = {}
 
-        for basis_ctype,basis_jtype,basis_ktype,bits in inttypes:
+        for basis_ctype,basis_jtype,basis_ktype,bits in int_types:
             bits_case_body = 'if(0){}\n'
 
             for index_type in index_types:
@@ -134,14 +134,14 @@ class basis:
         return switch_code_ctypes,cpp.emit_method("term_switch_code_generator","static size_t",args,method_body,const_method=False)
 
     @staticmethod
-    def emit_on_the_fly_switch_code_generator(inttypes:list,matrix_types:list):
+    def emit_on_the_fly_switch_code_generator(int_types:list,boost_types:list,matrix_types:list):
         cases = {}
         switch_code = 0
         switch_code_ctypes = {}
 
         iterate_typenums = [(T,T_typenum) for T in matrix_types for T_typenum in numpy_numtypes[T]]
 
-        for basis_ctype,basis_jtype,basis_ktype,bits in inttypes:
+        for basis_ctype,basis_jtype,basis_ktype,bits in int_types:
             T_cases =  {}
             for (T,T_typenum) in iterate_typenums:
                 X_cases = {}
@@ -273,14 +273,14 @@ class basis:
         return cpp.emit_method(f'build_subspace_{operator}','size_t',args,body,const_method=False)
 
     @staticmethod
-    def emit_get_state(inttypes:list, bitbasis:str):
+    def emit_get_state(int_types:list,boost_types:list, bitbasis:str):
         args = [
             cpp.emit_declare('state_index','const size_t'),
             cpp.emit_declare('output', 'std::vector<int>&'),
             cpp.emit_declare('length = 0','const int'),
         ]
         cases = {}
-        for  ctype,jtype,ktype,bits in inttypes:
+        for  ctype,jtype,ktype,bits in int_types:
             cases[bits] = (
             '{\n'
             f'    auto state = reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->space->get_state(state_index);\n'\
@@ -293,9 +293,9 @@ class basis:
         return cpp.emit_method("get_state","void",args,body,const_method=True)
 
         
-def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
-    on_the_fly_switch_codes,on_the_fly_switch_code_generator = basis.emit_on_the_fly_switch_code_generator(inttypes,symmetric_matrix_types)
-    term_switch_codes,term_switch_code_generator = basis.emit_term_switch_code_generator(inttypes,index_types,symmetric_matrix_types)
+def emit_symmetric_bitbasis_attr(int_types:list,boost_types:list) -> tuple:
+    on_the_fly_switch_codes,on_the_fly_switch_code_generator = basis.emit_on_the_fly_switch_code_generator(int_types,boost_types,symmetric_matrix_types)
+    term_switch_codes,term_switch_code_generator = basis.emit_term_switch_code_generator(int_types,boost_types,index_types,symmetric_matrix_types)
         
     
     private_list = [
@@ -315,20 +315,20 @@ def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
         # basis.emit_calc_matrix(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
         # basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
         # basis.emit_build_subspace(term_switch_codes,'symmetric_bitbasis','two_body','quspin::N_body_bit_op<{T},2>'),
-        basis.emit_get_state(inttypes,'symmetric_bitbasis')
+        basis.emit_get_state(int_types,boost_types,'symmetric_bitbasis')
     ]
     
     return private_list,public_list
 
 
-def emit_symmetric_bitbasis_constructor(inttypes:list) -> str:
+def emit_symmetric_bitbasis_constructor(int_types:list,boost_types:list) -> str:
     args = [
         cpp.emit_declare('_bits','const size_t'),
         cpp.emit_declare('symmetry','std::shared_ptr<void>'),
         cpp.emit_declare('Ns_est = 0','const size_t'),
     ]
     # body = "if(0){}\n"    
-    # for  ctype,jtype,ktype,bits in inttypes:
+    # for  ctype,jtype,ktype,bits in int_types:
     #     body += (
     #     f'else if(_bits == {bits}){{\n'\
     #     f'    std::shared_ptr<bit_subspace_{bits}> _space = std::make_shared<bit_subspace_{bits}>(Ns_est);\n'\
@@ -341,7 +341,7 @@ def emit_symmetric_bitbasis_constructor(inttypes:list) -> str:
     # body += 'else{throw std::runtime_error("number of bits not supported");}\n'
     
     cases = {}
-    for  ctype,jtype,ktype,bits in inttypes:
+    for  ctype,jtype,ktype,bits in int_types:
         cases[bits] = (
         '{\n'
         f'    std::shared_ptr<bit_subspace_{bits}> _space = std::make_shared<bit_subspace_{bits}>(Ns_est);\n'\
@@ -358,18 +358,18 @@ def emit_symmetric_bitbasis_constructor(inttypes:list) -> str:
                                 preconstruct='bits(_bits)')
 
 
-def emit_symmetric_bitbasis_class(inttypes:list) -> str:
+def emit_symmetric_bitbasis_class(int_types:list,boost_types:list) -> str:
     name = 'symmetric_bitbasis_abi'
-    constructor = emit_symmetric_bitbasis_constructor(inttypes)
+    constructor = emit_symmetric_bitbasis_constructor(int_types,boost_types)
     destructor = cpp.emit_destructor(name)
-    private_list,public_list = emit_symmetric_bitbasis_attr(inttypes)
+    private_list,public_list = emit_symmetric_bitbasis_attr(int_types,boost_types)
 
     return cpp.emit_class(name,constructor,destructor,public_list,private_list)
 
 
-def emit_symmetric_ditbasis_attr(inttypes:list) -> tuple:
-    on_the_fly_switch_codes,on_the_fly_switch_code_generator = basis.emit_on_the_fly_switch_code_generator(inttypes,symmetric_matrix_types)
-    term_switch_codes,term_switch_code_generator = basis.emit_term_switch_code_generator(inttypes,index_types,symmetric_matrix_types)
+def emit_symmetric_ditbasis_attr(int_types:list,boost_types:list) -> tuple:
+    on_the_fly_switch_codes,on_the_fly_switch_code_generator = basis.emit_on_the_fly_switch_code_generator(int_types,boost_types,symmetric_matrix_types)
+    term_switch_codes,term_switch_code_generator = basis.emit_term_switch_code_generator(int_types,boost_types,index_types,symmetric_matrix_types)
         
     
     private_list = [
@@ -389,14 +389,14 @@ def emit_symmetric_ditbasis_attr(inttypes:list) -> tuple:
         # basis.emit_calc_matrix(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
         # basis.emit_on_the_fly(on_the_fly_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
         # basis.emit_build_subspace(term_switch_codes,'symmetric_ditbasis','two_body','quspin::N_body_dit_op<{T},2>'),
-        basis.emit_get_state(inttypes,'symmetric_ditbasis')
+        basis.emit_get_state(int_types,boost_types,'symmetric_ditbasis')
 
     ]
     
     return private_list,public_list
 
 
-def emit_symmetric_ditbasis_constructor(inttypes:list) -> str:
+def emit_symmetric_ditbasis_constructor(int_types:list,boost_types:list) -> str:
     args = [
         cpp.emit_declare('_bits','const size_t'),
         cpp.emit_declare('_lhss','const int'),
@@ -405,7 +405,7 @@ def emit_symmetric_ditbasis_constructor(inttypes:list) -> str:
     ]
 
     body = "if(0){}\n"    
-    for  ctype,jtype,ktype,bits in inttypes:
+    for  ctype,jtype,ktype,bits in int_types:
         body += (
         f'else if(_bits == {bits}){{\n'\
         f'    auto _space = std::make_shared<dit_subspace_{bits}>(Ns_est,_lhss);\n'\
@@ -422,24 +422,24 @@ def emit_symmetric_ditbasis_constructor(inttypes:list) -> str:
                                 preconstruct='bits(_bits), lhss(_lhss)')
 
 
-def emit_symmetric_ditbasis_class(inttypes:list) -> str:
+def emit_symmetric_ditbasis_class(int_types:list,boost_types:list) -> str:
     name = 'symmetric_ditbasis_abi'
-    constructor = emit_symmetric_ditbasis_constructor(inttypes)
+    constructor = emit_symmetric_ditbasis_constructor(int_types,boost_types)
     destructor = cpp.emit_destructor(name)
-    private_list,public_list = emit_symmetric_ditbasis_attr(inttypes)
+    private_list,public_list = emit_symmetric_ditbasis_attr(int_types,boost_types)
 
     return cpp.emit_class(name,constructor,destructor,public_list,private_list)
 
 
-def emit_bitbasis_class(inttypes:list) -> str:
+def emit_bitbasis_class(int_types:list,boost_types:list) -> str:
     return ''
 
 
-def emit_ditbasis_class(inttypes:list) -> str:
+def emit_ditbasis_class(int_types:list,boost_types:list) -> str:
     return ''
 
 
-def emit_typedefs(inttypes:list):
+def emit_typedefs(int_types:list,boost_types:list):
     typedefs = [
         cpp.emit_using('bit_perm','quspin::basis::bit_perm<I>','template<typename I>'),
         cpp.emit_using('perm_bit','quspin::basis::perm_bit<I>','template<typename I>'),
@@ -454,36 +454,46 @@ def emit_typedefs(inttypes:list):
         cpp.emit_using('dit_symmetry',
                        'quspin::basis::symmetry<dit_perm<I>,perm_dit<I>,dit_set<I>,npy_cdouble_wrapper>',
                        'template<typename I>'),
+        cpp.emit_using('operator_string','quspin::operator_string<T>','template<typename T>'),
+        cpp.emit_using('two_body','quspin::N_body_bit_op<T,2>','template<typename T>'),
+        cpp.emit_using('two_body_dit_op','quspin::N_body_dit_op<T,2>','template<typename T>'),
         "// concrete definitions",
     ]
-    for ctype,jtype,ktype,bits in inttypes:
+    for ctype,jtype,ktype,bits in (int_types):
        typedefs += [
-                cpp.emit_using(f'bit_subspace_{bits}',f'quspin::basis::bit_subspace<{ctype},{jtype},{ktype}>'),
-                cpp.emit_using(f'symmetric_bitbasis_{bits}',f'quspin::basis::symmetric_basis<bit_subspace_{bits},bit_symmetry<{ctype}>>'),
+            cpp.emit_using(f'bit_subspace_{bits}',f'quspin::basis::bit_subspace<{ctype},{jtype},{ktype}>'),
+            cpp.emit_using(f'bit_fullspace_{bits}',f'quspin::basis::bit_fullspace<{ctype},{jtype}>'),
+            cpp.emit_using(f'dit_subspace_{bits}',f'quspin::basis::dit_subspace<{ctype},{jtype},{ktype}>'),
+            cpp.emit_using(f'dit_fullspace_{bits}',f'quspin::basis::dit_fullspace<{ctype},{jtype}>'),
        ]
-
-    for ctype,jtype,ktype,bits in inttypes:
+    for ctype,jtype,ktype,bits in (boost_types):
        typedefs += [
-                cpp.emit_using(f'dit_subspace_{bits}',f'quspin::basis::dit_subspace<{ctype},{jtype},{ktype}>'),
-                cpp.emit_using(f'symmetric_ditbasis_{bits}',f'quspin::basis::symmetric_basis<dit_subspace_{bits},dit_symmetry<{ctype}>>'),
+            cpp.emit_using(f'bit_subspace_{bits}',f'quspin::basis::bit_subspace<{ctype},{jtype},{ktype}>'),
+            # cpp.emit_using(f'bit_fullspace_{bits}',f'quspin::basis::bit_fullspace<{ctype},{jtype},{ktype}>'),
+            cpp.emit_using(f'dit_subspace_{bits}',f'quspin::basis::dit_subspace<{ctype},{jtype},{ktype}>'),
+            # cpp.emit_using(f'dit_fullspace_{bits}',f'quspin::basis::dit_fullspace<{ctype},{jtype},{ktype}>'),
        ]
        
-       typedefs += [
-           cpp.emit_using('operator_string','quspin::operator_string<T>','template<typename T>'),
-           cpp.emit_using('two_body','quspin::N_body_bit_op<T,2>','template<typename T>'),
-           cpp.emit_using('two_body_dit_op','quspin::N_body_dit_op<T,2>','template<typename T>')
 
-       ]
+    for ctype,jtype,ktype,bits in (int_types+boost_types):
+       typedefs += [
+            cpp.emit_using(f'symmetric_bitbasis_{bits}',f'quspin::basis::symmetric_basis<bit_subspace_{bits},bit_symmetry<{ctype}>>'),
+            cpp.emit_using(f'symmetric_ditbasis_{bits}',f'quspin::basis::symmetric_basis<dit_subspace_{bits},dit_symmetry<{ctype}>>'),
+       ]  
+
+
+
+
     
     return '\n\n'.join(typedefs)
 
-def emit_basis_abi_body(inttypes:list) -> str:
-    typedefs=emit_typedefs(inttypes)
-    symmetric_bitbasis_class = emit_symmetric_bitbasis_class(inttypes)
-    symmetric_ditbasis_class = emit_symmetric_ditbasis_class(inttypes)
+def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
+    typedefs=emit_typedefs(int_types,boost_types)
+    symmetric_bitbasis_class = emit_symmetric_bitbasis_class(int_types,boost_types)
+    symmetric_ditbasis_class = emit_symmetric_ditbasis_class(int_types,boost_types)
 
-    bitbasys_class = emit_bitbasis_class(inttypes)
-    ditbasis_class = emit_ditbasis_class(inttypes)
+    bitbasys_class = emit_bitbasis_class(int_types,boost_types)
+    ditbasis_class = emit_ditbasis_class(int_types,boost_types)
     
     return f"""
 {typedefs}
@@ -501,20 +511,19 @@ def emit_basis_abi_body(inttypes:list) -> str:
 
 def emit_basis_abi_source(use_boost:bool) -> str:
     if use_boost:
-        inttypes = [
-            ('quspin::basis::uint32_t'   ,"npy_intp", "quspin::basis::uint8_t",32   ),
-            ('quspin::basis::uint64_t'   ,"npy_intp", "quspin::basis::uint8_t",64   ),
+        boost_types = [
             ('quspin::basis::uint1024_t' ,"npy_intp", "int"                   ,1024 ),
             ('quspin::basis::uint4096_t' ,"npy_intp", "int"                   ,4096 ),
             ('quspin::basis::uint16384_t',"npy_intp", "int"                   ,16384),
         ]
     else:
-        inttypes = [
-            ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
-            ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
-        ]
-    
-    basis_abi_body = emit_basis_abi_body(inttypes)
+        boost_types = []
+
+    int_types = [
+        ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
+        ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
+    ]    
+    basis_abi_body = emit_basis_abi_body(int_types,boost_types)
     if use_boost:
         boost_header = "#define USE_BOOST"
     else:
