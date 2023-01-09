@@ -278,14 +278,14 @@ class basis:
         body = "if(0){}\n"    
         for  ctype,jtype,ktype,bits in inttypes:
             body += (
-            f'else if(_bits == {bits}){{\n'\
+            f'else if(bits == {bits}){{\n'\
             f'    auto state = reinterpret_pointer_cast<{bitbasis}_{bits}>(basis_ptr)->space->get_state(state_index);\n'\
             f'    auto state_vec = state.to_vector(length);\n'
             f'    output.insert(output.end(),state_vec.begin(),state_vec.end());\n'
             f'}}\n'
         )
         
-        return cpp.emit_method("get_state","size_t",args,body,const_method=True)
+        return cpp.emit_method("get_state","void",args,body,const_method=True)
 
         
 def emit_symmetric_bitbasis_attr(inttypes:list) -> tuple:
