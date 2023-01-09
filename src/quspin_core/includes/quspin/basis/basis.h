@@ -30,25 +30,39 @@ public:
 
     template<typename Container,typename Map, typename J>
     void ref_states_conj(const J i, const Container& col_states,  Map& columns) const {
+         const typename space_t::bitset_t init_state = space->get_state(i);
+
         for(const auto& [state,raw_mat_ele] : col_states){
-            const auto& [ref_state,charater] = symmetry.get_refstate(state);
-            const J j = space->get_index(ref_state);
-            const auto norm_j = space->get_norm(j);
-            const auto norm_i = space->get_norm(i);
-            const auto mat_ele = raw_mat_ele * conj(charater) * std::sqrt(double(norm_j) / norm_i);
-            columns[j] = (columns.count(j) != 0 ?  columns[j] + mat_ele : mat_ele );
+           if (state == init_state){
+                columns[i] = (columns.count(i) != 0 ?  columns[i] + raw_mat_ele : raw_mat_ele );
+            }
+            else{
+                const auto& [ref_state,charater] = symmetry.get_refstate(state);
+                const J j = space->get_index(ref_state);
+                const auto norm_j = space->get_norm(j);
+                const auto norm_i = space->get_norm(i);
+                const auto mat_ele = raw_mat_ele * conj(charater) * std::sqrt(double(norm_j) / norm_i);
+                columns[j] = (columns.count(j) != 0 ?  columns[j] + mat_ele : mat_ele );
+            }
         }
     }
 
     template<typename Container,typename Map, typename J>
     void ref_states(const J i, const Container& row_states, Map& rows) const {
+        const typename space_t::bitset_t init_state = space->get_state(i);
+
         for(const auto& [state,raw_mat_ele] : row_states){
-            const auto& [ref_state,charater] = symmetry.get_refstate(state);
-            J j = space->get_index(ref_state);
-            const auto norm_j = space->get_norm(j);
-            const auto norm_i = space->get_norm(i);
-            const auto mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
-            rows[j] = (rows.count(j) != 0 ?  rows[j] + mat_ele : mat_ele );
+            if (state == init_state){
+                rows[i] = (rows.count(i) != 0 ?  rows[i] + raw_mat_ele : raw_mat_ele );
+            }
+            else{
+                const auto& [ref_state,charater] = symmetry.get_refstate(state);
+                J j = space->get_index(ref_state);
+                const auto norm_j = space->get_norm(j);
+                const auto norm_i = space->get_norm(i);
+                const auto mat_ele =  raw_mat_ele * charater * std::sqrt(double(norm_j) / norm_i);
+                rows[j] = (rows.count(j) != 0 ?  rows[j] + mat_ele : mat_ele );
+            }
         }
     }
 
@@ -259,7 +273,7 @@ public:
 
     template<typename Container,typename Map, typename J>
     void ref_states(const J i, const Container& row_states, Map& rows) const {
-        for(const auto& [state,mat_ele] : row_states){
+        for(const auto& [state,mat_ele] : row_states){            
             const J state_index = space->get_index(state);
             rows[state_index] = (rows.count(state_index) != 0 ? rows[state_index] + mat_ele : mat_ele);
         }
