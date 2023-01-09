@@ -20,11 +20,10 @@ namespace quspin::basis {
 template<typename space_t, typename symmetry_t>
 class symmetric_basis
 {
-private:
+public:
+
     symmetry_t symmetry; // OK to copy
     std::shared_ptr<space_t> space;
-
-public:
 
     symmetric_basis(symmetry_t& _symmetry, std::shared_ptr<space_t> _space) : symmetry(_symmetry), space(_space) {}
     ~symmetric_basis() {}
@@ -158,10 +157,11 @@ public:
         }
 
         using index_t = typename space_t::index_t;
+        using bitset_t = typename space_t::bitset_t;
         using value_type = typename Term::value_type;
 
-        std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states;
-        std::unordered_map<typename space_t::index_t,value_type> matrix_ele;
+        std::vector<std::pair<bitset_t,value_type>> row_states;
+        std::unordered_map<index_t,value_type> matrix_ele;
 
         row_states.reserve(nterms);
 
@@ -241,10 +241,9 @@ public:
 template<typename space_t>
 class basis
 {
-private:
-    std::shared_ptr<space_t> space;
 
 public:
+    std::shared_ptr<space_t> space;
 
     basis(std::shared_ptr<space_t> _space) : space(_space) {}
     ~basis() {}
