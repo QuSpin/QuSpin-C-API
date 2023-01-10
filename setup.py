@@ -4,21 +4,55 @@ from Cython.Build import cythonize
 import numpy as np
 import os,subprocess,sys
 
-def get_extension_kwargs():
-    if sys.platform in ['darwin','linux','linux2']:
-        return dict(
-            extra_compile_args =['--std=c++20'],
-            extra_link_args = [],
-            include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
-        )
+def check_for_boost_includes(include_dirs):
+    for include_dir in include_dirs:
+        print(include_dir)
+        if os.path.exists(os.path.join(include_dir,'boost')):
+            return True
+        
+    return False
+
+def get_include_dirs():
+    from sysconfig import get_paths
+    data_path = get_paths()["data"]
+    
+    include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
+    
+    if sys.platform == 'win32':
+        include_dirs.append(os.path.join(data_path,'Library','include'))
     else:
+         include_dirs.append(os.path.join(data_path,'include'))
+         
+    return include_dirs
+
+def get_extension_kwargs(include_dirs):
+    if sys.platform == 'win32':
         return dict(
             extra_compile_args =  ['/std:c++20'],
             extra_link_args = [],
-            include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
-        )       
-    
-extension_kwargs = get_extension_kwargs()
+            include_dirs = include_dirs
+        )    
+    else:
+        return dict(
+            extra_compile_args =['--std=c++20'],
+            extra_link_args = [],
+            include_dirs = include_dirs
+        )
+ 
+ 
+include_dirs = get_include_dirs()
+   
+if "--boost-includes" in sys.argv:
+    i = sys.argv.index("--boost-includes")
+    include_dirs.append(sys.argv[i+1])
+    sys.argv.pop(i) # remove flag
+    sys.argv.pop(i) # remove argument for flag
+
+
+
+extension_kwargs = get_extension_kwargs(include_dirs)
+use_boost = check_for_boost_includes(include_dirs)
+
 
 with open('README.md', 'r') as f:
     long_description = f.read()
@@ -35,9 +69,10 @@ ext = [
 ]
 
 
+
 subprocess.check_call([sys.executable,
                         os.path.join(os.path.dirname(__file__),
-                                    'generate_abi.py')])
+                            'generate_abi.py'),f'{use_boost}'])
 
 setup(
     name='quspin-core',

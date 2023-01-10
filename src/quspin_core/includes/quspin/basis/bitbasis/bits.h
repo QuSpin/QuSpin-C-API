@@ -18,7 +18,7 @@ template<typename I>
 struct bit_set { // thin wrapper used for convience
     // doesn't allocate any data
     static const int lhss = 2;
-    static const I mask = 1;
+    static constexpr I mask = 1;
     static const dit_integer_t bits = 1;
 
     typedef I bitset_t;
