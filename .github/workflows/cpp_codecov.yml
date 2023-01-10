@@ -1,12 +1,8 @@
 name: C++ codecov upload
 
 on:
-  push:
-    branches: 
-      - main
-  pull_request:
-    branches:
-      - main
+  - push
+  - pull_request
 
 env:
   CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -O0 --std=c++20
