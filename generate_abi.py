@@ -99,12 +99,12 @@ class bosonic_basis:
         self.int_types = int_types
         self.boost_types = boost_types
         self.bit_term = [
-            (0,'quspin::operator_string<{T}>'),
-            (2,'quspin::N_body_bit_op<{T},2>')
+            (0,'quspin::operator_string<{}>'),
+            (2,'quspin::N_body_bit_op<{},2>')
         ]
         self.dit_term = [
-            (0,'quspin::operator_string<{T}>'),
-            (2,'quspin::N_body_dit_op<{T},2>')
+            (0,'quspin::operator_string<{}>'),
+            (2,'quspin::N_body_dit_op<{},2>')
         ]
         
     def emit(self)->str:
@@ -155,7 +155,7 @@ class bosonic_basis:
     def emit_destructor(self)->str:
         return cpp.emit_destructor(self.name)
 
-    def emit_attr(self)->tuple[list,list]:
+    def emit_attr(self)->dict[list,list]:
         private_list = [
             cpp.emit_var('lhss','const int'),
             cpp.emit_var('basis_switch_code','const size_t'),
@@ -174,7 +174,7 @@ class bosonic_basis:
         ]
         return dict(private_list=private_list,public_list=public_list)
 
-    def get_basis_switch_code_switch(self):
+    def get_basis_switch_code_switch(self) -> tuple[str,dict]:
         
         switch_code = 0
         cases = {}
@@ -296,7 +296,7 @@ class bosonic_basis:
         
         return cpp.emit_case('bits',cases,'return -1;'),case_types
     
-    def get_term_switch_code_switch(self):
+    def get_term_switch_code_switch(self) -> tuple[str,dict]:
         cases = {}
         switch_code = 0
         switch_code_types = {}
@@ -316,15 +316,16 @@ class bosonic_basis:
                     matric_typenum = numpy_numtypes[matrix_type]
                     
                     
-                    if 'symmetric' in basis_type:
-                        matrix_type_cases[matric_typenum] = 'return -1;'
+                    if 'symmetric' in basis_type and np.issubdtype(matrix_type,np.integer):
+                        continue
+                        # matrix_type_cases[matric_typenum] = 'return -1;'
                     else:
                         term_cases = {}
                             
                         terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
                         for length,term_type in terms:
                             term_cases[length] = f'return {switch_code};'
-                            switch_code_types[switch_code] = (basis_type,index_ctype,matrix_ctype,term_type.format(T=matrix_ctype))
+                            switch_code_types[switch_code] = (basis_type,index_ctype,matrix_ctype,term_type.format(matrix_ctype))
                             switch_code += 1
                             
                         matrix_type_cases[matric_typenum] = cpp.emit_case("length",term_cases,'return -1;')
@@ -343,7 +344,7 @@ class bosonic_basis:
         
         return method_body,switch_code_types
 
-    def get_otf_switch_code_switch(self):
+    def get_otf_switch_code_switch(self) -> tuple[str,dict]:
         cases = {}
         switch_code = 0
         switch_code_types = {}
@@ -365,7 +366,7 @@ class bosonic_basis:
                             terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
                             for length,term_type in terms:
                                 term_cases[length] = f'return {switch_code};'
-                                switch_code_types[switch_code] = (basis_type,numpy_ctypes[T], numpy_ctypes[X], numpy_ctypes[Y],term_type.format(T=numpy_ctypes[T]))
+                                switch_code_types[switch_code] = (basis_type,numpy_ctypes[T], numpy_ctypes[X], numpy_ctypes[Y],term_type.format(numpy_ctypes[T]))
                                 switch_code += 1
                             
                             term_body = cpp.emit_case('length',term_cases,'return -1;')
@@ -383,7 +384,7 @@ class bosonic_basis:
         method_body = cpp.emit_case("basis_switch_code",cases,'return -1;')
         return method_body,switch_code_types
 
-    def get_build_subspace_switch_code_switch(self):
+    def get_build_subspace_switch_code_switch(self) -> tuple[str,dict]:
         cases = {}
         switch_code = 0
         switch_code_types = {}
@@ -400,15 +401,16 @@ class bosonic_basis:
                 matrix_ctype = numpy_ctypes[matrix_type]
                 matric_typenum = numpy_numtypes[matrix_type]
                 
-                if 'symmetric' in basis_type:
-                     matrix_type_cases[matric_typenum] = 'return -1;'
+                if 'symmetric' in basis_type and np.issubdtype(matrix_type,np.integer):
+                    continue
+                    #  matrix_type_cases[matric_typenum] = 'return -1;'
                 else:
                     term_cases = {}
                     
                     terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
                     for length,term_type in terms:
                         term_cases[length] = f'return {switch_code};'
-                        switch_code_types[switch_code] = (basis_type,matrix_ctype,term_type.format(T=matrix_ctype))
+                        switch_code_types[switch_code] = (basis_type,matrix_ctype,term_type.format(matrix_ctype))
                         switch_code += 1
                         
                     matrix_type_cases[matric_typenum] = cpp.emit_case("length",term_cases,'return -1;')
@@ -568,6 +570,30 @@ class bosonic_basis:
         body = f'const size_t switch_code = generate_build_subspace_switch_code(basis_switch_code,T_typenum,length);\n{switch}'
         return cpp.emit_method(f'build_subspace','size_t',args,body,const_method=False)
 
+class fermionic_basis:
+    def __init__(self,*args):
+        pass
+
+    def emit(self) -> str:
+        return ''
+
+class operator:
+    def __init__(self,int_types:list,boost_types:list) -> NoReturn:
+        self.name = 'operator_abi'
+        self.int_types = int_types
+        self.boost_types = boost_types
+        self.bit_term = [
+            (0,'quspin::operator_string<{T}>'),
+            (2,'quspin::N_body_bit_op<{T},2>')
+        ]
+        self.dit_term = [
+            (0,'quspin::operator_string<{T}>'),
+            (2,'quspin::N_body_dit_op<{T},2>')
+        ]
+
+    def emit(self) -> str:
+        return ''
+
 def emit_typedefs(int_types:list,boost_types:list):
     typedefs = [
         cpp.emit_using('bit_perm','quspin::basis::bit_perm<I>','template<typename I>'),
@@ -623,6 +649,9 @@ def emit_typedefs(int_types:list,boost_types:list):
 def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
     typedefs=emit_typedefs(int_types,boost_types)
     bosonic_basis_class = bosonic_basis(int_types,boost_types).emit()
+    fermionic_basis_class = fermionic_basis(int_types,boost_types).emit()
+    operator_class = operator(int_types,boost_types).emit()
+
     
     return f"""
 {typedefs}
@@ -630,6 +659,9 @@ def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
 // abi class definitions
 {bosonic_basis_class}
 
+{fermionic_basis_class}
+
+{operator_class}
 
 """
 
