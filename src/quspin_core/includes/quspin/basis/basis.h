@@ -430,7 +430,7 @@ public:
             const auto input_state = stack.front();
             stack.pop();
 
-            std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states(2*nterms);
+            std::vector<std::pair<typename space_t::bitset_t,value_type>> row_states;
             for(int i=0;i<nterms;++i){
                 const auto& term = terms[i];
                 term.op(input_state,row_states);
