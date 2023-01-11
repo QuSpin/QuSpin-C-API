@@ -245,6 +245,10 @@ inline double conj(const double& A) {return A;}
 
 inline float conj(const float& A) {return A;}
 
+inline npy_int16 conj(const npy_int16& A) {return A;}
+
+inline npy_int8 conj(const npy_int8& A) {return A;}
+
 inline double real(const npy_cdouble_wrapper& A) {return A.real;}
 
 inline float real(const npy_cfloat_wrapper& A) {return A.real;}
@@ -253,6 +257,10 @@ inline double real(const double& A) {return A;}
 
 inline float real(const float& A) {return A;}
 
+inline npy_int16 real(const npy_int16& A) {return A;}
+
+inline npy_int8 real(const npy_int8& A) {return A;}
+
 inline double imag(const npy_cdouble_wrapper& A) {return A.imag;}
 
 inline float imag(const npy_cfloat_wrapper& A) {return A.imag;}
@@ -260,6 +268,10 @@ inline float imag(const npy_cfloat_wrapper& A) {return A.imag;}
 inline double imag(const double& A) {return 0;}
 
 inline float imag(const float& A) {return 0;}
+
+inline npy_int16 imag(const npy_int16& A) {return 0;}
+
+inline npy_int8 imag(const npy_int8& A) {return 0;}
 
 }
 

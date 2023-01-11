@@ -9,8 +9,9 @@ from itertools import product
 numpy_ctypes={float32:"float",float64:"double",complex64:"npy_cfloat_wrapper",complex128:"npy_cdouble_wrapper",
                 int32:"npy_int32",int64:"npy_int64",int8:"npy_int8",int16:"npy_int16"}
 
-numpy_numtypes={float32:["NPY_FLOAT32"],float64:["NPY_FLOAT64"],complex64:["NPY_COMPLEX64"],complex128:["NPY_COMPLEX128"],
-                int32:["NPY_INT32"],int64:["NPY_INT64"],int16:["NPY_INT16"],int8:["NPY_INT8"]}
+
+numpy_numtypes={float32:"NPY_FLOAT32",float64:"NPY_FLOAT64",complex64:"NPY_COMPLEX64",complex128:"NPY_COMPLEX128",
+                int32:"NPY_INT32",int64:"NPY_INT64",int16:"NPY_INT16",int8:"NPY_INT8"}
 
 real_dtypes={float32:float32, float64:float64, complex64:float32, complex128:float64}
 
@@ -160,16 +161,16 @@ class bosonic_basis:
             cpp.emit_var('basis_switch_code','const size_t'),
             cpp.emit_var('basis_ptr','std::shared_ptr<void>'),
             self.emit_generate_basis_switch_code(),
-            # self.emit_generate_term_switch_code(),
-            # self.emit_generate_otf_switch_code(),
-            # self.emit_generate_build_subspace_switch_code(),
+            self.emit_generate_term_switch_code(),
+            self.emit_generate_otf_switch_code(),
+            self.emit_generate_build_subspace_switch_code(),
         ]
         
         public_list = [
-            # self.emit_calc_rowptr(),
-            # self.emit_calc_matrix(),
-            # self.emit_on_the_fly(),
-            # self.emit_build_subspace(),
+            self.emit_calc_rowptr(),
+            self.emit_calc_matrix(),
+            self.emit_on_the_fly(),
+            self.emit_build_subspace(),
         ]
         return dict(private_list=private_list,public_list=public_list)
 
@@ -306,22 +307,27 @@ class bosonic_basis:
             bits_case_body = 'if(0){}\n'
 
             for index_type in index_types:
-                index_type_num = numpy_numtypes[index_type][0]
+                index_type_num = numpy_numtypes[index_type]
                 index_ctype = numpy_ctypes[index_type]
                 
                 matrix_type_cases = {}
                 for matrix_type in matrix_types:
                     matrix_ctype = numpy_ctypes[matrix_type]
-                    term_cases = {}
+                    matric_typenum = numpy_numtypes[matrix_type]
                     
-                    terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
-                    for length,term_type in terms:
-                        term_cases[length] = f'return {switch_code};'
-                        switch_code_types[switch_code] = (basis_type,index_ctype,matrix_ctype,term_type.format(T=matrix_ctype))
-                        switch_code += 1
-                        
-                    for matrix_type_num in numpy_numtypes[matrix_type]:
-                        matrix_type_cases[matrix_type_num] = cpp.emit_case("length",term_cases,'return -1;')
+                    
+                    if 'symmetric' in basis_type:
+                        matrix_type_cases[matric_typenum] = 'return -1;'
+                    else:
+                        term_cases = {}
+                            
+                        terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
+                        for length,term_type in terms:
+                            term_cases[length] = f'return {switch_code};'
+                            switch_code_types[switch_code] = (basis_type,index_ctype,matrix_ctype,term_type.format(T=matrix_ctype))
+                            switch_code += 1
+                            
+                        matrix_type_cases[matric_typenum] = cpp.emit_case("length",term_cases,'return -1;')
                         
                 matrix_type_case = cpp.emit_case("T_typenum",matrix_type_cases,
                     default='return -1;'
@@ -343,7 +349,7 @@ class bosonic_basis:
         switch_code_types = {}
 
         _,basis_case_types = self.get_basis_switch_code_switch()
-        iterate_typenums = [(T,T_typenum) for T in symmetric_matrix_types for T_typenum in numpy_numtypes[T]]
+        iterate_typenums = [(T,numpy_numtypes[T]) for T in symmetric_matrix_types]
 
         for basis_switch_code,(_,_,basis_type) in basis_case_types.items():
             T_cases =  {}
@@ -351,9 +357,9 @@ class bosonic_basis:
                 X_cases = {}
                 for (X,X_typenum) in iterate_typenums:
                     R = np.result_type(X,T)
-                    for Y in symmetric_matrix_types:
+                    for Y,Y_typenum in iterate_typenums:
                         if R == Y:
-                            Y_conditional = ' || '.join([f'Y_typenum == {Y_typenum}' for Y_typenum in numpy_numtypes[Y]])
+                            Y_conditional = f'Y_typenum == {Y_typenum}'
                             term_cases = {}
                             
                             terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
@@ -392,16 +398,20 @@ class bosonic_basis:
             matrix_type_cases = {}
             for matrix_type in matrix_types:
                 matrix_ctype = numpy_ctypes[matrix_type]
-                term_cases = {}
+                matric_typenum = numpy_numtypes[matrix_type]
                 
-                terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
-                for length,term_type in terms:
-                    term_cases[length] = f'return {switch_code};'
-                    switch_code_types[switch_code] = (basis_type,matrix_ctype,term_type.format(T=matrix_ctype))
-                    switch_code += 1
+                if 'symmetric' in basis_type:
+                     matrix_type_cases[matric_typenum] = 'return -1;'
+                else:
+                    term_cases = {}
                     
-                for matrix_type_num in numpy_numtypes[matrix_type]:
-                    matrix_type_cases[matrix_type_num] = cpp.emit_case("length",term_cases,'return -1;')
+                    terms = (self.bit_term if 'bit' in basis_type else self.dit_term)
+                    for length,term_type in terms:
+                        term_cases[length] = f'return {switch_code};'
+                        switch_code_types[switch_code] = (basis_type,matrix_ctype,term_type.format(T=matrix_ctype))
+                        switch_code += 1
+                        
+                    matrix_type_cases[matric_typenum] = cpp.emit_case("length",term_cases,'return -1;')
                     
             cases[basis_switch_code] = cpp.emit_case("T_typenum",matrix_type_cases,
                 default='return -1;'
