@@ -1,9 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest.h>
 
-
 #define QUSPIN_UNIT_TESTS
+#define USE_STD_COMPLEX
+
 #include "quspin/quspin.h"
+
+
 
 int main(int argc, char **argv) {
     doctest::Context context;

@@ -181,7 +181,7 @@ public:
     typedef int norm_t;
 
 
-    bit_fullspace(const J _Ns) : Ns(_Ns) {}
+    bit_fullspace(const J _Ns,const int _lhss = 2) : Ns(_Ns) {}
     ~bit_fullspace() {}
 
     inline size_t size() const { return Ns;}
@@ -211,14 +211,14 @@ public:
     typedef J index_t;
     typedef K norm_t;
 
-    bit_subspace(const J Ns_est) {
+    bit_subspace(const J Ns_est,const int _lhss = 2) {
         states.reserve(Ns_est);
         index_map.reserve(Ns_est*2);
     }
     ~bit_subspace() {}
 
-    inline size_t size() const { return states.size();}
-    inline size_t get_Ns() const { return states.size();}
+    inline J size() const { return states.size();}
+    inline J get_Ns() const { return states.size();}
     inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {

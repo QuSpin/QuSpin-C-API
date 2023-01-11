@@ -15,7 +15,7 @@ typedef std::uint16_t uint16_t;
 typedef std::uint32_t uint32_t;
 typedef std::uint64_t uint64_t;
 
-typedef uint_fast8_t dit_integer_t; 
+typedef int dit_integer_t; 
 
 #ifdef USE_BOOST
 typedef boost::multiprecision::uint128_t uint128_t;

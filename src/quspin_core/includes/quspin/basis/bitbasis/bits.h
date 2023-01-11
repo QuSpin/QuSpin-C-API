@@ -18,7 +18,7 @@ template<typename I>
 struct bit_set { // thin wrapper used for convience
     // doesn't allocate any data
     static const int lhss = 2;
-    static const I mask = 1;
+    static constexpr I mask = 1;
     static const dit_integer_t bits = 1;
 
     typedef I bitset_t;
@@ -27,7 +27,7 @@ struct bit_set { // thin wrapper used for convience
     bit_set(const I _content) : content(_content) {}
     bit_set(const bit_set<I>& other) : content(other.content) {}
 
-    bit_set(const std::vector<dit_integer_t>& bits_vec){
+    bit_set(const std::vector<dit_integer_t>& bits_vec, const int lhss = 2){
         content = 0;
         for(int i=0;i<bits_vec.size();i++){
             content |= (I(bits_vec[i]) << i*bits);
@@ -76,7 +76,7 @@ int get_sub_bitstring(const bit_set<I>& s, const std::array<int,N>& locs){
 
 template<typename I>
 bit_set<I> set_sub_bitstring(const bit_set<I>& s,const int in,const int i){
-    return  bit_set<I>(s.content ^ ( (I(in & 1) << i ) ^ s.content) & (I(1) << i));
+    return  bit_set<I>(s.content ^ (( (I(in & 1) << i ) ^ s.content) & (I(1) << i)));
 }
 
 template<typename I,std::size_t N>

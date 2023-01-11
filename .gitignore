@@ -33,6 +33,8 @@
 
 basis.cpp
 operator.cpp
+**/basis_abi.h
+**/operator_abi.h
 
 dist/
 *.egg
@@ -50,3 +52,4 @@ CMakeFiles/
 CMakeCache.txt
 doctest/
 install.txt
+**/.DS_Store

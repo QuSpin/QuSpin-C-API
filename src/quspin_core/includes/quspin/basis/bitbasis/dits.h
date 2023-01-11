@@ -56,13 +56,12 @@ static const quspin::basis::dit_integer_t mask[255] = {
 // local degrees of freedom stored in contiguous chunks of bits
 template<typename I>
 struct dit_set { // thin wrapper used for convience
-    
+    I content;
     int lhss;
     I mask;
     dit_integer_t bits;
 
     typedef I bitset_t;
-    I content;
 
     dit_set(I _content,const int _lhss, const I _mask, const dit_integer_t bits) : 
     content(_content), 
@@ -139,7 +138,7 @@ int get_sub_bitstring(const dit_set<I>& s,const std::array<int,N>& locs){
 template<typename I>
 dit_set<I> set_sub_bitstring(const dit_set<I>& s,const int in,const int i){
     const int shift =  i * s.bits;
-    const I r = s.content ^ ( ( I(in) << shift ) ^ s.content) & (s.mask << shift);
+    const I r = s.content ^ (( ( I(in) << shift ) ^ s.content) & (s.mask << shift));
     return  dit_set<I>(r,s.lhss,s.mask,s.bits);
 }
 
