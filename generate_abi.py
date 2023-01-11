@@ -805,15 +805,14 @@ class operator:
             **self.emit_attr()
         )  
 
-
     def emit_constructor(self)->str:
-        args = [
 
-        ]
-
-        body = ''
-
-        return cpp.emit_constructor(self.name,args=args,body=body)
+        return (
+            self.emit_constructor_operator_string() + 
+            '\n' + 
+            self.emit_constructor_two_body()
+        
+        )
 
     def emit_destructor(self)->str:
         return cpp.emit_destructor(self.name)
@@ -827,12 +826,61 @@ class operator:
         ]
         return dict(private_list=private_list,public_list=public_list)
 
+
+    def emit_constructor_operator_string(self):
+        args = [
+            cpp.emit_declare('_T_typenum','NPY_TYPES'),
+            cpp.emit_declare('_lhss','const int'),
+            cpp.emit_declare('args','std::vector<operator_string_args>&')
+        ]
+
+        body = ''
+        
+        return cpp.emit_constructor(self.name,args,body,
+            preconstruct='T_typenum(_T_typenum), \nlength(0), \nnterms(_nterms), \ntype_switch_code(0,_lhss,_T_typenum)'
+        )
+
+    def emit_constructor_two_body(self):
+        args = [
+            cpp.emit_declare('_T_typenum','NPY_TYPES'),
+            cpp.emit_declare('_lhss','const int'),
+            cpp.emit_declare('args','std::vector<two_body_args>&')
+        ]
+
+        body = ''
+        
+        return cpp.emit_constructor(self.name,args,body,
+            preconstruct='T_typenum(_T_typenum), \nlength(2), \nnterms(args.size()), \ntype_switch_code(2,_lhss,_T_typenum)'
+        )
+
+def emit_operator_abi_typedefs():
+    return """
+
+struct operator_string_args {
+    // store each the data for each operator
+    // as a void*. data will be recast to the 
+    // appropriate pointer type and copied later.
+    std::vector<int> locs;
+    std::vector<void*> datas;
+    std::vector<std::vector>> perms;
+};
+
+struct two_body_args {
+    // store each the data as a void*. 
+    // data will be recast to the appropriate
+    // pointer type and copied later.
+    std::vector<int> locs;
+    void* data;
+};"""
+
 def emit_operator_abi_body():
+    typedefs = emit_operator_abi_typedefs()
     operator_class = operator().emit()
     
     return f"""
-// abi class definitions
+{typedefs}
 
+// abi class definitions
 {operator_class}
 
 """
