@@ -276,4 +276,11 @@ inline npy_int8 imag(const npy_int8& A) {return 0;}
 }
 
 
+namespace quspin {
+    using namespace quspin_abi; // insert these definitions into quspin namespace
+}
+
+#include <quspin/quspin.h>
+
+
 #endif

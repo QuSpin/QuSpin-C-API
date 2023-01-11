@@ -577,24 +577,7 @@ class fermionic_basis:
     def emit(self) -> str:
         return ''
 
-class operator:
-    def __init__(self,int_types:list,boost_types:list) -> NoReturn:
-        self.name = 'operator_abi'
-        self.int_types = int_types
-        self.boost_types = boost_types
-        self.bit_term = [
-            (0,'quspin::operator_string<{T}>'),
-            (2,'quspin::N_body_bit_op<{T},2>')
-        ]
-        self.dit_term = [
-            (0,'quspin::operator_string<{T}>'),
-            (2,'quspin::N_body_dit_op<{T},2>')
-        ]
-
-    def emit(self) -> str:
-        return ''
-
-def emit_typedefs(int_types:list,boost_types:list):
+def emit_basis_abi_typedefs(int_types:list,boost_types:list):
     typedefs = [
         cpp.emit_using('bit_perm','quspin::basis::bit_perm<I>','template<typename I>'),
         cpp.emit_using('perm_bit','quspin::basis::perm_bit<I>','template<typename I>'),
@@ -647,11 +630,9 @@ def emit_typedefs(int_types:list,boost_types:list):
     return '\n\n'.join(typedefs)
 
 def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
-    typedefs=emit_typedefs(int_types,boost_types)
+    typedefs=emit_basis_abi_typedefs(int_types,boost_types)
     bosonic_basis_class = bosonic_basis(int_types,boost_types).emit()
     fermionic_basis_class = fermionic_basis(int_types,boost_types).emit()
-    operator_class = operator(int_types,boost_types).emit()
-
     
     return f"""
 {typedefs}
@@ -660,8 +641,6 @@ def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
 {bosonic_basis_class}
 
 {fermionic_basis_class}
-
-{operator_class}
 
 """
 
@@ -686,9 +665,9 @@ def emit_basis_abi_source(use_boost:bool) -> str:
     else:
         boost_header = ""
         
-    return f"""#ifndef __QUSPIN_BASIS_ABI__
-#define __QUSPIN_BASIS_ABI__
-#define __QUSPIN_VERSION__ "{__version__}"
+    return f"""#ifndef __QUSPIN_CORE_BASIS_ABI__
+#define __QUSPIN_CORE_BASIS_ABI__
+#define __QUSPIN_CORE_VERSION__ "{__version__}"
 {boost_header}
 
 #include <numpy/ndarrayobject.h>
@@ -696,16 +675,162 @@ def emit_basis_abi_source(use_boost:bool) -> str:
 #include <quspin_abi/complex_ops.h>
 #include <memory>
 
-namespace quspin {{
-    using namespace quspin_abi;
-}}
-
 #include <quspin/quspin.h>
+
 
 namespace quspin_abi {{
 {basis_abi_body}
 }}
 #endif"""
+
+
+
+
+class operator:
+    r"""operator class design
+    
+    ```
+    class operator_abi
+    {
+    private:
+        NPY_TYPES T_typenum;
+        const int length;
+        const int nterms;
+        
+        const size_t type_switch_code;
+        std::vector<quspin::operator_string<npy_int8> operator_string_npy_int8;
+        std::vector<quspin::N_body_bit_op<npy_int8,2> two_body_bit_op_npy_int8;
+        std::vector<quspin::N_body_dit_op<npy_int8,2> two_body_dit_op_npy_int8;
+        std::vector<quspin::operator_string<npy_int16> operator_string_npy_int16;
+        std::vector<quspin::N_body_bit_op<npy_int16,2> two_body_bit_op_npy_int16;
+        std::vector<quspin::N_body_dit_op<npy_int16,2> two_body_dit_op_npy_int16;
+        //... all operator types
+
+        static size_t generate_type_switch_code(
+            const int length,
+            const int lhss, // doesn't matter for operator_string
+            NPY_TYPE T_typenum)
+        {
+            // ... generate switch codes
+        }
+
+    public:
+        // define two constructors, one for operator_strings and one for two_body_... terms
+        operator_abi(
+            \\ ... arg for operator_string
+            ) : T_typenum(_T_typenum), length(0), nterms(_nterms), type_switch_code(0,_lhss,_T_typenum)
+        {
+            switch(type_switch_code)
+            {
+                // initialize for each case
+                // skip two_body_...
+            }
+        }
+        
+        operator_abi(
+            \\ ... arg for two_body_... terms
+            ) T_typenum(_T_typenum), length(2), nterms(_nterms), type_switch_code(2,_lhss,_T_typenum)
+        {
+            switch(type_switch_code)
+            {
+                // initialize for each case
+                // skip operator_string
+            }
+        }
+        
+        ~operator_abi()
+        {
+            
+        }
+        
+        NPY_TYPES get_typenum() const {return T_typenum;}
+        const int get_length() const {return length;}
+        const int get_nterms() const{ return nterms;}         
+        void* data() const {
+            switch(type_switch_code)
+            {
+                // return the appropriate (void*)vector.data();
+            }
+        }
+
+    };
+    ```
+
+    """
+    
+    def __init__(self) -> NoReturn:
+        self.name = 'operator_abi'
+        self.bit_term = [
+            (0,'quspin::operator_string<{T}>'),
+            (2,'quspin::N_body_bit_op<{T},2>')
+        ]
+        self.dit_term = [
+            (0,'quspin::operator_string<{T}>'),
+            (2,'quspin::N_body_dit_op<{T},2>')
+        ]
+
+    def emit(self)->str:
+        return cpp.emit_class(
+            self.name,
+            self.emit_constructor(),
+            self.emit_destructor(),
+            **self.emit_attr()
+        )  
+
+
+    def emit_constructor(self)->str:
+        args = [
+
+        ]
+
+        body = ''
+
+        return cpp.emit_constructor(self.name,args=args,body=body)
+
+    def emit_destructor(self)->str:
+        return cpp.emit_destructor(self.name)
+
+    def emit_attr(self)->dict[list,list]:
+        private_list = [
+
+        ]
+        
+        public_list = [
+        ]
+        return dict(private_list=private_list,public_list=public_list)
+
+def emit_operator_abi_body():
+    operator_class = operator().emit()
+    
+    return f"""
+// abi class definitions
+
+{operator_class}
+
+"""
+    
+def emit_operator_abi_source(use_boost:bool) -> str:
+ 
+    operator_abi_body = emit_operator_abi_body()
+        
+    return f"""#ifndef __QUSPIN_CORE_OPERATOR_ABI__
+#define __QUSPIN_CORE_OPERATOR_ABI__
+#define __QUSPIN_CORE_VERSION__ "{__version__}"
+
+
+#include <numpy/ndarrayobject.h>
+#include <numpy/ndarraytypes.h>
+#include <quspin_abi/complex_ops.h>
+#include <memory>
+#include <vector>
+
+#include <quspin/quspin.h>
+
+
+namespace quspin_abi {{
+{operator_abi_body}
+}}
+#endif"""    
 
 if __name__ == '__main__':
     try:
@@ -715,6 +840,11 @@ if __name__ == '__main__':
         
     pwd = os.path.split(os.path.abspath(__file__))[0]
     exec(open(os.path.join(pwd,"src","quspin_core","_version.py")).read())
-    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_abi','basis_abi.h'),'w') as IO:
+    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','basis_abi.h'),'w') as IO:
         IO.write(emit_basis_abi_source(use_boost))
+        
+        
+    pwd = os.path.split(os.path.abspath(__file__))[0]
+    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','operator_abi.h'),'w') as IO:
+        IO.write(emit_operator_abi_source(use_boost))
         
