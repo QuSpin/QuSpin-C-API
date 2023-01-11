@@ -46,12 +46,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: main
-        
+
     - name: Get boost headers
-      uses: actions/checkout@v3
-      with:
-        repository: 'scipy/boost-headers-only'
-        path: boost-headers-only
+      run: |
+        wget https://github.com/scipy/boost-headers-only/archive/refs/heads/main.zip -O ${{github.workspace}}/main.zip
+        7z x main.zip
 
     - uses: actions/setup-python@v4
       with:
