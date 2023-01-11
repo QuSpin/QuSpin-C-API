@@ -43,6 +43,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Get boost headers
+      uses: actions/checkout@v3
+      with:
+        repository: 'scipy/boost-headers-only'
+
     - uses: actions/setup-python@v4
       with:
         python-version: ${{matrix.config.py_version}} 

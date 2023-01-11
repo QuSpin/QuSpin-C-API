@@ -258,7 +258,7 @@ class bosonic_basis:
             switch_code += 1
             
             bit_body = (
-                f'if(_symmetry)\n'\
+                f'if(symmetry)\n'\
                 f'{{\n'\
                 f'    {bit_symmetry_body}\n'
                 f'}}\n'\

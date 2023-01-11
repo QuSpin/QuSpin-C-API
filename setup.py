@@ -6,11 +6,16 @@ import os,subprocess,sys
 
 def check_for_boost_includes(include_dirs):
     for include_dir in include_dirs:
-        print(include_dir)
         if os.path.exists(os.path.join(include_dir,'boost')):
-            return True
-        
-    return False
+            return True,include_dirs
+    
+    # check of boost is installed in local workspace
+    for root, dirs, files in os.walk(".", topdown=True):
+        if 'boost' in dirs:
+            include_dirs.append(root)
+            return True,include_dirs
+            
+    return False,include_dirs
 
 def get_include_dirs():
     from sysconfig import get_paths
@@ -51,7 +56,11 @@ if "--boost-includes" in sys.argv:
 
 
 extension_kwargs = get_extension_kwargs(include_dirs)
-use_boost = check_for_boost_includes(include_dirs)
+use_boost,include_dirs = check_for_boost_includes(include_dirs)
+
+print(include_dirs)
+
+exit()
 
 
 with open('README.md', 'r') as f:
