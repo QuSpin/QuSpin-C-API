@@ -33,7 +33,8 @@ private:
     std::vector<T> data;
     std::vector<bool> nonzero;
 
-public:
+public:    
+    static const int length = N;
     typedef T value_type;
 
     static int get_power(const int _lhss) {
@@ -95,7 +96,6 @@ class N_body_bit_op
 {
     //
 private: 
-    
     static const size_t dim = static_cast<size_t>(integer_pow<2,N>::value);
 
     std::array<int,N> locs;
@@ -103,6 +103,7 @@ private:
     std::array<bool,dim*dim> nonzero;
 
 public:
+    static const int length = N;
     typedef T value_type;
 
     N_body_bit_op(std::vector<int> _locs,std::vector<T> &_data)
@@ -164,7 +165,7 @@ private:
     std::vector<T> inv_datas; // matrix elements for dagger operator.
 
 public:
-
+    static const int length=0;
     typedef T value_type;
 
     operator_string(std::vector<int> _locs,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 

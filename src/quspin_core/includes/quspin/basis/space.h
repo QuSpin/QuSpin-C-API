@@ -181,7 +181,7 @@ public:
     typedef int norm_t;
 
 
-    bit_fullspace(const J _Ns) : Ns(_Ns) {}
+    bit_fullspace(const J _Ns,const int _lhss = 2) : Ns(_Ns) {}
     ~bit_fullspace() {}
 
     inline size_t size() const { return Ns;}
@@ -211,7 +211,7 @@ public:
     typedef J index_t;
     typedef K norm_t;
 
-    bit_subspace(const J Ns_est) {
+    bit_subspace(const J Ns_est,const int _lhss = 2) {
         states.reserve(Ns_est);
         index_map.reserve(Ns_est*2);
     }
