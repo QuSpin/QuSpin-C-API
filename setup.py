@@ -54,9 +54,8 @@ if "--boost-includes" in sys.argv:
     sys.argv.pop(i) # remove argument for flag
 
 
-
-extension_kwargs = get_extension_kwargs(include_dirs)
 use_boost,include_dirs = check_for_boost_includes(include_dirs)
+extension_kwargs = get_extension_kwargs(include_dirs)
 
 with open('README.md', 'r') as f:
     long_description = f.read()
