@@ -22,6 +22,7 @@ symmetric_matrix_types = [float32,float64,complex64,complex128]
 on_the_fly_types = [float32,float64,complex64,complex128]
 
 class cpp:
+    """A collection of methods useful for generating C++ code."""
     
     @staticmethod
     def emit_declare(name:str,type:str) -> str:
@@ -94,6 +95,23 @@ class cpp:
         return f'class {name}\n{{\nprivate:\n{private_attr}\npublic:\n\n{constructor}\n\n{destructor}\n\n{public_attr}\n}};'
 
 class bosonic_basis:
+    """Class to generate basis ABI for bosonic basis types
+    
+    this class is used to generate the quspin-core bosonic_basis ABI (application backend interface).
+    The high idea is to put all possible basis+(integer types) + (numpy types) into a single
+    C++ class. functions defined as static methods of the cless give a switch_code that is used
+    to dispatch the possible template and basis type methods to remove the usage of explicitly 
+    basis types as well as the costly-to-compile cython composite types. 
+    
+    In cython there will only be a thin class wrapper to handle the python/numpy inputs.
+    
+    bosonic_basis ABI implementation design:
+    
+    ```C++
+    
+    ```
+    
+    """
     def __init__(self,int_types:list,boost_types:list) -> NoReturn:
         self.name = 'bosonic_basis_abi'
         self.int_types = int_types
@@ -687,9 +705,19 @@ namespace quspin_abi {{
 
 
 class operator:
-    r"""operator class design
+    r"""class to generate QuSpin-Core operator ABI
     
-    ```
+    this class is used to generate the quspin-core operator ABI (application backend interface).
+    The high idea is to put all possible (term types) + (numpy types) into a single
+    C++ class. functions defined as static methods of the cless give a switch_code that is used
+    to dispatch the possible template and term type methods to remove the usage of explicitly 
+    term types as well as the costly-to-compile cython composite types. 
+    
+    In cython there will only be a thin class wrapper to handle the python/numpy inputs. 
+    
+    operator ABI class design
+     
+    ```C++
     class operator_abi
     {
     private:
