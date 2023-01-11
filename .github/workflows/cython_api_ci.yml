@@ -49,6 +49,7 @@ jobs:
       run: |
         wget https://github.com/scipy/boost-headers-only/archive/refs/heads/main.zip -O ${{github.workspace}}/main.zip
         7z x main.zip
+        rm main.zip
 
     - uses: actions/setup-python@v4
       with:
