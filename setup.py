@@ -58,11 +58,6 @@ if "--boost-includes" in sys.argv:
 extension_kwargs = get_extension_kwargs(include_dirs)
 use_boost,include_dirs = check_for_boost_includes(include_dirs)
 
-print(include_dirs)
-
-exit()
-
-
 with open('README.md', 'r') as f:
     long_description = f.read()
 
