@@ -184,7 +184,7 @@ public:
     bit_fullspace(const J _Ns,const int _lhss = 2) : Ns(_Ns) {}
     ~bit_fullspace() {}
 
-    inline size_t size() const { return Ns;}
+    inline J size() const { return Ns;}
     inline size_t get_Ns() const { return Ns;}
 
    inline bitset_t get_state(const J index) const {
