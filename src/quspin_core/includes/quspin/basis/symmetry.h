@@ -171,10 +171,11 @@ template <typename I>
 class perm_bit // permutations of the bit states locally
 {
 private:
-    I mask; // which bits to flip
+    const I mask; // which bits to flip
 
 public:
     perm_bit(const I _mask) : mask(_mask) { }
+    perm_bit(const std::vector<int>& mask_vec) : mask(bit_set<I>(mask_vec).content) {}
     ~perm_bit() {}
 
     template<typename T>
@@ -314,6 +315,7 @@ template class symmetry<bit_perm<uint8_t>,perm_bit<uint8_t>,bit_set<uint8_t>,dou
 }
 
 TEST_SUITE("quspin/basis/symmetry.h"){
+    #include <memory>
     using namespace quspin::basis;
 
     TEST_CASE("bit_perm"){
@@ -368,23 +370,42 @@ TEST_SUITE("quspin/basis/symmetry.h"){
 
     TEST_CASE("perm_bit"){
         const uint8_t mask = 0b00110101;
-        perm_bit<uint8_t> pb(mask);
+        std::unique_ptr<perm_bit<uint8_t>> pb = std::make_unique<perm_bit<uint8_t>>(mask);
         bit_set<uint8_t> bit_state({0,1,0,1,1,1,0,0});
         double coeff = 1.0;
 
-        auto result = pb.app(bit_state,coeff);
+        auto result = pb->app(bit_state,coeff);
         CHECK(coeff == 1.0);
         CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
 
-        result = pb.inv(bit_state,coeff);
+        result = pb->inv(bit_state,coeff);
         CHECK(coeff == 1.0);
         CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
 
-        result = pb.app(pb.inv(bit_state,coeff),coeff);
+        result = pb->app(pb->inv(bit_state,coeff),coeff);
         CHECK(coeff == 1.0);
         CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
 
-        result = pb.inv(pb.app(bit_state,coeff),coeff);
+        result = pb->inv(pb->app(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+        std::vector<int> mask_vec = {1,0,1,0,1,1,0,0};
+        pb = std::make_unique<perm_bit<uint8_t>>(mask_vec);
+
+        result = pb->app(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
+
+        result = pb->inv(bit_state,coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "1 1 1 1 0 0 0 0 ");
+
+        result = pb->app(pb->inv(bit_state,coeff),coeff);
+        CHECK(coeff == 1.0);
+        CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
+
+        result = pb->inv(pb->app(bit_state,coeff),coeff);
         CHECK(coeff == 1.0);
         CHECK(result.to_string() == "0 1 0 1 1 1 0 0 ");
 
