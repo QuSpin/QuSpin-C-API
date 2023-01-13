@@ -29,7 +29,7 @@ struct bit_set { // thin wrapper used for convience
 
     bit_set(const std::vector<dit_integer_t>& bits_vec, const int lhss = 2){
         content = 0;
-        for(int i=0;i<bits_vec.size();i++){
+        for(size_t i=0;i<bits_vec.size();i++){
             content |= (I(bits_vec[i]) << i*bits);
         }
     }

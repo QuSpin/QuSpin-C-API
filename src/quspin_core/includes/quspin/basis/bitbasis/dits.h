@@ -87,7 +87,7 @@ struct dit_set { // thin wrapper used for convience
     bits(constants::bits[_lhss])
     {
         content = 0;
-        for(int i=0;i<dits.size();i++){
+        for(size_t i=0;i<dits.size();i++){
             content |= (I(dits[i]) << i*bits);
         }
     }

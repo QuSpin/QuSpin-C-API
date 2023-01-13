@@ -205,7 +205,7 @@ public:
         assert(_lat_symm.size() == _lat_char.size());
         assert(_loc_symm.size() == _loc_char.size());
 
-        for(int i=0;i<lat_symm.size();i++){
+        for(size_t i=0;i<lat_symm.size();i++){
             lat_symm.emplace_back(_lat_symm[i]);
             lat_char.emplace_back(_lat_char[i]);
             loc_symm.emplace_back(_loc_symm[i]);
@@ -225,10 +225,10 @@ public:
         T sign = T(1);
         T coeff = T(1);
         
-        for(int i=0;i<loc_symm.size();++i) 
+        for(size_t i=0;i<loc_symm.size();++i) 
         {
             const auto r = loc_symm[i].app(s,sign);
-            for(int j=0;j<lat_symm.size();++j)
+            for(size_t j=0;j<lat_symm.size();++j)
             {
                 const auto rr = lat_symm[i].app(r,sign);
 
@@ -249,10 +249,10 @@ public:
 
         dits_or_bits ss(s);
 
-        for(int i=0;i<loc_symm.size();++i) 
+        for(size_t i=0;i<loc_symm.size();++i) 
         {
             const auto r = loc_symm[i].app(s,sign);
-            for(int j=0;j<lat_symm.size();++j)
+            for(size_t j=0;j<lat_symm.size();++j)
             {
                 const auto rr = lat_symm[i].app(r,sign);
                 if(rr == s) norm += real(sign * lat_char[j] * loc_char[i]);
@@ -266,10 +266,10 @@ public:
         double norm=0.0;
         T sign = T(1);
 
-        for(int i=0;i<loc_symm.size();++i) 
+        for(size_t i=0;i<loc_symm.size();++i) 
         {
             const auto r = loc_symm[i].app(s,sign);
-            for(int j=0;j<lat_symm.size();++j)
+            for(size_t j=0;j<lat_symm.size();++j)
             {
                 const auto rr = lat_symm[i].app(r,sign);
 

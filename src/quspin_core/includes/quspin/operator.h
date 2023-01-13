@@ -96,7 +96,7 @@ class N_body_bit_op
 {
     //
 private: 
-    static const size_t dim = static_cast<size_t>(integer_pow<2,N>::value);
+    static const int dim = static_cast<size_t>(integer_pow<2,N>::value);
 
     std::array<int,N> locs;
     std::array<T,dim*dim> data;

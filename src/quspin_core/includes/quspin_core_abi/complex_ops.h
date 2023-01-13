@@ -6,7 +6,10 @@
  */
 #include <numpy/arrayobject.h>
 
-namespace quspin_abi {
+
+
+
+namespace quspin_core_abi {
 
 template <class c_type, class npy_type>
 class complex_wrapper : public npy_type {
@@ -274,6 +277,13 @@ inline npy_int16 imag(const npy_int16& A) {return 0;}
 inline npy_int8 imag(const npy_int8& A) {return 0;}
 
 }
+
+
+namespace quspin {
+    using namespace quspin_core_abi; // insert these definitions into quspin namespace
+}
+
+#include <quspin/quspin.h>
 
 
 #endif
