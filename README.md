@@ -72,13 +72,17 @@ Low-level C++ and Cython API for QuSpin
 
 3. design C++ ABI (Application backend interface) 
 
+    ~~a. preliminary design concept and implementation.~~
+    
+    b. revise during development of Cython API
+
 4. Cython API:
 
     a. design
     
     b. test
     
-5. fermion core API:
+5. fermion core ABI/API:
     
     a. design
     
