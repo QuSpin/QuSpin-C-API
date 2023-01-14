@@ -1,5 +1,5 @@
-#ifndef COMPLEX_OPS_H
-#define COMPLEX_OPS_H
+#ifndef __QUSPIN_CORE_COMPLEX_OPS__
+#define __QUSPIN_CORE_COMPLEX_OPS__
 
 /*
  *  Functions to handle arithmetic operations on NumPy complex values
