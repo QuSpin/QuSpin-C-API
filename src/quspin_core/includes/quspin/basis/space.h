@@ -55,6 +55,11 @@ public:
         return Ns - integer<J,I>::cast(state.content) - 1;
     }
 
+    J get_index(const std::vector<dit_integer_t>& state_vector) const {
+        bitset_t state(state_vector,lhss);
+        return get_index(state);
+    }
+
     static int get_norm(const bitset_t& state) {return 1;}
     static int get_norm(const J index) {return 1;}
     
@@ -89,7 +94,12 @@ public:
     inline size_t nbytes() const {return states.size() * sizeof(std::pair<I,K>);}
 
     inline bitset_t get_state(const size_t index) const {
-        return bitset_t(I(states[index].first),lhss);
+        return bitset_t(std::get<0>(states[index]),lhss,mask,bits);
+    }
+
+    J get_index(const std::vector<dit_integer_t>& state_vector) const {
+        bitset_t state(state_vector,lhss);
+        return (contains(state) ? get_index(state) : -1);
     }
 
     inline J get_index(const bitset_t& state) const {
@@ -97,11 +107,11 @@ public:
     }
 
     inline K get_norm(const bitset_t& state) const {
-        return states[index_map.at(state.content)].second;
+        return get_norm(get_index(state));
     }
 
     inline K get_norm(const J index) const {
-        return states[index].second;
+        return std::get<1>(states[index]);
     }
 
     inline bool contains(const bitset_t& state) const {
@@ -195,6 +205,11 @@ public:
         return Ns - integer<J,I>::cast(state.content) - 1;
     }
 
+    J get_index(const std::vector<dit_integer_t>& state_vector) const {
+        bitset_t state(state_vector);
+        return get_index(state);
+    }
+
     static int get_norm(const bitset_t& state) {return 1;}
     static int get_norm(const J index) {return 1;}
 };
@@ -225,12 +240,17 @@ public:
         return bitset_t(std::get<0>(states[index]));
     }
 
+    J get_index(const std::vector<dit_integer_t>& state_vector) const {
+        bitset_t state(state_vector);
+        return (contains(state) ? get_index(state) : -1);
+    }
+
     inline J get_index(const bitset_t& state) const {
         return index_map.at(state.content);
     }
 
     inline K get_norm(const bitset_t& state) const {
-        return std::get<1>(states[index_map.at(state.content)]);
+        return get_norm(get_index(state));
     }
 
     inline K get_norm(const J index) const {
