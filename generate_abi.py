@@ -142,7 +142,7 @@ class bosonic_basis:
             cpp.emit_declare('_bits','const size_t'),
             cpp.emit_declare('_lhss','const int'),
             cpp.emit_declare('fullspace','const bool'),
-            cpp.emit_declare('_symmetry','std::shared_ptr<void>'),
+            cpp.emit_declare('_symmetry','symmetry_abi&'),
             cpp.emit_declare('Ns = 0','const size_t'),
         ]
         
@@ -153,7 +153,7 @@ class bosonic_basis:
                 cases[switch_code] = (
                 '{\n'
                 f'    std::shared_ptr<{space_type}> space = std::make_shared<{space_type}>(Ns,_lhss);\n'\
-                f'    std::shared_ptr<{symmetry_type}> symmetry = std::reinterpret_pointer_cast<{symmetry_type}>(_symmetry);\n'\
+                f'    std::shared_ptr<{symmetry_type}> symmetry = std::reinterpret_pointer_cast<{symmetry_type}>(_symmetry.data());\n'\
                 f'    std::shared_ptr<{basis_type}> _basis_ptr = std::make_shared<{basis_type}>(*symmetry,space);\n'\
                 f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'\
                 f'    break;\n'\
@@ -1103,7 +1103,11 @@ class symmetry:
         ]
 
         switch = cpp.emit_case('type_switch_code',cases,'throw std::runtime_error("cannot parse arguments.");')
-        body = f'const size_t type_switch_code = generate_type_switch_code(lhss,bits);\n{switch}'
+        body = (
+            f'const size_t type_switch_code = generate_type_switch_code(lhss,bits);\n'\
+            f'if(_lat_args.size() == 0 || _loc_args.size() == 0){{return;}}\n'\
+            f'{switch}'
+        )
         return cpp.emit_constructor(self.name,args,body=body)
     
     def emit_destructor(self):
@@ -1115,7 +1119,9 @@ class symmetry:
             self.emit_generate_type_switch_code()
         ]
         public_list = [
-            cpp.emit_method('data','std::shared_ptr<void>',[],'return symmetry_ptr;')
+            cpp.emit_method('data','std::shared_ptr<void>',[],'return symmetry_ptr;'),
+            cpp.emit_method('get','void*',[],'return symmetry_ptr.get();')
+
         ]
         return dict(
             private_list = private_list,
@@ -1236,7 +1242,6 @@ namespace quspin_core_abi {{
 {symmetry_abi_body}
 }}
 #endif""" 
-
 
 def emit_abi_source(use_boost):
     boost_flag = ('#define USE_BOOST\n' if use_boost else '')
