@@ -199,12 +199,12 @@ public:
     static int get_norm(const J index) {return 1;}
 };
 
-template<typename I,typename J,typename K>
+template<typename I,typename J,typename K> // tem[plate argument to turn off hash mapping]
 class bit_subspace // sps = 2 
 {
 private:
     std::vector<std::pair<I,K>> states;
-    std::unordered_map<I,J> index_map;
+    std::unordered_map<I,J> index_map; // create ABI to switch on and off the index_map;
     
 public:
     typedef bit_set<I> bitset_t;
