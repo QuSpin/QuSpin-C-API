@@ -39,7 +39,7 @@ public:
 
     static int get_power(const int _lhss) {
         int _dim = 1; 
-        for(int i=0;i<N;i++){_dim *= _lhss;}
+        for(size_t i=0;i<N;i++){_dim *= _lhss;}
         return _dim;
     }
 
@@ -177,7 +177,7 @@ public:
 
         locs.insert(locs.end(),_locs.begin(),_locs.end());
 
-        for(int i=0;i<_locs.size();i++){
+        for(size_t i=0;i<_locs.size();i++){
 
             std::vector<int> perm(_perms[i].begin(),_perms[i].end()),inv_perm(_perms[i].size());
             std::vector<T> data(_datas[i].begin(),_datas[i].end()),inv_data(_datas[i].size());

@@ -597,22 +597,7 @@ class fermionic_basis:
         return ''
 
 def emit_basis_abi_typedefs(int_types:list,boost_types:list):
-    typedefs = [
-        cpp.emit_using('bit_perm','quspin::basis::bit_perm<I>','template<typename I>'),
-        cpp.emit_using('perm_bit','quspin::basis::perm_bit<I>','template<typename I>'),
-        cpp.emit_using('bit_set','quspin::basis::bit_set<I>','template<typename I>'),
-
-        cpp.emit_using('bit_symmetry',
-                       'quspin::basis::symmetry<bit_perm<I>,perm_bit<I>,bit_set<I>,npy_cdouble_wrapper>',
-                       'template<typename I>'),
-        cpp.emit_using('dit_perm','quspin::basis::dit_perm<I>','template<typename I>'),
-        cpp.emit_using('perm_dit','quspin::basis::perm_dit<I>','template<typename I>'),
-        cpp.emit_using('dit_set','quspin::basis::dit_set<I>','template<typename I>'),
-        cpp.emit_using('dit_symmetry',
-                       'quspin::basis::symmetry<dit_perm<I>,perm_dit<I>,dit_set<I>,npy_cdouble_wrapper>',
-                       'template<typename I>'),
-        "// concrete definitions",
-    ]
+    typedefs = []
     for ctype,jtype,ktype,bits in (int_types):
        typedefs += [
             cpp.emit_using(f'bit_subspace_{bits}',f'quspin::basis::bit_subspace<{ctype},{jtype},{ktype}>'),
@@ -683,6 +668,7 @@ def emit_basis_abi_source(use_boost:bool) -> str:
 #include <numpy/ndarraytypes.h>
 #include <quspin_core_abi/complex_ops.h>
 #include <quspin_core_abi/operator_abi.h>
+#include <quspin_core_abi/symmetry_abi.h>
 #include <memory>
 
 #include <quspin/quspin.h>
@@ -1030,8 +1016,9 @@ namespace quspin_core_abi {{
 
 
 class symmetry:
-    def __init__(self):
+    def __init__(self,int_types):
         self.name = 'symmetry_abi'
+        self.int_type = int_types
         
     def emit(self):
         return cpp.emit_class(
@@ -1042,21 +1029,115 @@ class symmetry:
         )
         
     def emit_constructor(self):
+        _,case_types = self.emit_generate_type_switch_code()
+        
+        cases = {}
+        for switch_code,(symmetry_type,lat_symm,loc_symm) in case_types.items():
+            if 'bit' in symmetry_type:
+                cases[switch_code] = (
+                    f'std::vector<{lat_symm}> lat_symm;\n'\
+                    f'std::vector<{loc_symm}> loc_symm;\n'\
+                    f'for(const auto& lat_perm : lat_perms){{lat_symm.emplace_back(lat_perm);}}\n'\
+                    f'for(size_t i=0;i<loc_perms.size();i++){{loc_symm.emplace_back(loc_perms[i],locs[i]);}}\n'\
+                    f'std::shared<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}(lat_symm,lat_char,loc_symm,loc_char);'
+                    f'symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);'
+                )
+            else:
+                cases[switch_code] = (
+                    f'std::vector<{lat_symm}> lat_symm;\n'\
+                    f'std::vector<{loc_symm}> loc_symm;\n'\
+                    f'for(const auto& lat_perm : lat_perms){{lat_symm.emplace_back(lat_perm);}}\n'\
+                    f'for(size_t i=0;i<loc_perms.size();i++){{loc_symm.emplace_back(loc_perms[i],locs[i]);}}\n'\
+                    f'std::shared<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}(lat_symm,lat_char,loc_symm,loc_char);'
+                    f'symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);'
+                )                
+
         return cpp.emit_constructor(self.name)
     
     def emit_destructor(self):
         return cpp.emit_destructor(self.name)
     
     def emit_attr(self):
-        private_list = []
-        public_list = []
+        private_list = [
+            cpp.emit_var('symmetry_ptr','std::shared_ptr<void>'),
+            cpp.emit_generate_type_switch_code()
+        ]
+        public_list = [
+            cpp.emit_method('data','std::shared<void>',[],'return symmetry_ptr;')
+        ]
         return dict(
             private_list = private_list,
             public_list = public_list
         )
+        
+    def emit_type_switch_code_body(self):
+        switch_code = 0
+        case_types = {}
+        bit_cases = {}
+        for ctype,jtype,ktype,bits in self.int_types:
+            bit_cases[bits] = f'return {switch_code};'
+            case_types[switch_code] = (
+                f'bit_symmetry<{ctype}>',
+                f'bit_perm<{ctype}>', # lat
+                f'perm_bit<{ctype}>'
+            )
+                        
+        dit_cases = {}
+        for ctype,jtype,ktype,bits in self.int_types:
+            dit_cases[bits] = f'return {switch_code};'
+            case_types[switch_code] = (
+                f'dit_symmetry<{ctype}>',
+                f'dit_perm<{ctype}>',
+                f'derm_bit<{ctype}>'
+            )            
+            
+        bit_body = cpp.emit_case('bits',bit_cases,'return -1;')
+        dit_body = cpp.emit_case('bits',dit_cases,'return -1;')
 
-def emit_operator_abi_typedefs():
-    return ''
+        bit_body = bit_body.replace('\n','\n    ')
+        dit_body = dit_body.replace('\n','\n    ')
+        
+        method_body = (
+            f'if(lhss<2){{return -1;}}\n'\
+            f'else if(lhss==2)\n'
+            f'{{\n'\
+            f'    {bit_body}\n'\
+            f'}}\n'\
+            f'else\n'\
+            f'{{\n'\
+            f'    {dit_body}\n'\
+            f'}}'
+        )
+        
+        return method_body,case_types
+
+    def emit_generate_type_switch_code(self):
+        args = [
+            cpp.emit_declare('lhss','const int'),
+            cpp.emit_declare('bits','const size_t')
+        ]
+        
+        method_body,_ = self.emit_generate_type_switch_code()
+        return cpp.emit_method('generate_type_switch_code','static size_t',args,method_body)        
+
+def emit_symmetry_abi_typedefs():
+    typedefs = [
+        cpp.emit_using('bit_perm','quspin::basis::bit_perm<I>','template<typename I>'),
+        cpp.emit_using('perm_bit','quspin::basis::perm_bit<I>','template<typename I>'),
+        cpp.emit_using('bit_set','quspin::basis::bit_set<I>','template<typename I>'),
+
+        cpp.emit_using('bit_symmetry',
+                       'quspin::basis::symmetry<bit_perm<I>,perm_bit<I>,bit_set<I>,npy_cdouble_wrapper>',
+                       'template<typename I>'),
+        cpp.emit_using('dit_perm','quspin::basis::dit_perm<I>','template<typename I>'),
+        cpp.emit_using('perm_dit','quspin::basis::perm_dit<I>','template<typename I>'),
+        cpp.emit_using('dit_set','quspin::basis::dit_set<I>','template<typename I>'),
+        cpp.emit_using('dit_symmetry',
+                       'quspin::basis::symmetry<dit_perm<I>,perm_dit<I>,dit_set<I>,npy_cdouble_wrapper>',
+                       'template<typename I>'),
+    ]
+    return '\n\n'.join(typedefs)
+
 
 def emit_symmetry_abi_body(use_boost:bool):
     boost_types = get_boost_types(use_boost)
@@ -1065,7 +1146,7 @@ def emit_symmetry_abi_body(use_boost:bool):
         ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
         ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
     ]    
-    typedefs = emit_operator_abi_typedefs()
+    typedefs = emit_symmetry_abi_typedefs()
     symmetry_class = symmetry().emit()
     return f"""
 {typedefs}
