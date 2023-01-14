@@ -72,7 +72,7 @@ class cpp:
         return f'~{name}(){body}'
 
     @staticmethod
-    def emit_constructor(name:str,args:list[str] = [], body:str = "",preconstruct : Optional[str] = None, ) -> str:
+    def emit_constructor(name:str,args:list[str] = [], body:str = "",preconstruct : Optional[str] = None ) -> str:
         
         body = "    "+body.replace('\n','\n    ')
         args = '\n    '+(',\n    '.join(args))
@@ -127,7 +127,7 @@ class bosonic_basis:
         self.dit_term = [
             ('OP_STRING','quspin::operator_string<{}>'),
             ('OP_TWO_BODY','quspin::N_body_dit_op<{},2>')
-        ]
+        ]        
         
     def emit(self)->str:
         return cpp.emit_class(
@@ -686,21 +686,16 @@ def emit_basis_abi_source(use_boost:bool) -> str:
         ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
     ]    
     basis_abi_body = emit_basis_abi_body(int_types,boost_types)
-    if use_boost:
-        boost_header = "#define USE_BOOST"
-    else:
-        boost_header = ""
+
         
     return f"""#ifndef __QUSPIN_CORE_BASIS_ABI__
 #define __QUSPIN_CORE_BASIS_ABI__
-#define __QUSPIN_CORE_VERSION__ "{__version__}"
-{boost_header}
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ndarraytypes.h>
 #include <quspin_core_abi/complex_ops.h>
-#include <quspin_core_abi/operator_abi.h>
 #include <quspin_core_abi/symmetry_abi.h>
+#include <quspin_core_abi/operator_abi.h>
 #include <memory>
 
 #include <quspin/quspin.h>
@@ -1027,8 +1022,6 @@ def emit_operator_abi_source(use_boost:bool) -> str:
         
     return f"""#ifndef __QUSPIN_CORE_OPERATOR_ABI__
 #define __QUSPIN_CORE_OPERATOR_ABI__
-#define __QUSPIN_CORE_VERSION__ "{__version__}"
-
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ndarraytypes.h>
@@ -1209,7 +1202,6 @@ def emit_symmetry_abi_typedefs():
     ]
     return '\n\n'.join(typedefs)
 
-
 def emit_symmetry_abi_body(use_boost:bool):
     boost_types = get_boost_types(use_boost)
 
@@ -1231,8 +1223,6 @@ def emit_symmetry_abi_source(use_boost):
     symmetry_abi_body = emit_symmetry_abi_body(use_boost)
     return f"""#ifndef __QUSPIN_CORE_SYMMETRY_ABI__
 #define __QUSPIN_CORE_SYMMETRY_ABI__
-#define __QUSPIN_CORE_VERSION__ "{__version__}"
-
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ndarraytypes.h>
@@ -1247,6 +1237,23 @@ namespace quspin_core_abi {{
 }}
 #endif""" 
 
+
+def emit_abi_source(use_boost):
+    boost_flag = ('#define USE_BOOST\n' if use_boost else '')
+        
+    
+    return f"""#ifndef __QUSPIN_CORE_ABI__
+#define __QUSPIN_CORE_ABI__
+#define __QUSPIN_CORE_VERSION__ "{__version__}"
+{boost_flag}
+#include <quspin_core_abi/complex_ops.h>
+#include <quspin_core_abi/symmetry_abi.h>
+#include <quspin_core_abi/operator_abi.h>
+#include <quspin_core_abi/basis_abi.h>
+
+#endif
+"""
+
 def get_boost_types(use_boost:bool):
     if use_boost:
         boost_types = [
@@ -1259,6 +1266,8 @@ def get_boost_types(use_boost:bool):
         boost_types = []
         
     return boost_types
+
+
 
 if __name__ == '__main__':
     try:
@@ -1276,3 +1285,6 @@ if __name__ == '__main__':
 
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','symmetry_abi.h'),'w') as IO:
         IO.write(emit_symmetry_abi_source(use_boost))
+    
+    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','quspin_abi.h'),'w') as IO:
+        IO.write(emit_abi_source(use_boost))    

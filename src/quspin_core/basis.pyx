@@ -1,6 +1,6 @@
 # cython: language_level=3
 # distutils: language=c++
-from basis cimport *
+from quspin_core_abi cimport *
 
 __all__ = ["bit_basis"]
 

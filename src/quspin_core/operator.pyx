@@ -1,6 +1,6 @@
 # cython: language_level=3
 # distutils: language=c++
-from operator cimport *
+from quspin_core_abi cimport *
 
 __all__ = ["operator_string"]
 
