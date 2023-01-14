@@ -33,7 +33,7 @@ public:
         for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
 
         // permute chucks of bits of length 'bits' 
-        for(int i=0;i<perm.size();i++){
+        for(size_t i=0;i<perm.size();i++){
             const int dst = perm[i];
             const int src = i;
             for(int j=0;j<bits;j++){
@@ -76,7 +76,7 @@ public:
         for(int i=0;i<bit_info<I>::bits;i++){index[i] = benes::no_index;}
 
         // benes permutation is agnostic to lhss
-        for(int i=0;i<perm.size();i++){
+        for(size_t i=0;i<perm.size();i++){
             index[i] = perm[i];  
         }
 
@@ -116,7 +116,7 @@ public:
 
         locs.insert(locs.end(),_locs.begin(),_locs.end());
 
-        for(int i=0;i<locs.size();++i){
+        for(size_t i=0;i<locs.size();++i){
             const std::vector<int> p = _perm.at(i);
             std::vector<int> ip(p.size());
             assert(p.size() == lhss);
