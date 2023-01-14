@@ -662,15 +662,7 @@ def emit_basis_abi_body(int_types:list,boost_types:list) -> str:
 """
 
 def emit_basis_abi_source(use_boost:bool) -> str:
-    if use_boost:
-        boost_types = [
-            ('quspin::basis::uint128_t'  ,"npy_intp", "quspin::basis::uint8_t",128 ),
-            ('quspin::basis::uint1024_t' ,"npy_intp", "int"                   ,1024 ),
-            ('quspin::basis::uint4096_t' ,"npy_intp", "int"                   ,4096 ),
-            ('quspin::basis::uint16384_t',"npy_intp", "int"                   ,16384),
-        ]
-    else:
-        boost_types = []
+    boost_types = get_boost_types(use_boost)
 
     int_types = [
         ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
@@ -1035,6 +1027,87 @@ namespace quspin_core_abi {{
 }}
 #endif"""    
 
+
+
+class symmetry:
+    def __init__(self):
+        self.name = 'symmetry_abi'
+        
+    def emit(self):
+        return cpp.emit_class(
+            self.name,
+            self.emit_constructor(),
+            self.emit_destructor(),
+            **self.emit_attr()
+        )
+        
+    def emit_constructor(self):
+        return cpp.emit_constructor(self.name)
+    
+    def emit_destructor(self):
+        return cpp.emit_destructor(self.name)
+    
+    def emit_attr(self):
+        private_list = []
+        public_list = []
+        return dict(
+            private_list = private_list,
+            public_list = public_list
+        )
+
+def emit_operator_abi_typedefs():
+    return ''
+
+def emit_symmetry_abi_body(use_boost:bool):
+    boost_types = get_boost_types(use_boost)
+
+    int_types = [
+        ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
+        ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
+    ]    
+    typedefs = emit_operator_abi_typedefs()
+    symmetry_class = symmetry().emit()
+    return f"""
+{typedefs}
+
+// abi class definitions
+{symmetry_class}
+
+"""
+
+def emit_symmetry_abi_source(use_boost):
+    symmetry_abi_body = emit_symmetry_abi_body(use_boost)
+    return f"""#ifndef __QUSPIN_CORE_SYMMETRY_ABI__
+#define __QUSPIN_CORE_SYMMETRY_ABI__
+#define __QUSPIN_CORE_VERSION__ "{__version__}"
+
+
+#include <numpy/ndarrayobject.h>
+#include <numpy/ndarraytypes.h>
+#include <memory>
+#include <vector>
+
+#include <quspin/quspin.h>
+
+
+namespace quspin_core_abi {{
+{symmetry_abi_body}
+}}
+#endif""" 
+
+def get_boost_types(use_boost:bool):
+    if use_boost:
+        boost_types = [
+            ('quspin::basis::uint128_t'  ,"npy_intp", "quspin::basis::uint8_t",128 ),
+            ('quspin::basis::uint1024_t' ,"npy_intp", "int"                   ,1024 ),
+            ('quspin::basis::uint4096_t' ,"npy_intp", "int"                   ,4096 ),
+            ('quspin::basis::uint16384_t',"npy_intp", "int"                   ,16384),
+        ]
+    else:
+        boost_types = []
+        
+    return boost_types
+
 if __name__ == '__main__':
     try:
         use_boost=eval(sys.argv[1])
@@ -1046,8 +1119,8 @@ if __name__ == '__main__':
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','basis_abi.h'),'w') as IO:
         IO.write(emit_basis_abi_source(use_boost))
         
-        
-    pwd = os.path.split(os.path.abspath(__file__))[0]
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','operator_abi.h'),'w') as IO:
         IO.write(emit_operator_abi_source(use_boost))
-        
+
+    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','symmetry_abi.h'),'w') as IO:
+        IO.write(emit_symmetry_abi_source(use_boost))
