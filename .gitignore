@@ -33,6 +33,7 @@
 
 basis.cpp
 operator.cpp
+symmetry.cpp
 **/*_abi.h
 
 dist/
