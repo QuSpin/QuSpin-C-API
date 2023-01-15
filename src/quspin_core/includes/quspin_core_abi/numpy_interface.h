@@ -1,7 +1,7 @@
 #ifndef __QUSPIN_CORE_NUMPY_INTERFACE_H__
 #define __QUSPIN_CORE_NUMPY_INTERFACE_H__
 
-namespace quspin_abi {
+namespace quspin_core_abi {
 
 inline NPY_TYPES npy_typenum(PyArrayObject * array){
   return static_cast<NPY_TYPES>(PyArray_TYPE(array));

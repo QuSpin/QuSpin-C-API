@@ -118,6 +118,28 @@ class cpp:
 
         return f'class {name}\n{{\nprivate:\n{private_attr}\npublic:\n\n{constructor}\n\n{destructor}\n\n{public_attr}\n}};'
 
+    def emit_simple_struct(name:str,vars:list[str],types:list[str]):
+        const_attr = [(v,t)  for v,t in zip(vars,types) if 'const' in t]
+        non_const_attr = [(v,t) for v,t in zip(vars,types) if not 'const' in t]
+        attr = "\n".join([cpp.emit_var(v,t) for v,t in zip(vars,types)])
+
+        preconstruct = ", ".join(f'{v}(_{v}' for v,t in const_attr)
+        args = [cpp.emit_declare('_'+v,t) for v,t in zip(vars,types)]
+        body = "\n".join([f'{v} = _{v};' for (v,t) in non_const_attr])
+        
+        if len(const_attr) == 0:
+            constructor = cpp.emit_constructor(name,args,body)
+        else:
+            constructor = cpp.emit_constructor(name,args,body,preconstruct=preconstruct)
+        destructor = cpp.emit_destructor(name)
+        
+        attr = attr.replace('\n','\n    ')
+        constructor = constructor.replace('\n','\n    ')
+        destructor = destructor.replace('\n','\n    ')
+        return f'struct {name}\n{{\n    {attr}\n    {constructor}\n    {destructor}\n}};'
+
+
+
 class basis_abi:
 
     class bosonic_basis:
@@ -740,6 +762,7 @@ class basis_abi:
 
     #include <numpy/ndarrayobject.h>
     #include <numpy/ndarraytypes.h>
+    #include <quspin_core_abi/numpy_interface.h>
     #include <quspin_core_abi/complex_ops.h>
     #include <quspin_core_abi/symmetry_abi.h>
     #include <quspin_core_abi/operator_abi.h>
@@ -862,7 +885,7 @@ class operator_abi:
                 cpp.emit_declare('_T_typenum','NPY_TYPES'),
                 cpp.emit_declare('_op_type','OPERATOR_TYPES'),
                 cpp.emit_declare('lhss','const int'),
-                cpp.emit_declare('_op_args','std::vector<void*>')
+                cpp.emit_declare('_op_args','std::vector<std::shared_ptr<void>>')
             ]
 
             _,case_types = self.get_generate_type_switch_code_body()
@@ -872,22 +895,22 @@ class operator_abi:
                 
                 if 'operator_string' in term_name:
                     cases[switch_code] = (
-                        f'for(void *  _op_arg : _op_args){{\n'
-                        f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;\n'
+                        f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
+                        f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(op_arg->locs,op_arg->perms,op_arg->datas);\n'
                         f'}}'
                     )
                 elif 'two_body_bit_op' in term_name:
                     cases[switch_code] = (
-                        f'for(void *  _op_arg : _op_args){{\n'
-                        f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;'\
+                        f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
+                        f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(op_arg->locs,op_arg->data);'
                         f'}}'
                     )
                 elif 'two_body_dit_op' in term_name:
                     cases[switch_code] = (
-                        f'for(void *  _op_arg : _op_args){{\n'
-                        f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;'\
+                        f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
+                        f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(lhss,op_arg->locs,op_arg->data);'
                         f'}}'                )
                 else:
@@ -1106,16 +1129,16 @@ class symmetry_abi:
                     cases[switch_code] = (
                         f'{{\n'
                         f'    std::vector<{lat_symm}> lat_symm;\n'
-                        f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
+                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());'
                         f'    std::vector<{loc_symm}> loc_symm;\n'
-                        f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
-                        f'    for(void * _lat_arg : _lat_args){{\n'
-                        f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
+                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());'
+                        f'    for(std::shared_ptr<void> _lat_arg : _lat_args){{\n'
+                        f'        std::shared_ptr<{lat_args}> lat_arg =  std::reinterpret_pointer_cast<{lat_args}>(_lat_arg);\n'
                         f'        lat_symm.emplace_back(lhss,lat_arg->perm);\n'
                         f'    }}\n'
-                        f'    for(void * _loc_arg : _loc_args){{\n'
-                        f'        {loc_args} *loc_arg =  ({loc_args} *)_loc_arg;\n'
-                        f'        loc_symm.emplace_back(loc_arg->perm,loc_arg->locs);\n'
+                        f'    for(std::shared_ptr<void> _loc_arg : _loc_args){{\n'
+                        f'        std::shared_ptr<{loc_args}> loc_arg = std::reinterpret_pointer_cast<{loc_args}>(_loc_arg);\n'
+                        f'        loc_symm.emplace_back(loc_arg->perms,loc_arg->locs);\n'
                         f'    }}\n'
                         f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                         f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
@@ -1125,15 +1148,15 @@ class symmetry_abi:
                     cases[switch_code] = (
                         f'{{\n'
                         f'    std::vector<{lat_symm}> lat_symm;\n'
-                        f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
+                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());'
                         f'    std::vector<{loc_symm}> loc_symm;\n'
-                        f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
-                        f'    for(void * _lat_arg : _lat_args){{\n'
-                        f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
+                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());'
+                        f'    for(std::shared_ptr<void> _lat_arg : _lat_args){{\n'
+                        f'        std::shared_ptr<{lat_args}> lat_arg =  std::reinterpret_pointer_cast<{lat_args}>(_lat_arg);\n'
                         f'        lat_symm.emplace_back(lat_arg->perm);\n'
                         f'    }}\n'
-                        f'    for(void * _loc_arg : _loc_args){{\n'
-                        f'        {loc_args} * loc_arg =  ({loc_args} *)_loc_arg;\n'
+                        f'    for(std::shared_ptr<void> _loc_arg : _loc_args){{\n'
+                        f'        std::shared_ptr<{loc_args}> loc_arg =  std::reinterpret_pointer_cast<{loc_args}>(_loc_arg);\n'
                         f'        loc_symm.emplace_back(loc_arg->mask);\n'
                         f'    }}\n'
                         f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
@@ -1144,10 +1167,10 @@ class symmetry_abi:
             args = [
                 cpp.emit_declare('lhss','const int'),
                 cpp.emit_declare('bits','const size_t'),
-                cpp.emit_declare('_lat_args','std::vector<void*>'),
-                cpp.emit_declare('lat_char','const npy_cdouble *'),
-                cpp.emit_declare('_loc_args','std::vector<void*>'),
-                cpp.emit_declare('loc_char','const npy_cdouble *'),
+                cpp.emit_declare('_lat_args','std::vector<std::shared_ptr<void>>'),
+                cpp.emit_declare('_lat_char','std::complex<double> *'),
+                cpp.emit_declare('_loc_args','std::vector<std::shared_ptr<void>>'),
+                cpp.emit_declare('_loc_char','std::complex<double> *'),
 
             ]
 
@@ -1253,10 +1276,10 @@ class symmetry_abi:
             cpp.emit_using('dit_symmetry',
                         'quspin::basis::symmetry<dit_perm<I>,perm_dit<I>,dit_set<I>,npy_cdouble_wrapper>',
                         'template<typename I>'),
-            f'struct bit_perm_args{{std::vector<int> perm;}};',
-            f'struct perm_bit_args{{std::vector<quspin::basis::dit_integer_t> mask;}};',
-            f'struct dit_perm_args{{std::vector<int> perm;}};',
-            f'struct perm_dit_args{{std::vector<std::vector<int>> perm;std::vector<int> locs;}};',
+            cpp.emit_simple_struct('bit_perm_args',['perm'],['std::vector<int>']),
+            cpp.emit_simple_struct('dit_perm_args',['perm'],['std::vector<int>']),
+            cpp.emit_simple_struct('perm_bit_args',['mask'],['std::vector<int>']),
+            cpp.emit_simple_struct('perm_dit_args',['perms','locs'],['std::vector<std::vector<int>>','std::vector<int>']),
 
         ]
         return '\n\n'.join(typedefs)
@@ -1287,6 +1310,7 @@ class symmetry_abi:
 
     #include <numpy/ndarrayobject.h>
     #include <numpy/ndarraytypes.h>
+    #include <complex>
     #include <memory>
     #include <vector>
     
@@ -1361,8 +1385,8 @@ def emit_abi_source(use_boost):
 #define __QUSPIN_CORE_ABI__
 #define __QUSPIN_CORE_VERSION__ "{__version__}"
 {boost_flag}
-#include <quspin_core_abi/utils_abi.h>
 #include <quspin_core_abi/complex_ops.h>
+#include <quspin_core_abi/utils_abi.h>
 #include <quspin_core_abi/symmetry_abi.h>
 #include <quspin_core_abi/operator_abi.h>
 #include <quspin_core_abi/basis_abi.h>
