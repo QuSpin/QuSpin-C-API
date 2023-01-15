@@ -1093,7 +1093,9 @@ class symmetry:
                 cases[switch_code] = (
                     f'{{\n'
                     f'    std::vector<{lat_symm}> lat_symm;\n'
+                    f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
                     f'    std::vector<{loc_symm}> loc_symm;\n'
+                    f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
                     f'    for(void * _lat_arg : _lat_args){{\n'
                     f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
                     f'        lat_symm.emplace_back(lhss,lat_arg->perm);\n'
@@ -1110,7 +1112,9 @@ class symmetry:
                 cases[switch_code] = (
                     f'{{\n'
                     f'    std::vector<{lat_symm}> lat_symm;\n'
+                    f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
                     f'    std::vector<{loc_symm}> loc_symm;\n'
+                    f'    std::vector<npy_complex_wrapper> lat_char(_lat_char,_lat_char+lat_symm.size());'
                     f'    for(void * _lat_arg : _lat_args){{\n'
                     f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
                     f'        lat_symm.emplace_back(lat_arg->perm);\n'
