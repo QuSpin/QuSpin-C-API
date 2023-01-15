@@ -1298,6 +1298,63 @@ class symmetry_abi:
     }}
     #endif""" 
 
+class utils_abi:
+    @staticmethod
+    def emit_get_bits(int_types:list):
+        
+        N_error = cpp.emit_domain_error('N','N>0')
+        lhss_error = cpp.emit_domain_error('lhss','0 <= lhss < 256')
+        last_error = cpp.emit_runtime_error('The combination of lhss and system size not compatible with QuSpin.')
+        
+        min_bit_body = 'if(0){}\n'
+        for ctype,jtype,ktype,bits in int_types:
+            min_bit_body = min_bit_body + f'else if(min_bits <= {bits}){{return {bits};}}\n'
+            
+            
+        min_bit_body = min_bit_body + f'else{{{last_error}}}'
+        
+        body = (
+            f'if(lhss < 0 || lhss >= 256){{{lhss_error}}}\n'
+            f'if(N < 0){{{N_error}}}\n'
+            f'const int min_bits = quspin::basis::constants::bits[lhss] * N;\n'
+            f'{min_bit_body}'
+        )
+        args = [
+            cpp.emit_declare('lhss','const int'),
+            cpp.emit_declare('N','const int'),
+        ]
+        
+        return cpp.emit_method('get_bits','size_t',args,body)
+
+    @staticmethod
+    def emit_utils_abi_body(use_boost:bool):
+        int_types = [
+            ('quspin::basis::uint32_t',"npy_intp", "quspin::basis::uint8_t",32),
+            ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
+        ] + get_boost_types(use_boost)
+        
+        methods = [
+            utils_abi.emit_get_bits(int_types),
+        ]
+            
+        return '\n\n'.join(methods)
+
+    @staticmethod
+    def emit(use_boose:bool):
+        utils_abi_body =  utils_abi.emit_utils_abi_body(use_boose)
+        return f"""#ifndef __QUSPIN_CORE_UTILS_ABI_H__
+    #define __QUSPIN_CORE_UTILS_ABI_H__
+
+    #include <quspin/quspin.h>
+
+    namespace quspin_core_abi {{
+        {utils_abi_body}
+    }}
+
+    #endif"""
+
+
+
 
 def emit_abi_source(use_boost):
     boost_flag = ('#define USE_BOOST\n' if use_boost else '')
