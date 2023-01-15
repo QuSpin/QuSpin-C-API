@@ -1289,7 +1289,7 @@ class symmetry_abi:
     #include <numpy/ndarraytypes.h>
     #include <memory>
     #include <vector>
-
+    
     #include <quspin/quspin.h>
 
 
@@ -1352,9 +1352,6 @@ class utils_abi:
     }}
 
     #endif"""
-
-
-
 
 def emit_abi_source(use_boost):
     boost_flag = ('#define USE_BOOST\n' if use_boost else '')
