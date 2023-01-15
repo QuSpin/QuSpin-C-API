@@ -168,20 +168,20 @@ class bosonic_basis:
             if len(symmetry_type)>0: 
                 cases[switch_code] = (
                 '{\n'
-                f'    std::shared_ptr<{space_type}> space = std::make_shared<{space_type}>(Ns,_lhss);\n'\
-                f'    std::shared_ptr<{symmetry_type}> symmetry = std::reinterpret_pointer_cast<{symmetry_type}>(_symmetry.data());\n'\
-                f'    std::shared_ptr<{basis_type}> _basis_ptr = std::make_shared<{basis_type}>(*symmetry,space);\n'\
-                f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'\
-                f'    break;\n'\
+                f'    std::shared_ptr<{space_type}> space = std::make_shared<{space_type}>(Ns,_lhss);\n'
+                f'    std::shared_ptr<{symmetry_type}> symmetry = std::reinterpret_pointer_cast<{symmetry_type}>(_symmetry.data());\n'
+                f'    std::shared_ptr<{basis_type}> _basis_ptr = std::make_shared<{basis_type}>(*symmetry,space);\n'
+                f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'
+                f'    break;\n'
                 '}'
             )
             else:
                 cases[switch_code] = (
                 '{\n'
-                f'    std::shared_ptr<{space_type}> space = std::make_shared<{space_type}>(Ns,_lhss);\n'\
-                f'    std::shared_ptr<{basis_type}> _basis_ptr = std::make_shared<{basis_type}>(space);\n'\
-                f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'\
-                f'    break;\n'\
+                f'    std::shared_ptr<{space_type}> space = std::make_shared<{space_type}>(Ns,_lhss);\n'
+                f'    std::shared_ptr<{basis_type}> _basis_ptr = std::make_shared<{basis_type}>(space);\n'
+                f'    basis_ptr = std::reinterpret_pointer_cast<void>(_basis_ptr);\n'
+                f'    break;\n'
                 '}'
             )
 
@@ -241,24 +241,24 @@ class bosonic_basis:
             switch_code += 2
             
             bit_body = (
-                f'if(symmetry)\n'\
-                f'{{\n'\
+                f'if(symmetry)\n'
+                f'{{\n'
                 f'    {bit_symmetry_body}\n'
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {bit_no_symmetry_body}\n'\
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {bit_no_symmetry_body}\n'
                 f'}}\n'                    
             )
             
             dit_body = (
-                f'if(symmetry)\n'\
-                f'{{\n'\
+                f'if(symmetry)\n'
+                f'{{\n'
                 f'    {dit_symmetry_body}\n'
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {dit_no_symmetry_body}\n'\
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {dit_no_symmetry_body}\n'
                 f'}}\n'  
             )
             
@@ -268,14 +268,14 @@ class bosonic_basis:
             dit_body = dit_body.replace('\n','\n    ')
 
             cases[bits] = (
-                f'if(lhss<2){{return -1;}}\n'\
+                f'if(lhss<2){{return -1;}}\n'
                 f'else if(lhss==2)\n'
-                f'{{\n'\
-                f'    {bit_body}\n'\
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {dit_body}\n'\
+                f'{{\n'
+                f'    {bit_body}\n'
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {dit_body}\n'
                 f'}}'
             )
         
@@ -298,24 +298,24 @@ class bosonic_basis:
             switch_code += 1
             
             bit_body = (
-                f'if(symmetry)\n'\
-                f'{{\n'\
+                f'if(symmetry)\n'
+                f'{{\n'
                 f'    {bit_symmetry_body}\n'
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {bit_no_symmetry_body}\n'\
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {bit_no_symmetry_body}\n'
                 f'}}\n'                    
             )
             
             dit_body = (
-                f'if(symmetry)\n'\
-                f'{{\n'\
+                f'if(symmetry)\n'
+                f'{{\n'
                 f'    {dit_symmetry_body}\n'
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {dit_no_symmetry_body}\n'\
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {dit_no_symmetry_body}\n'
                 f'}}\n'  
             )
             
@@ -323,14 +323,14 @@ class bosonic_basis:
             dit_body = dit_body.replace('\n','\n    ')
 
             cases[bits] = (
-                f'if(lhss<2){{return -1;}}\n'\
+                f'if(lhss<2){{return -1;}}\n'
                 f'else if(lhss==2)\n'
-                f'{{\n'\
-                f'    {bit_body}\n'\
-                f'}}\n'\
-                f'else\n'\
-                f'{{\n'\
-                f'    {dit_body}\n'\
+                f'{{\n'
+                f'    {bit_body}\n'
+                f'}}\n'
+                f'else\n'
+                f'{{\n'
+                f'    {dit_body}\n'
                 f'}}'
             )
         
@@ -412,8 +412,8 @@ class bosonic_basis:
                             term_body = cpp.emit_case('op_type',term_cases,'return -1;')
                             term_body = term_body.replace('\n','\n    ')
                             X_cases[X_typenum] = (
-                                f'if({Y_conditional})\n'\
-                                f'{{\n'\
+                                f'if({Y_conditional})\n'
+                                f'{{\n'
                                 f'    {term_body}\n'
                                 f'}}\n'
                                 f'else{{return -1;}}'
@@ -863,21 +863,21 @@ class operator:
             
             if 'operator_string' in term_name:
                 cases[switch_code] = (
-                    f'for(void *  _op_arg : _op_args){{\n'\
-                    f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;\n'\
+                    f'for(void *  _op_arg : _op_args){{\n'
+                    f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;\n'
                     f'    {vec_name}.emplace_back(op_arg->locs,op_arg->perms,op_arg->datas);\n'
                     f'}}'
                 )
             elif 'two_body_bit_op' in term_name:
                 cases[switch_code] = (
-                    f'for(void *  _op_arg : _op_args){{\n'\
+                    f'for(void *  _op_arg : _op_args){{\n'
                     f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;'\
                     f'    {vec_name}.emplace_back(op_arg->locs,op_arg->data);'
                     f'}}'
                 )
             elif 'two_body_dit_op' in term_name:
                 cases[switch_code] = (
-                    f'for(void *  _op_arg : _op_args){{\n'\
+                    f'for(void *  _op_arg : _op_args){{\n'
                     f'    {arg_type} * op_arg = ({arg_type}*)_op_arg;'\
                     f'    {vec_name}.emplace_back(lhss,op_arg->locs,op_arg->data);'
                     f'}}'                )
@@ -984,11 +984,11 @@ class operator:
         dit_body = dit_body.replace('\n','\n    ')
         
         op_cases[term_typenum] = (
-            f'if(lhss==2)\n{{\n'\
-            f'    {bit_body}\n'\
-            f'}}\n'\
-            f'else{{\n'\
-            f'    {dit_body}\n'\
+            f'if(lhss==2)\n{{\n'
+            f'    {bit_body}\n'
+            f'}}\n'
+            f'else{{\n'
+            f'    {dit_body}\n'
             f'}}'
         )
         
@@ -1091,34 +1091,34 @@ class symmetry:
         for switch_code,(symmetry_type,lat_symm,loc_symm,lat_args,loc_args) in case_types.items():
             if 'dit' in symmetry_type:
                 cases[switch_code] = (
-                    f'{{\n'\
-                    f'    std::vector<{lat_symm}> lat_symm;\n'\
-                    f'    std::vector<{loc_symm}> loc_symm;\n'\
-                    f'    for(void * _lat_arg : _lat_args){{\n'\
+                    f'{{\n'
+                    f'    std::vector<{lat_symm}> lat_symm;\n'
+                    f'    std::vector<{loc_symm}> loc_symm;\n'
+                    f'    for(void * _lat_arg : _lat_args){{\n'
                     f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
-                    f'        lat_symm.emplace_back(lhss,lat_arg->perm);\n'\
-                    f'    }}\n'\
-                    f'    for(void * _loc_arg : _loc_args){{\n'\
+                    f'        lat_symm.emplace_back(lhss,lat_arg->perm);\n'
+                    f'    }}\n'
+                    f'    for(void * _loc_arg : _loc_args){{\n'
                     f'        {loc_args} *loc_arg =  ({loc_args} *)_loc_arg;\n'
-                    f'        loc_symm.emplace_back(loc_arg->perm,loc_arg->locs);\n'\
-                    f'    }}\n'\
+                    f'        loc_symm.emplace_back(loc_arg->perm,loc_arg->locs);\n'
+                    f'    }}\n'
                     f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                     f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
                     f'}}'
                 )
             else:
                 cases[switch_code] = (
-                    f'{{\n'\
-                    f'    std::vector<{lat_symm}> lat_symm;\n'\
-                    f'    std::vector<{loc_symm}> loc_symm;\n'\
-                    f'    for(void * _lat_arg : _lat_args){{\n'\
+                    f'{{\n'
+                    f'    std::vector<{lat_symm}> lat_symm;\n'
+                    f'    std::vector<{loc_symm}> loc_symm;\n'
+                    f'    for(void * _lat_arg : _lat_args){{\n'
                     f'        {lat_args} * lat_arg =  ({lat_args} *)_lat_arg;\n'
-                    f'        lat_symm.emplace_back(lat_arg->perm);\n'\
-                    f'    }}\n'\
-                    f'    for(void * _loc_arg : _loc_args){{\n'\
+                    f'        lat_symm.emplace_back(lat_arg->perm);\n'
+                    f'    }}\n'
+                    f'    for(void * _loc_arg : _loc_args){{\n'
                     f'        {loc_args} * loc_arg =  ({loc_args} *)_loc_arg;\n'
-                    f'        loc_symm.emplace_back(loc_arg->mask);\n'\
-                    f'    }}\n'\
+                    f'        loc_symm.emplace_back(loc_arg->mask);\n'
+                    f'    }}\n'
                     f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                     f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
                     f'}}'
@@ -1128,16 +1128,16 @@ class symmetry:
             cpp.emit_declare('lhss','const int'),
             cpp.emit_declare('bits','const size_t'),
             cpp.emit_declare('_lat_args','std::vector<void*>'),
-            cpp.emit_declare('lat_char','std::vector<npy_cdouble_wrapper>'),
+            cpp.emit_declare('lat_char','npy_cdouble *'),
             cpp.emit_declare('_loc_args','std::vector<void*>'),
-            cpp.emit_declare('loc_char','std::vector<npy_cdouble_wrapper>'),
+            cpp.emit_declare('loc_char','npy_cdouble *'),
 
         ]
 
         switch = cpp.emit_case('type_switch_code',cases,'throw std::runtime_error("cannot parse arguments.");')
         body = (
-            f'const size_t type_switch_code = generate_type_switch_code(lhss,bits);\n'\
-            f'if(_lat_args.size() == 0 || _loc_args.size() == 0){{return;}}\n'\
+            f'const size_t type_switch_code = generate_type_switch_code(lhss,bits);\n'
+            f'if(_lat_args.size() == 0 || _loc_args.size() == 0){{return;}}\n'
             f'{switch}'
         )
         return cpp.emit_constructor(self.name,args,body=body)
@@ -1198,14 +1198,14 @@ class symmetry:
         
         lhss_exception = cpp.emit_domain_error('lhss','lhss >= 2')
         method_body = (
-            f'if(lhss<2){{{lhss_exception}}}\n'\
+            f'if(lhss<2){{{lhss_exception}}}\n'
             f'else if(lhss==2)\n'
-            f'{{\n'\
-            f'    {bit_body}\n'\
-            f'}}\n'\
-            f'else\n'\
-            f'{{\n'\
-            f'    {dit_body}\n'\
+            f'{{\n'
+            f'    {bit_body}\n'
+            f'}}\n'
+            f'else\n'
+            f'{{\n'
+            f'    {dit_body}\n'
             f'}}'
         )
         
