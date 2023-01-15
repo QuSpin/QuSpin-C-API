@@ -26,6 +26,22 @@ class cpp:
     """A collection of methods useful for generating C++ code."""
     
     @staticmethod
+    def emit_domain_error(name:str, domain:str)-> str:
+        return f'throw std::domain_error("expecting value of \'{name}\' to be in range: {domain}");'
+
+    @staticmethod
+    def emit_invalid_argument(name:str, domain:str)-> str:
+        return f'throw std::invalid_argument("expecting value of \'{name}\' to be in: [{domain}]");'
+
+    @staticmethod
+    def emit_bad_typeid(name:str, excpected_types:str) -> str:
+        return f'throw std::bad_typeid("expecting type of \'{name}\' to be one of: {excpected_types}");'
+    
+    @staticmethod
+    def emit_out_of_range(name:str, collection:str) -> str:
+        return f'throw std::out_of_range("value of \'{name}\' not found in \'{collection}\'");'
+
+    @staticmethod
     def emit_declare(name:str,type:str) -> str:
         return f'{type} {name}'
 
@@ -502,15 +518,22 @@ class bosonic_basis:
                 f'({J}*)rowptr);'
             )
         args = [
-            cpp.emit_declare('J_typenum','NPY_TYPES'),
-            cpp.emit_declare('T_typenum','NPY_TYPES'),
-            cpp.emit_declare('op_type','OPERATOR_TYPES'),
-            cpp.emit_declare('terms','void*'),
-            cpp.emit_declare('nterms','const int'),
-            cpp.emit_declare('rowptr','void*')
+            cpp.emit_declare('op','operator_abi'),
+            cpp.emit_declare('npy_rowptr','PyArrayObject *'),
+
         ]
+        
         switch = cpp.emit_case('switch_code',cases,'return -1;')
-        body = f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);\n{switch}'
+        body = (
+            f'NPY_TYPES T_typenum = op.get_T_typenum();\n'
+            f'NPY_TYPES J_typenum = npy_typenum(npy_rowptr);\n'
+            f'OPERATOR_TYPES op_type = op.get_op_type();\n'
+            f'const int nterms = op.get_nterms();\n'
+            f'void * terms = op.data();\n'
+            f'void * rowptr = npy_data(npy_rowptr);\n'
+            f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);'\
+            f'\n{switch}'
+        )
         return cpp.emit_method(f'calc_rowptr','size_t',args,body,const_method=True)
     
     def emit_calc_matrix(self)->str:
@@ -528,17 +551,24 @@ class bosonic_basis:
                 f'({J}*)rowptr);'
             )
         args = [
-            cpp.emit_declare('J_typenum','NPY_TYPES'),
-            cpp.emit_declare('T_typenum','NPY_TYPES'),
-            cpp.emit_declare('op_type','OPERATOR_TYPES'),
-            cpp.emit_declare('terms','void*'),
-            cpp.emit_declare('nterms','const int'),
-            cpp.emit_declare('values',"void*"),
-            cpp.emit_declare('indices','void*'),
-            cpp.emit_declare('rowptr','void*')
+            cpp.emit_declare('op','operator_abi'),
+            cpp.emit_declare('npy_values','PyArrayObject *'),
+            cpp.emit_declare('npy_indices','PyArrayObject *'),
+            cpp.emit_declare('npy_rowptr','PyArrayObject *'),
         ]
+        
         switch = cpp.emit_case('switch_code',cases,'return -1;')
-        body = f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);\n{switch}'
+        body = (
+            f'NPY_TYPES J_typenum = npy_typenum(npy_indices);\n'
+            f'NPY_TYPES T_typenum = npy_typenum(npy_values);\n'
+            f'OPERATOR_TYPES op_type = op.get_op_type();\n'
+            'const int nterms = op.get_nterms();\n'
+            f'void * terms = op.data();\n'
+            f'void * values = npy_data(npy_values);\n'
+            f'void * indices = npy_data(npy_indices);\n'
+            f'void * rowptr = npy_data(npy_rowptr);\n'
+            f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);\n{switch}'
+        )
         return cpp.emit_method(f'calc_matrix','size_t',args,body,const_method=True)
 
     def emit_on_the_fly(self)->str:
@@ -557,19 +587,28 @@ class bosonic_basis:
             )
             
         args = [
-            cpp.emit_declare('T_typenum','NPY_TYPES'),
-            cpp.emit_declare('X_typenum','NPY_TYPES'),
-            cpp.emit_declare('Y_typenum','NPY_TYPES'),
-            cpp.emit_declare('op_type','OPERATOR_TYPES'),
-            cpp.emit_declare('terms','void*'),
-            cpp.emit_declare('nterms','const int'),
-            cpp.emit_declare('a','void*'),
-            cpp.emit_declare('input','void*'),
-            cpp.emit_declare('b','void*'),
-            cpp.emit_declare('output','void*')
+            cpp.emit_declare('op','operator_abi'),
+            cpp.emit_declare('npy_a','PyArrayObject *'),
+            cpp.emit_declare('npy_input','PyArrayObject *'),
+            cpp.emit_declare('npy_b','PyArrayObject *'),
+            cpp.emit_declare('npy_output','PyArrayObject *'),
         ]
+        
         switch = cpp.emit_case('switch_code',cases,'return -1;')
-        body = f'const size_t switch_code = generate_otf_switch_code(basis_switch_code,T_typenum,X_typenum,Y_typenum,op_type);\n{switch}'
+        body = (
+            f'NPY_TYPES T_typenum = op.get_T_typenum();\n'
+            f'NPY_TYPES X_typenum = npy_typenum(npy_input);\n'
+            f'NPY_TYPES Y_typenum = npy_typenum(npy_output);\n'
+            f'OPERATOR_TYPES op_type = op.get_op_type();\n'
+            f'const int nterms = op.get_nterms();\n'
+            f'void * terms = op.data();\n'
+            f'void * input = npy_data(npy_input);\n'
+            f'void * output = npy_data(npy_output);\n'
+            f'void * a = npy_data(npy_a);\n'
+            f'void * b = npy_data(npy_b);\n'
+            f'const size_t switch_code = generate_otf_switch_code(basis_switch_code,T_typenum,X_typenum,Y_typenum,op_type);\n'
+            f'{switch}'
+        )
         return cpp.emit_method(f'on_the_fly','size_t',args,body,const_method=True)
       
     def emit_build_subspace(self)->str:
@@ -686,8 +725,7 @@ def emit_basis_abi_source(use_boost:bool) -> str:
         ('quspin::basis::uint64_t',"npy_intp", "quspin::basis::uint8_t",64),
     ]    
     basis_abi_body = emit_basis_abi_body(int_types,boost_types)
-
-        
+   
     return f"""#ifndef __QUSPIN_CORE_BASIS_ABI__
 #define __QUSPIN_CORE_BASIS_ABI__
 
@@ -1004,7 +1042,7 @@ enum OPERATOR_TYPES {OP_STRING, OP_TWO_BODY};
 
 """
 
-def emit_operator_abi_body():
+def emit_operator_abi_body() -> str:
     typedefs = emit_operator_abi_typedefs()
     operator_class = operator().emit()
     return f"""
@@ -1020,7 +1058,7 @@ def emit_operator_abi_source(use_boost:bool) -> str:
 #include <numpy/ndarrayobject.h>
 #include <numpy/ndarraytypes.h>
 #include <quspin_core_abi/complex_ops.h>
-#include <quspin_core_abi/operator_abi.h>
+
 #include <memory>
 #include <vector>
 
@@ -1028,7 +1066,7 @@ def emit_operator_abi_source(use_boost:bool) -> str:
 
 
 namespace quspin_core_abi {{
-{operator_abi_body}
+{emit_operator_abi_body()}
 }}
 #endif"""    
 
@@ -1126,6 +1164,8 @@ class symmetry:
         switch_code = 0
         case_types = {}
         bit_cases = {}
+        bit_values = ', '.join([str(bits) for _,_,_,bits in self.int_types])
+
         for ctype,jtype,ktype,bits in self.int_types:
             bit_cases[bits] = f'return {switch_code};'
             case_types[switch_code] = (
@@ -1150,14 +1190,15 @@ class symmetry:
             switch_code += 1
   
             
-        bit_body = cpp.emit_case('bits',bit_cases,'return -1;')
-        dit_body = cpp.emit_case('bits',dit_cases,'return -1;')
+        bit_body = cpp.emit_case('bits',bit_cases,cpp.emit_invalid_argument('bits',bit_values))
+        dit_body = cpp.emit_case('bits',dit_cases,cpp.emit_invalid_argument('bits',bit_values))
 
         bit_body = bit_body.replace('\n','\n    ')
         dit_body = dit_body.replace('\n','\n    ')
         
+        lhss_exception = cpp.emit_domain_error('lhss','lhss >= 2')
         method_body = (
-            f'if(lhss<2){{return -1;}}\n'\
+            f'if(lhss<2){{{lhss_exception}}}\n'\
             f'else if(lhss==2)\n'
             f'{{\n'\
             f'    {bit_body}\n'\
@@ -1285,5 +1326,5 @@ if __name__ == '__main__':
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','symmetry_abi.h'),'w') as IO:
         IO.write(emit_symmetry_abi_source(use_boost))
     
-    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','quspin_abi.h'),'w') as IO:
+    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','quspin_core_abi.h'),'w') as IO:
         IO.write(emit_abi_source(use_boost))    
