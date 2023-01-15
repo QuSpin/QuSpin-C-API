@@ -1007,19 +1007,13 @@ enum OPERATOR_TYPES {OP_STRING, OP_TWO_BODY};
 def emit_operator_abi_body():
     typedefs = emit_operator_abi_typedefs()
     operator_class = operator().emit()
-    
     return f"""
 {typedefs}
-
 // abi class definitions
 {operator_class}
-
 """
     
 def emit_operator_abi_source(use_boost:bool) -> str:
- 
-    operator_abi_body = emit_operator_abi_body()
-        
     return f"""#ifndef __QUSPIN_CORE_OPERATOR_ABI__
 #define __QUSPIN_CORE_OPERATOR_ABI__
 
