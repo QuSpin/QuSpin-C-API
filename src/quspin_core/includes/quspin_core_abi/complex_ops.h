@@ -35,7 +35,9 @@ class complex_wrapper : public npy_type {
         }
         operator float() const {return (float)npy_type::real;}
         operator double() const {return (double)npy_type::real;}
-        
+        operator npy_cdouble() const {return npy_complex128((double)npy_type::real,(double)npy_type::imag);}
+        operator npy_cfloat() const {return npy_complex128((float)npy_type::real,(float)npy_type::imag);}
+
         /* Operators */
         complex_wrapper operator-() const {
           return complex_wrapper(-npy_type::real,-npy_type::imag);
