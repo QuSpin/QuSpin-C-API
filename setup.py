@@ -66,6 +66,9 @@ ext = [
     Extension('quspin_core.basis', [os.path.join('src','quspin_core','basis.pyx')],
         **extension_kwargs
     ),
+    Extension('quspin_core.symmetry', [os.path.join('src','quspin_core','symmetry.pyx')],
+        **extension_kwargs
+    ),
     Extension('quspin_core.operator', [os.path.join('src','quspin_core','operator.pyx')],
         **extension_kwargs
     ),
