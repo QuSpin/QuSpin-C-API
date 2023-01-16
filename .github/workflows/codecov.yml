@@ -79,7 +79,7 @@ jobs:
 
       - name: Test
         working-directory: ${{github.workspace}}/test_python
-        run: pyest --cov 
+        run: pytest --cov 
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3          
