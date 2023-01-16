@@ -78,10 +78,10 @@ jobs:
           pip install ${{github.workspace}}
 
       - name: Test
-        working-directory: ${{github.workspace}}/test_python
+        working-directory: ${{github.workspace}}
         run: |
-          coverage run -m unittest
-          coverage lcov 
+          coverage run -m unittest --source=src discover
+          coverage lcov
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3          
