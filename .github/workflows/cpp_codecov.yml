@@ -32,14 +32,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download doctest
-        run: wget https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h -O ${{github.workspace}}/test/test_cpp/doctest.h
+        run: wget https://github.com/doctest/doctest/releases/download/v2.4.9/doctest.h -O ${{github.workspace}}/test_cpp/doctest.h
 
       - name: Compile calculator
-        working-directory: ${{github.workspace}}/test/test_cpp
+        working-directory: ${{github.workspace}}/test_cpp
         run: g++ $CPP_FLAGS $INCLUDE_FLAGS -o test test.cpp
 
       - name: Run tests
-        working-directory: ${{github.workspace}}/test/test_cpp
+        working-directory: ${{github.workspace}}/test_cpp
         run: ./test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3          
