@@ -7,7 +7,7 @@ on:
 
 env:
   CPP_FLAGS: --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -O0 --std=c++20
-  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes -I ${{github.workspace}}/test/test_cpp
+  INCLUDE_FLAGS: -I ${{github.workspace}}/src/quspin_core/includes -I ${{github.workspace}}/test_cpp
 
 jobs:
   pre_job:
