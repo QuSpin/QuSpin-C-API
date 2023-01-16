@@ -48,7 +48,7 @@ def get_extension_kwargs(include_dirs):
 include_dirs = get_include_dirs()
  
 
-
+# optional arguments only to be used in development mode. 
    
 if "--boost-includes" in sys.argv:
     i = sys.argv.index("--boost-includes")
@@ -59,8 +59,10 @@ if "--boost-includes" in sys.argv:
 use_boost,include_dirs = check_for_boost_includes(include_dirs)
 extension_kwargs = get_extension_kwargs(include_dirs)
 
-if "--generate-abi" in sys.argv:
-    sys.argv.pop(sys.argv.index("--generate_abi"))
+if "--no-generate-abi" in sys.argv:
+    sys.argv.pop(sys.argv.index("--no-generate_abi"))
+    
+else:
     subprocess.check_call([sys.executable,
                             os.path.join(os.path.dirname(__file__),
                                 'generate_abi.py'),f'{use_boost}'])
