@@ -74,16 +74,18 @@ jobs:
 
       - name: Install
         run: |
-          pip install pytest-cov 
+          pip install coverage 
           pip install ${{github.workspace}}
 
       - name: Test
         working-directory: ${{github.workspace}}/test_python
-        run: pytest --cov 
+        run: |
+          coverage run -m unittest
+          coverage lcov 
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3          
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-          files: ${{github.workspace}}/test_python/.coverage
+          files: ${{github.workspace}}/test_python/coverage.lcov

@@ -54,3 +54,4 @@ doctest/
 install.txt
 **/.DS_Store
 .coverage
+*.lcov
