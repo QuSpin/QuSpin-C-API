@@ -1,4 +1,4 @@
-name: C++ codecov upload
+name: codecov upload
 
 on:
   - push
@@ -25,7 +25,10 @@ jobs:
           skip_after_successful_duplicate: 'true'
           paths_ignore: '["**/README.md", "**/docs/**","**/conda.recipe/**","**/test_cython/**","*.py","*.pyx","*.pxd"]'
           do_not_skip: '["workflow_dispatch", "schedule"]'
-  run:
+  run-cpp:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    name: C++ code-coverage 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,3 +50,38 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           gcov: true
           gcov_include: test.cpp
+
+  run-python:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    name: Python code-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get boost headers
+        run: |
+          curl -L -O https://github.com/scipy/boost-headers-only/archive/refs/heads/main.zip
+          7z x main.zip
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.config.py_version}} 
+      
+      - name: checking pip 
+        run:  python -m ensurepip --upgrade
+
+      - name: Install
+        run: |
+          pip install pytest-cov 
+          pip install ${{github.workspace}}
+
+      - name: Test
+        working-directory: ${{github.workspace}}/test_python
+        run: pyest --cov 
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3          
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
