@@ -88,4 +88,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-          files: ${{github.workspace}}/test_python/coverage.lcov
