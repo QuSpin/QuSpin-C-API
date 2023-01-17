@@ -80,9 +80,6 @@ def check_args(lhss,lat_args,lat_chars,loc_args,loc_chars):
     else:
         return _check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
 
-
-
-
 cdef class symmetry_api:
     """An Extension class that constructs a low-level QuSpin symmetry_abi object."""
 
