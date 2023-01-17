@@ -74,7 +74,7 @@ jobs:
 
       - name: Install
         run: |
-          pip install coverage, cython-coverage, ${{github.workspace}}
+          pip install coverage cython-coverage ${{github.workspace}}
 
       - name: Test
         working-directory: ${{github.workspace}}
