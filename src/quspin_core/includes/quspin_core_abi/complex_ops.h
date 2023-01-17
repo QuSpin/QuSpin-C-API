@@ -1,5 +1,5 @@
-#ifndef COMPLEX_OPS_H
-#define COMPLEX_OPS_H
+#ifndef __QUSPIN_CORE_COMPLEX_OPS__
+#define __QUSPIN_CORE_COMPLEX_OPS__
 
 /*
  *  Functions to handle arithmetic operations on NumPy complex values
@@ -35,7 +35,9 @@ class complex_wrapper : public npy_type {
         }
         operator float() const {return (float)npy_type::real;}
         operator double() const {return (double)npy_type::real;}
-        
+        operator npy_cdouble() const {return {(double)npy_type::real,(double)npy_type::imag};}
+        operator npy_cfloat() const {return {(float)npy_type::real,(float)npy_type::imag};}
+
         /* Operators */
         complex_wrapper operator-() const {
           return complex_wrapper(-npy_type::real,-npy_type::imag);

@@ -46,6 +46,9 @@ def get_extension_kwargs(include_dirs):
  
  
 include_dirs = get_include_dirs()
+ 
+
+# optional arguments only to be used in development mode. 
    
 if "--boost-includes" in sys.argv:
     i = sys.argv.index("--boost-includes")
@@ -53,9 +56,16 @@ if "--boost-includes" in sys.argv:
     sys.argv.pop(i) # remove flag
     sys.argv.pop(i) # remove argument for flag
 
-
 use_boost,include_dirs = check_for_boost_includes(include_dirs)
 extension_kwargs = get_extension_kwargs(include_dirs)
+
+if "--no-generate-abi" in sys.argv:
+    sys.argv.pop(sys.argv.index("--no-generate_abi"))
+    
+else:
+    subprocess.check_call([sys.executable,
+                            os.path.join(os.path.dirname(__file__),
+                                'generate_abi.py'),f'{use_boost}'])
 
 with open('README.md', 'r') as f:
     long_description = f.read()
@@ -66,16 +76,13 @@ ext = [
     Extension('quspin_core.basis', [os.path.join('src','quspin_core','basis.pyx')],
         **extension_kwargs
     ),
+    Extension('quspin_core.symmetry', [os.path.join('src','quspin_core','symmetry.pyx')],
+        **extension_kwargs
+    ),
     Extension('quspin_core.operator', [os.path.join('src','quspin_core','operator.pyx')],
         **extension_kwargs
     ),
 ]
-
-
-
-subprocess.check_call([sys.executable,
-                        os.path.join(os.path.dirname(__file__),
-                            'generate_abi.py'),f'{use_boost}'])
 
 setup(
     name='quspin-core',
@@ -92,5 +99,6 @@ setup(
     ),
     install_requires=[
         'numpy>=1.19.2',
-    ]
+    ],
+    test_suite="test_python"
 )

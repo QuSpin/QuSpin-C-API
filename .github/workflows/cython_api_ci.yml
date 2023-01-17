@@ -61,5 +61,5 @@ jobs:
       run: pip install ${{github.workspace}}
 
     - name: Test
-      working-directory: ${{github.workspace}}/test/test_python
+      working-directory: ${{github.workspace}}/test_python
       run: python -m unittest 

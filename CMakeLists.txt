@@ -28,5 +28,5 @@ include_directories(${DOCTEST_INCLUDE_DIR})
 include_directories(${QUSPIN_INCLUDE_DIR})
 
 
-add_subdirectory(test/test_cpp)
+add_subdirectory(test_cpp)
 
