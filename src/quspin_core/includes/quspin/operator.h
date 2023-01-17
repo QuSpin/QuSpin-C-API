@@ -43,11 +43,9 @@ public:
         return _dim;
     }
 
-    N_body_dit_op(const basis::dit_integer_t _lhss,std::vector<int> _locs,std::vector<T> &_data) : 
+    N_body_dit_op(const basis::dit_integer_t _lhss, const std::vector<int>& _locs, const std::vector<T>& _data) : 
     lhss(_lhss), dim(get_power(_lhss))
     {
-        
-
         assert(_data.size() == dim*dim);
         assert(_locs.size() == N);
         // copy to contiguous pointers
@@ -61,8 +59,25 @@ public:
                 return value != T(0);
             }
         );
-
     }
+
+    N_body_dit_op(const basis::dit_integer_t _lhss, int * _locs, T * _data) : 
+    lhss(_lhss), dim(get_power(_lhss))
+    {
+
+        // copy to contiguous pointers
+        data.insert(data.begin(),_data, _data + dim*dim);
+        std::copy(_locs, _locs + N,locs.begin());
+
+        nonzero.resize(data.size());
+        std::transform(data.begin(),data.end(),nonzero.begin(),
+            [](const T value) -> bool 
+            {
+                return value != T(0);
+            }
+        );
+    }
+
     ~N_body_dit_op(){}
 
     template<typename bitset_t,typename contianer_t>
@@ -106,7 +121,7 @@ public:
     static const int length = N;
     typedef T value_type;
 
-    N_body_bit_op(std::vector<int> _locs,std::vector<T> &_data)
+    N_body_bit_op(const std::vector<int>& _locs,const std::vector<T>& _data)
     {
         assert(_data.size() == dim*dim);
         assert(_locs.size() == N);
@@ -120,8 +135,23 @@ public:
                 return value != T(0);
             }
         );
-
     }
+
+    N_body_bit_op(int * _locs,T * _data)
+    {
+
+        // copy to contiguous pointers (already allocated)
+        std::copy(_data, _data + dim*dim, data.begin());
+        std::copy(_locs, _locs + N, locs.begin());
+        
+        std::transform(data.begin(),data.end(),nonzero.begin(),
+            [](const T& value) -> bool 
+            {
+                return value != T(0);
+            }
+        );
+    }
+    
     ~N_body_bit_op(){}
 
     template<typename bitset_t,typename contianer_t>
@@ -168,7 +198,7 @@ public:
     static const int length=0;
     typedef T value_type;
 
-    operator_string(std::vector<int> _locs,std::vector<std::vector<int>> _perms, std::vector<std::vector<T>> _datas) : 
+    operator_string(const std::vector<int>& _locs,const std::vector<std::vector<int>>& _perms,const std::vector<std::vector<T>>& _datas) : 
     lhss(_perms.front().size()), nlocs(_locs.size())
     { 
 
@@ -189,7 +219,7 @@ public:
             for(const int p : perm){
                 assert((p >= 0) && (p < lhss));
                 inv_perm[p] = j;
-                inv_data[p] = data[j];
+                inv_data[p] = conj(data[j]);
                 j++;
             }
 
@@ -199,6 +229,30 @@ public:
             datas.insert(datas.end(),data.begin(),data.end());
             inv_datas.insert(inv_datas.end(),inv_data.begin(),inv_data.end());
 
+        }
+    }
+
+    operator_string(const int _lhss,const int _nlocs, int * _locs, int * _perms, T * _datas) : 
+    lhss(_lhss), nlocs(_nlocs)
+    { 
+        // constructor for raw data. 
+        locs.insert(locs.end(),_locs,_locs + _nlocs);
+        perms.insert(perms.end(), _perms, _perms + _lhss*_nlocs);
+        datas.insert(datas.end(), _datas, _datas + _lhss*_nlocs);
+        inv_perms.resize(perms.size());
+        inv_datas.resize(perms.size());
+
+        std::transform(datas.begin(),datas.end(),inv_datas.begin(),
+            [](const T& val){return conj(val);}
+        );
+
+        int * _inv_perms = inv_perms.data();
+        for(int i=0;i<_nlocs;++i){
+            int * perm = _perms + i*_lhss;
+            int * inv_perm = _inv_perms + i*_lhss;
+            for(int j=0;j<_lhss;++j){
+                inv_perm[perm[j]] = j;
+            }
         }
     }
     
@@ -248,7 +302,7 @@ public:
             ptr -= lhss;
         }
 
-        if( nonzero ) output.push_back(std::make_pair(r,conj(m)));
+        if( nonzero ) output.push_back(std::make_pair(r,m));
     }
 
 };
