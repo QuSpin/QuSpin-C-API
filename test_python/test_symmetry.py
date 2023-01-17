@@ -1,11 +1,11 @@
-from quspin_core.symmetry import symmetry_api
-from quspin_core._symmetry_utils import (
-    check_bit_lat_args,
-    check_dit_lat_args,
-    check_bit_loc_args,
-    check_dit_loc_args,
-    check_bit_args,
-    check_dit_args,
+from quspin_core.symmetry import (
+    symmetry_api,
+    _check_bit_lat_args,
+    _check_dit_lat_args,
+    _check_bit_loc_args,
+    _check_dit_loc_args,
+    _check_bit_args,
+    _check_dit_args,
     check_args
 )
 import unittest
@@ -56,16 +56,16 @@ class TestSymmetryAPI(unittest.TestCase):
         
         return lhss,args,chars,args,np.asarray(chars,dtype=np.complex128)
     
-    def test_check_bit_lat_args(self):
+    def test__check_bit_lat_args(self):
         # proper arguments
         args,chars,test_args,test_chars = self.get_bit_lat_args()
 
-        result_args,result_chars = check_bit_lat_args(args,chars)
+        result_args,result_chars = _check_bit_lat_args(args,chars)
         self.assertEqual(result_args,test_args)
         self.assertArrayEqual(test_chars,result_chars)
-        self.assertRaises(ValueError,check_bit_lat_args,args,[1,2,3,4])
+        self.assertRaises(ValueError,_check_bit_lat_args,args,[1,2,3,4])
     
-    def test_check_dit_lat_args(self):
+    def test__check_dit_lat_args(self):
         # proper arguments
         lhss = 3
         chars = [1,-1,1]
@@ -78,12 +78,12 @@ class TestSymmetryAPI(unittest.TestCase):
         test_chars = np.array([1,-1,1],dtype=np.complex128)
         test_args = args
         
-        result_args,result_chars = check_dit_lat_args(lhss,args,chars)
+        result_args,result_chars = _check_dit_lat_args(lhss,args,chars)
         self.assertEqual(result_args,test_args)
         self.assertArrayEqual(test_chars,result_chars)
-        self.assertRaises(ValueError,check_dit_lat_args,lhss,args,[1,2,3,4])
+        self.assertRaises(ValueError,_check_dit_lat_args,lhss,args,[1,2,3,4])
     
-    def test_check_bit_loc_args(self):
+    def test__check_bit_loc_args(self):
         # proper arguments
         args,chars,test_args,test_chars = self.get_bit_loc_args()
         
@@ -94,49 +94,49 @@ class TestSymmetryAPI(unittest.TestCase):
             ]
 
         
-        result_args,result_chars = check_bit_loc_args(args,chars)
+        result_args,result_chars = _check_bit_loc_args(args,chars)
         self.assertEqual(result_args,test_args)
         self.assertArrayEqual(test_chars,result_chars)
-        self.assertRaises(ValueError,check_bit_loc_args,args,[1,2,3,4])
-        self.assertRaises(TypeError,check_bit_loc_args,int_args,chars)
+        self.assertRaises(ValueError,_check_bit_loc_args,args,[1,2,3,4])
+        self.assertRaises(TypeError,_check_bit_loc_args,int_args,chars)
     
-    def test_check_dit_loc_args(self):
+    def test__check_dit_loc_args(self):
         lhss,args,chars,test_args,test_chars = self.get_dit_loc_args()
-        result_args,result_chars = check_dit_loc_args(lhss,args,chars)
+        result_args,result_chars = _check_dit_loc_args(lhss,args,chars)
         
         self.assertEqual(result_args,test_args)
         self.assertArrayEqual(result_chars,test_chars)
-        self.assertRaises(ValueError,check_dit_loc_args,lhss+1,args,chars)
-        self.assertRaises(ValueError,check_dit_loc_args,lhss,args,[1,2,3,4])
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss+1,args,chars)
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss,args,[1,2,3,4])
         bad_args  = [
             ([0,1,2],[1]),
             ([[0,1,2],[1,2,0]],[0,2]),
             ([[0,1,2],[1,2,0],[2,0,1]],[0,2,5]),
         ]
-        self.assertRaises(ValueError,check_dit_loc_args,lhss,bad_args,chars)
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss,bad_args,chars)
 
         bad_args  = [
             ([0,1,2],[1]),
             ([[0,1,2],[1,2,0]],[0,2]),
             ([[0,1,2],[1,2,0],[2,0,1]],[0,2,5]),
         ]
-        self.assertRaises(ValueError,check_dit_loc_args,lhss,bad_args,chars)
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss,bad_args,chars)
         
         bad_args  = [
             ([[0,1,2]],[[1]]),
             ([[0,1,2],[1,2,0]],[0,2]),
             ([[0,1,2],[1,2,0],[2,0,1]],[0,2,5]),
         ]
-        self.assertRaises(ValueError,check_dit_loc_args,lhss,bad_args,chars)
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss,bad_args,chars)
         
         bad_args  = [
             ([[0,1,2]],[1,0]),
             ([[0,1,2],[1,2,0]],[0,2]),
             ([[0,1,2],[1,2,0],[2,0,1]],[0,2,5]),
         ]
-        self.assertRaises(ValueError,check_dit_loc_args,lhss,bad_args,chars)    
+        self.assertRaises(ValueError,_check_dit_loc_args,lhss,bad_args,chars)    
     
-    def test_check_bit_args(self):
+    def test__check_bit_args(self):
         lat_args,lat_chars,test_lat_args,test_lat_chars = self.get_bit_lat_args()
         loc_args,loc_chars,test_loc_args,test_loc_chars = self.get_bit_loc_args()
 
@@ -144,21 +144,21 @@ class TestSymmetryAPI(unittest.TestCase):
         (result_lat_args,
          result_lat_chars,
          result_loc_args,
-         result_loc_chars) = check_bit_args(lat_args,lat_chars,loc_args,loc_chars)
+         result_loc_chars) = _check_bit_args(lat_args,lat_chars,loc_args,loc_chars)
         
         self.assertEqual(test_lat_args,result_lat_args)
         self.assertEqual(test_loc_args,result_loc_args)
         self.assertArrayEqual(test_lat_chars,result_lat_chars)
         self.assertArrayEqual(test_loc_chars,result_loc_chars)
  
-    def test_check_dit_args(self):
+    def test__check_dit_args(self):
         _   ,lat_args,lat_chars,test_lat_args,test_lat_chars = self.get_dit_lat_args()
         lhss,loc_args,loc_chars,test_loc_args,test_loc_chars = self.get_dit_loc_args()
         
         (result_lat_args,
          result_lat_chars,
          result_loc_args,
-         result_loc_chars) = check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
+         result_loc_chars) = _check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
         
         self.assertEqual(test_lat_args,result_lat_args)
         self.assertEqual(test_loc_args,result_loc_args)
@@ -172,7 +172,7 @@ class TestSymmetryAPI(unittest.TestCase):
         (result_lat_args,
          result_lat_chars,
          result_loc_args,
-         result_loc_chars) = check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
+         result_loc_chars) = _check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
         
         self.assertEqual(test_lat_args,result_lat_args)
         self.assertEqual(test_loc_args,result_loc_args)
@@ -187,7 +187,7 @@ class TestSymmetryAPI(unittest.TestCase):
         (result_lat_args,
          result_lat_chars,
          result_loc_args,
-         result_loc_chars) = check_bit_args(lat_args,lat_chars,loc_args,loc_chars)
+         result_loc_chars) = _check_bit_args(lat_args,lat_chars,loc_args,loc_chars)
         
         self.assertEqual(test_lat_args,result_lat_args)
         self.assertEqual(test_loc_args,result_loc_args)
@@ -206,3 +206,12 @@ class TestSymmetryAPI(unittest.TestCase):
             symmetry_api,
             *args
         )
+        
+        args = 2,32,lat_args,lat_chars,loc_args,loc_chars
+        obj = symmetry_api(*args)
+
+        lhss,lat_args,lat_chars,*_ = self.get_dit_lat_args()
+        _,loc_args,loc_chars,*_ = self.get_dit_loc_args()
+        
+        args = lhss,32,lat_args,lat_chars,loc_args,loc_chars
+        obj = symmetry_api(*args)
