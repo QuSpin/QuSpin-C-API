@@ -543,7 +543,7 @@ class basis_abi:
                     f'std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->calc_rowptr'\
                     f'((const {term_type}*)terms, '\
                     f'nterms, '\
-                    f'({J}*)rowptr);'
+                    f'({J}*)rowptr); return 0;'
                 )
             args = [
                 cpp.emit_declare('op','operator_abi'),
@@ -576,7 +576,7 @@ class basis_abi:
                     f'nterms, '\
                     f'({T}*)values, '\
                     f'({J}*)indices, '\
-                    f'({J}*)rowptr);'
+                    f'({J}*)rowptr); return 0;'
                 )
             args = [
                 cpp.emit_declare('op','operator_abi'),
@@ -611,7 +611,7 @@ class basis_abi:
                     f'*(const {Y}*)a, '\
                     f'(const {X}*)input, '\
                     f'*(const {Y}*)b, '\
-                    f'({Y}*)output);'
+                    f'({Y}*)output); return 0;'
                 )
                 
             args = [
@@ -648,7 +648,7 @@ class basis_abi:
                     f'std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->build_subspace'\
                     f'((const {term_type}*)terms, '\
                     f'nterms, '\
-                    f'seed_state, lhss);'
+                    f'seed_state, lhss); return 0;'
                 )
             args = [
                 cpp.emit_declare('T_typenum','NPY_TYPES'),
@@ -898,6 +898,7 @@ class operator_abi:
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(op_arg->locs,op_arg->perms,op_arg->datas);\n'
+                        f'    break;\n'
                         f'}}'
                     )
                 elif 'two_body_bit_op' in term_name:
@@ -905,6 +906,7 @@ class operator_abi:
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(op_arg->locs,op_arg->data);'
+                        f'    break;\n'
                         f'}}'
                     )
                 elif 'two_body_dit_op' in term_name:
@@ -912,7 +914,9 @@ class operator_abi:
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(lhss,op_arg->locs,op_arg->data);'
-                        f'}}'                )
+                        f'    break;\n'
+                        f'}}'                
+                    )
                 else:
                     raise NotImplementedError()                
 
@@ -1142,6 +1146,7 @@ class symmetry_abi:
                         f'    }}\n'
                         f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                         f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
+                        f'    break;\n'
                         f'}}'
                     )
                 else:
@@ -1161,6 +1166,7 @@ class symmetry_abi:
                         f'    }}\n'
                         f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                         f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
+                        f'    break;\n'
                         f'}}'
                     )                
 
