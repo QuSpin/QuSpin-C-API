@@ -14,6 +14,13 @@ import numpy as np
 
 
 class TestSymmetryAPI(unittest.TestCase):
+    @staticmethod
+    def tupleify_arg(arg):        
+        try:
+            return tuple(TestSymmetryAPI.tupleify_arg(ele) for ele in arg)
+        except TypeError: # hitting bottom of the tree
+            return arg
+        
     def assertArrayEqual(self,first,second,msg=None):
         self.assertTrue(np.all(first==second),msg=msg)
     
@@ -166,16 +173,16 @@ class TestSymmetryAPI(unittest.TestCase):
         self.assertArrayEqual(test_loc_chars,result_loc_chars)
     
     def test_check_args(self):
-        _   ,lat_args,lat_chars,test_lat_args,test_lat_chars = self.get_dit_lat_args()
-        lhss,loc_args,loc_chars,test_loc_args,test_loc_chars = self.get_dit_loc_args()
+        _   ,lat_args,lat_chars,test_lat_list,test_lat_chars = self.get_dit_lat_args()
+        lhss,loc_args,loc_chars,test_loc_list,test_loc_chars = self.get_dit_loc_args()
         
-        (result_lat_args,
+        (result_lat_list,
          result_lat_chars,
-         result_loc_args,
+         result_loc_list,
          result_loc_chars) = _check_dit_args(lhss,lat_args,lat_chars,loc_args,loc_chars)
         
-        self.assertEqual(test_lat_args,result_lat_args)
-        self.assertEqual(test_loc_args,result_loc_args)
+        self.assertEqual(test_lat_list,result_lat_list)
+        self.assertEqual(test_loc_list,result_loc_list)
         self.assertArrayEqual(test_lat_chars,result_lat_chars)
         self.assertArrayEqual(test_loc_chars,result_loc_chars)
         
@@ -194,24 +201,35 @@ class TestSymmetryAPI(unittest.TestCase):
         self.assertArrayEqual(test_lat_chars,result_lat_chars)
         self.assertArrayEqual(test_loc_chars,result_loc_chars)
         
-        self.assertRaises(ValueError,check_args,1,lat_args,lat_chars,loc_args,loc_chars)
+        lat_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(lat_args,lat_chars)}
+        loc_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(loc_args,loc_chars)}
         
-        
+        self.assertRaises(ValueError,check_args,1,lat_args,loc_args)
+    
     def test_symmetry_constructor(self):
-        lat_args,lat_chars,*_ = self.get_bit_lat_args()
-        loc_args,loc_chars,*_ = self.get_bit_loc_args()
-        args = 2,16,lat_args,lat_chars,loc_args,loc_chars
+        lat_list,lat_chars,*_ = self.get_bit_lat_args()
+        loc_list,loc_chars,*_ = self.get_bit_loc_args()
+        
+        lat_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(lat_list,lat_chars)}
+        loc_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(loc_list,loc_chars)}
+
+        args = 2,16,lat_args,loc_args
         self.assertRaises(
             ValueError,
             symmetry_api,
             *args
         )
         
-        args = 2,32,lat_args,lat_chars,loc_args,loc_chars
+        args = 2,32,lat_args,loc_args
         obj = symmetry_api(*args)
 
-        lhss,lat_args,lat_chars,*_ = self.get_dit_lat_args()
-        _,loc_args,loc_chars,*_ = self.get_dit_loc_args()
+        lhss,lat_list,lat_chars,*_ = self.get_dit_lat_args()
+        _,loc_list,loc_chars,*_ = self.get_dit_loc_args()
         
-        args = lhss,32,lat_args,lat_chars,loc_args,loc_chars
+        
+        lat_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(lat_list,lat_chars)}
+        loc_args = {TestSymmetryAPI.tupleify_arg(p):c for p,c in zip(loc_list,loc_chars)}
+        
+        
+        args = lhss,32,lat_args,loc_args
         obj = symmetry_api(*args)

@@ -60,7 +60,8 @@ use_boost,include_dirs = check_for_boost_includes(include_dirs)
 extension_kwargs = get_extension_kwargs(include_dirs)
 
 if "--no-generate-abi" in sys.argv:
-    sys.argv.pop(sys.argv.index("--no-generate_abi"))
+    i = sys.argv.index("--no-generate-abi")
+    sys.argv.pop(i)
     
 else:
     subprocess.check_call([sys.executable,
