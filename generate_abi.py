@@ -14,36 +14,40 @@ numpy_ctypes={float32:"float",float64:"double",complex64:"npy_cfloat_wrapper",co
 numpy_numtypes={float32:"NPY_FLOAT32",float64:"NPY_FLOAT64",complex64:"NPY_COMPLEX64",complex128:"NPY_COMPLEX128",
                 int32:"NPY_INT32",int64:"NPY_INT64",int16:"NPY_INT16",int8:"NPY_INT8"}
 
+numpy_names = {float32:"float32",float64:"float64",complex64:"complex64",complex128:"complex128",
+                int32:"int32",int64:"int64",int8:"int8",int16:"iny16"}
+
 real_dtypes={float32:float32, float64:float64, complex64:float32, complex128:float64}
 
 index_types = [int32,int64]
-matrix_types = [int8,int16,float32,float64,complex64,complex128]
+matrix_types = [int8, int16, float32, float64, complex64, complex128]
 symmetric_matrix_types = [float32,float64,complex64,complex128]
-
 on_the_fly_types = [float32,float64,complex64,complex128]
+
+bit_values_str = '32, 64, 128, 1024, 4096, 16384'
+matrix_types_str = 'int8, int16, float32, float64, complex64, or complex128'
+symmetric_matrix_types_str = 'float32, float64, complex64, or complex128'
+index_types_str = 'int32, int64'
+
 
 class cpp:
     """A collection of methods useful for generating C++ code."""
     
     @staticmethod
     def emit_domain_error(name:str, domain:str)-> str:
-        return f'throw std::domain_error("expecting value of \'{name}\' to be in range: {domain}");'
+        return f'throw std::domain_error("expecting value of {name} to be in range: {domain}");'
 
     @staticmethod
     def emit_invalid_argument(name:str, domain:str)-> str:
-        return f'throw std::invalid_argument("expecting value of \'{name}\' to be in: [{domain}]");'
+        return f'throw std::invalid_argument("expecting value of {name} to be in: [{domain}]");'
 
-    @staticmethod
-    def emit_bad_typeid(name:str, excpected_types:str) -> str:
-        return f'throw std::bad_typeid("expecting type of \'{name}\' to be one of: {excpected_types}");'
-    
     @staticmethod
     def emit_runtime_error(message):
         return f'throw std::runtime_error("{message}");'
     
     @staticmethod
     def emit_out_of_range(name:str, collection:str) -> str:
-        return f'throw std::out_of_range("value of \'{name}\' not found in \'{collection}\'");'
+        return f'throw std::out_of_range("value of {name} not found in {collection}");'
 
     @staticmethod
     def emit_declare(name:str,type:str) -> str:
@@ -213,7 +217,7 @@ class basis_abi:
                     '}'
                 )
 
-            body = cpp.emit_case('basis_switch_code',cases,'throw std::runtime_error("cannot interpret args");')
+            body = cpp.emit_case('basis_switch_code',cases,'throw std::invalid_argument("symmetry reduced basis require a subspace object, please set fullspace=False.");')
 
             return cpp.emit_constructor(self.name,args=args,body=body,
                                         preconstruct='lhss(_lhss),basis_switch_code(generate_basis_switch_code(_bits,_lhss,_symmetry.get(),fullspace))')
@@ -250,7 +254,7 @@ class basis_abi:
             for ctype,jtype,ktype,bits in self.int_types:
                 
                 # (space_type,symmetry_type,basis_type) 
-                bit_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                bit_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */ : {switch_code});'
                 case_types[switch_code] = (f'bit_subspace_{bits}',f'bit_symmetry<{ctype}>',f'symmetric_bitbasis_{bits}')
                 switch_code += 1
                 
@@ -259,7 +263,7 @@ class basis_abi:
                 case_types[switch_code+1] = (f'bit_subspace_{bits}',f'',f'subspace_bitbasis_{bits}')
                 switch_code += 2
 
-                dit_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                dit_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */ : {switch_code});'
                 case_types[switch_code] = (f'dit_subspace_{bits}',f'dit_symmetry<{ctype}>',f'symmetric_ditbasis_{bits}')
                 switch_code += 1
                 
@@ -296,7 +300,7 @@ class basis_abi:
                 dit_body = dit_body.replace('\n','\n    ')
 
                 cases[bits] = (
-                    f'if(lhss<2){{return -1;}}\n'
+                    f'if(lhss<2){{{cpp.emit_domain_error("lhss","1 < lhss < 255")}}}\n'
                     f'else if(lhss==2)\n'
                     f'{{\n'
                     f'    {bit_body}\n'
@@ -309,19 +313,19 @@ class basis_abi:
             
             for ctype,jtype,ktype,bits in self.boost_types: 
                 # (space_type,symmetry_type,basis_type) 
-                bit_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                bit_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */  : {switch_code});'
                 case_types[switch_code] = (f'bit_subspace_{bits}',f'bit_symmetry<{ctype}>',f'symmetric_bitbasis_{bits}')
                 switch_code += 1
                 
-                bit_no_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                bit_no_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */  : {switch_code});'
                 case_types[switch_code] = (f'bit_subspace_{bits}',f'',f'subspace_bitbasis_{bits}')
                 switch_code += 1
 
-                dit_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                dit_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */  : {switch_code});'
                 case_types[switch_code] = (f'dit_subspace_{bits}',f'dit_symmetry<{ctype}>',f'symmetric_ditbasis_{bits}')
                 switch_code += 1
                 
-                dit_no_symmetry_body = f'return (full_space ? -1 : {switch_code});'
+                dit_no_symmetry_body = f'return (full_space ? -1 /* error handled in constructor */  : {switch_code});'
                 case_types[switch_code] = (f'dit_subspace_{bits}',f'',f'subspace_ditbasis_{bits}')
                 switch_code += 1
                 
@@ -362,7 +366,7 @@ class basis_abi:
                     f'}}'
                 )
             
-            return cpp.emit_case('bits',cases,'return -1;'),case_types
+            return cpp.emit_case('bits',cases,cpp.emit_invalid_argument('bits',bit_values_str)),case_types
         
         def get_term_switch_code_body(self) -> tuple[str,dict]:
             cases = {}
@@ -373,7 +377,12 @@ class basis_abi:
 
             for basis_switch_code,(_,_,basis_type) in basis_case_types.items():
                 bits_case_body = 'if(0){}\n'
-
+                
+                if "symmetric" in basis_type:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',symmetric_matrix_types_str)
+                else:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+                    
                 for index_type in index_types:
                     index_type_num = numpy_numtypes[index_type]
                     index_ctype = numpy_ctypes[index_type]
@@ -386,7 +395,6 @@ class basis_abi:
                         
                         if 'symmetric' in basis_type and np.issubdtype(matrix_type,np.integer):
                             continue
-                            # matrix_type_cases[matric_typenum] = 'return -1;'
                         else:
                             term_cases = {}
                                 
@@ -395,19 +403,21 @@ class basis_abi:
                                 term_cases[op_type] = f'return {switch_code};'
                                 switch_code_types[switch_code] = (basis_type,index_ctype,matrix_ctype,term_type.format(matrix_ctype))
                                 switch_code += 1
-                                
-                            matrix_type_cases[matric_typenum] = cpp.emit_case("op_type",term_cases,'return -1;')
                             
+                            matrix_type_cases[matric_typenum] = cpp.emit_case("op_type",term_cases,cpp.emit_runtime_error('this message should not show up.'))
+                            
+                         
                     matrix_type_case = cpp.emit_case("T_typenum",matrix_type_cases,
-                        default='return -1;'
+                        default=type_error
                     )
                     matrix_type_case = matrix_type_case.replace('\n','\n    ')
                     
                     bits_case_body += f'else if(PyArray_EquivTypenums(J_typenum,{index_type_num}))\n{{\n    {matrix_type_case}\n}}\n'
 
-                cases[basis_switch_code] = bits_case_body + "else {return -1;}"
+                bit_error = cpp.emit_invalid_argument('Index type',index_types_str)
+                cases[basis_switch_code] = bits_case_body + f"else {{{bit_error}}}"
             
-            method_body = cpp.emit_case("basis_switch_code",cases,'return -1;')
+            method_body = cpp.emit_case("basis_switch_code",cases,cpp.emit_runtime_error('this message should not show up.'))
 
             
             return method_body,switch_code_types
@@ -422,6 +432,12 @@ class basis_abi:
 
             for basis_switch_code,(_,_,basis_type) in basis_case_types.items():
                 T_cases =  {}
+                
+                if "symmetric" in basis_type:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',symmetric_matrix_types_str)
+                else:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+                    
                 for (T,T_typenum) in iterate_typenums:
                     X_cases = {}
                     for (X,X_typenum) in iterate_typenums:
@@ -436,20 +452,20 @@ class basis_abi:
                                     term_cases[op_type] = f'return {switch_code};'
                                     switch_code_types[switch_code] = (basis_type,numpy_ctypes[T], numpy_ctypes[X], numpy_ctypes[Y],term_type.format(numpy_ctypes[T]))
                                     switch_code += 1
-                                
-                                term_body = cpp.emit_case('op_type',term_cases,'return -1;')
+
+                                term_body = cpp.emit_case('op_type',term_cases,cpp.emit_runtime_error('this message should not show up.'))
                                 term_body = term_body.replace('\n','\n    ')
                                 X_cases[X_typenum] = (
                                     f'if({Y_conditional})\n'
                                     f'{{\n'
                                     f'    {term_body}\n'
                                     f'}}\n'
-                                    f'else{{return -1;}}'
+                                    f'else{{{cpp.emit_invalid_argument("output dtype",numpy_names[Y])}}}'
                                 )
-                    T_cases[T_typenum] = cpp.emit_case("X_typenum",X_cases,"return -1;")
-                cases[basis_switch_code] = cpp.emit_case("T_typenum",T_cases,"return -1;")
+                    T_cases[T_typenum] = cpp.emit_case("X_typenum",X_cases,cpp.emit_invalid_argument("input dtype",numpy_names[X]))
+                cases[basis_switch_code] = cpp.emit_case("T_typenum",T_cases,type_error)
             
-            method_body = cpp.emit_case("basis_switch_code",cases,'return -1;')
+            method_body = cpp.emit_case("basis_switch_code",cases,cpp.emit_runtime_error("this message should not appear."))
             return method_body,switch_code_types
 
         def get_build_subspace_switch_code_body(self) -> tuple[str,dict]:
@@ -459,9 +475,13 @@ class basis_abi:
             
             _,basis_case_types = self.get_basis_switch_code_body()
             for basis_switch_code,(_,_,basis_type) in basis_case_types.items():
-                
+                if "symmetric" in basis_type:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',symmetric_matrix_types_str)
+                else:
+                    type_error = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+                    
                 if "fullspace" in basis_type: # skip fullspace as they can't be generated. 
-                    cases[basis_switch_code] = 'return -1;'
+                    cases[basis_switch_code] = cpp.emit_runtime_error("there is no subspace to build.")
                     continue
                 
                 matrix_type_cases = {}
@@ -481,13 +501,15 @@ class basis_abi:
                             switch_code_types[switch_code] = (basis_type,matrix_ctype,term_type.format(matrix_ctype))
                             switch_code += 1
                             
-                        matrix_type_cases[matric_typenum] = cpp.emit_case("op_type",term_cases,'return -1;')
-                        
-                cases[basis_switch_code] = cpp.emit_case("T_typenum",matrix_type_cases,
-                    default='return -1;'
-                )
+                        matrix_type_cases[matric_typenum] = cpp.emit_case("op_type",term_cases,
+                            default = cpp.emit_runtime_error('this message should not show up.')
+                        )
+                
+                cases[basis_switch_code] = cpp.emit_case("T_typenum",matrix_type_cases,type_error)
 
-            method_body = cpp.emit_case("basis_switch_code",cases,'return -1;')
+            method_body = cpp.emit_case("basis_switch_code",cases,
+                default = cpp.emit_runtime_error('this message should not show up.')
+            )
             return method_body,switch_code_types
 
         def emit_generate_basis_switch_code(self)->str:
@@ -543,7 +565,7 @@ class basis_abi:
                     f'std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->calc_rowptr'\
                     f'((const {term_type}*)terms, '\
                     f'nterms, '\
-                    f'({J}*)rowptr); return 0;'
+                    f'({J}*)rowptr); break;'
                 )
             args = [
                 cpp.emit_declare('op','operator_abi'),
@@ -551,7 +573,7 @@ class basis_abi:
 
             ]
             
-            switch = cpp.emit_case('switch_code',cases,'return -1;')
+            switch = cpp.emit_case('switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             body = (
                 f'NPY_TYPES T_typenum = op.get_T_typenum();\n'
                 f'NPY_TYPES J_typenum = npy_typenum(npy_rowptr);\n'
@@ -562,7 +584,7 @@ class basis_abi:
                 f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);'\
                 f'\n{switch}'
             )
-            return cpp.emit_method(f'calc_rowptr','size_t',args,body,const_method=True)
+            return cpp.emit_method(f'calc_rowptr','void',args,body,const_method=True)
         
         def emit_calc_matrix(self)->str:
             cases = {}
@@ -576,7 +598,7 @@ class basis_abi:
                     f'nterms, '\
                     f'({T}*)values, '\
                     f'({J}*)indices, '\
-                    f'({J}*)rowptr); return 0;'
+                    f'({J}*)rowptr); break;'
                 )
             args = [
                 cpp.emit_declare('op','operator_abi'),
@@ -585,7 +607,7 @@ class basis_abi:
                 cpp.emit_declare('npy_rowptr','PyArrayObject *'),
             ]
             
-            switch = cpp.emit_case('switch_code',cases,'return -1;')
+            switch = cpp.emit_case('switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             body = (
                 f'NPY_TYPES J_typenum = npy_typenum(npy_indices);\n'
                 f'NPY_TYPES T_typenum = npy_typenum(npy_values);\n'
@@ -597,7 +619,7 @@ class basis_abi:
                 f'void * rowptr = npy_data(npy_rowptr);\n'
                 f'const size_t switch_code = generate_term_switch_code(basis_switch_code,J_typenum,T_typenum,op_type);\n{switch}'
             )
-            return cpp.emit_method(f'calc_matrix','size_t',args,body,const_method=True)
+            return cpp.emit_method(f'calc_matrix','void',args,body,const_method=True)
 
         def emit_on_the_fly(self)->str:
             cases = {}
@@ -611,7 +633,7 @@ class basis_abi:
                     f'*(const {Y}*)a, '\
                     f'(const {X}*)input, '\
                     f'*(const {Y}*)b, '\
-                    f'({Y}*)output); return 0;'
+                    f'({Y}*)output); break;'
                 )
                 
             args = [
@@ -622,7 +644,7 @@ class basis_abi:
                 cpp.emit_declare('npy_output','PyArrayObject *'),
             ]
             
-            switch = cpp.emit_case('switch_code',cases,'return -1;')
+            switch = cpp.emit_case('switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             body = (
                 f'NPY_TYPES T_typenum = op.get_T_typenum();\n'
                 f'NPY_TYPES X_typenum = npy_typenum(npy_input);\n'
@@ -637,7 +659,7 @@ class basis_abi:
                 f'const size_t switch_code = generate_otf_switch_code(basis_switch_code,T_typenum,X_typenum,Y_typenum,op_type);\n'
                 f'{switch}'
             )
-            return cpp.emit_method(f'on_the_fly','size_t',args,body,const_method=True)
+            return cpp.emit_method(f'on_the_fly','void',args,body,const_method=True)
         
         def emit_build_subspace(self)->str:
             cases = {}
@@ -648,7 +670,7 @@ class basis_abi:
                     f'std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->build_subspace'\
                     f'((const {term_type}*)terms, '\
                     f'nterms, '\
-                    f'seed_state, lhss); return 0;'
+                    f'seed_state, lhss); break;'
                 )
             args = [
                 cpp.emit_declare('T_typenum','NPY_TYPES'),
@@ -657,9 +679,9 @@ class basis_abi:
                 cpp.emit_declare('nterms','const int'),
                 cpp.emit_declare('seed_state','const std::vector<int>&')
             ]
-            switch = cpp.emit_case('switch_code',cases,'return -1;')
+            switch = cpp.emit_case('switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             body = f'const size_t switch_code = generate_build_subspace_switch_code(basis_switch_code,T_typenum,op_type);\n{switch}'
-            return cpp.emit_method(f'build_subspace','size_t',args,body,const_method=False)
+            return cpp.emit_method(f'build_subspace','void',args,body,const_method=False)
 
         def emit_get_state(self)->str:
             args = [
@@ -671,7 +693,7 @@ class basis_abi:
                 cases[switch_code] = (
                     f'return std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->space->get_state(state_index).to_vector();'
                 )
-            body = cpp.emit_case('basis_switch_code',cases,'throw std::runtime_error("invalid basis type");')
+            body = cpp.emit_case('basis_switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             return cpp.emit_method('get_state','std::vector<quspin::basis::dit_integer_t>',args,body,const_method=True)
 
         def emit_get_index(self)->str:
@@ -685,7 +707,7 @@ class basis_abi:
                 cases[switch_code] = (
                     f'return std::reinterpret_pointer_cast<{basis_type}>(basis_ptr)->space->get_index(state_vector);'
                 )
-            body = cpp.emit_case('basis_switch_code',cases,'throw std::runtime_error("invalid basis type");')
+            body = cpp.emit_case('basis_switch_code',cases,cpp.emit_runtime_error('this message should not appear.'))
             return cpp.emit_method('get_index','npy_intp',args,body,const_method=True)
 
     class anyonic_basis:
@@ -867,9 +889,9 @@ class operator_abi:
                 'two_body_dit_op':'OP_TWO_BODY'
             }
             self.operator_args = {
-                'operator_string':'operator_string_args<{}>',
-                'two_body_bit_op':'N_body_op_args<{}>',
-                'two_body_dit_op':'N_body_op_args<{}>'
+                'operator_string':'operator_string_args',
+                'two_body_bit_op':'N_body_op_args',
+                'two_body_dit_op':'N_body_op_args'
             }
 
         def emit(self)->str:
@@ -891,13 +913,13 @@ class operator_abi:
             _,case_types = self.get_generate_type_switch_code_body()
             
             cases = {}
-            for switch_code,(term_name,arg_type,vec_type,vec_name) in case_types.items():
+            for switch_code,(term_name,arg_type,vec_type,vec_name,ctype) in case_types.items():
                 
                 if 'operator_string' in term_name:
                     cases[switch_code] = (
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
-                        f'    {vec_name}.emplace_back(op_arg->locs,op_arg->perms,op_arg->datas);\n'
+                        f'    {vec_name}.emplace_back(lhss,op_arg->nlocs,op_arg->locs,op_arg->perms,({ctype} *)op_arg->datas);\n'
                         f'    break;\n'
                         f'}}'
                     )
@@ -905,7 +927,7 @@ class operator_abi:
                     cases[switch_code] = (
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
-                        f'    {vec_name}.emplace_back(op_arg->locs,op_arg->data);'
+                        f'    {vec_name}.emplace_back(op_arg->locs,({ctype} *)op_arg->data);'
                         f'    break;\n'
                         f'}}'
                     )
@@ -913,14 +935,16 @@ class operator_abi:
                     cases[switch_code] = (
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
-                        f'    {vec_name}.emplace_back(lhss,op_arg->locs,op_arg->data);'
+                        f'    {vec_name}.emplace_back(lhss,op_arg->locs,({ctype} *)op_arg->data);'
                         f'    break;\n'
                         f'}}'                
                     )
                 else:
                     raise NotImplementedError()                
 
-            body = cpp.emit_case('type_switch_code',cases,'throw std::runtime_error("cannot interpret args");')
+            body = cpp.emit_case('type_switch_code',cases,
+                default = cpp.emit_runtime_error('this message should not show up.')
+            )
             
             return cpp.emit_constructor(self.name,args,body,
                 preconstruct=(
@@ -945,7 +969,7 @@ class operator_abi:
             
             _,case_switch = self.get_generate_type_switch_code_body()
             
-            for switch_code,(_,_,vec_type,vec_name) in case_switch.items():
+            for switch_code,(_,_,vec_type,vec_name,_) in case_switch.items():
                 private_list.append(cpp.emit_var(vec_name,vec_type))
 
             
@@ -972,14 +996,16 @@ class operator_abi:
                 ctype = numpy_ctypes[matrix_type]
                 
                 term_template = self.operator_template[term_name].format(ctype)
-                arg_type = self.operator_args[term_name].format(ctype)
+                arg_type = self.operator_args[term_name]
                 vec_type = f'std::vector<{term_template}>'
                 vec_name = f'{term_name}_{ctype}'
-                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name)
+                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name,ctype)
                 type_cases[matrix_typenum] = f'return {switch_code};'
                 switch_code += 1
                 
-            op_cases[term_typenum] = cpp.emit_case('T_typenum',type_cases,'return -1;')
+            op_cases[term_typenum] = cpp.emit_case('T_typenum',type_cases,
+                default = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+            )
             
             
             
@@ -994,7 +1020,7 @@ class operator_abi:
                 arg_type = self.operator_args[term_name].format(ctype)
                 vec_type = f'std::vector<{term_template}>'
                 vec_name = f'{term_name}_{ctype}'
-                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name)
+                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name,ctype)
                 bit_cases[matrix_typenum] = f'return {switch_code};'
                 switch_code += 1
                 
@@ -1009,12 +1035,16 @@ class operator_abi:
                 arg_type = self.operator_args[term_name].format(ctype)
                 vec_type = f'std::vector<{term_template}>'
                 vec_name = f'{term_name}_{ctype}'
-                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name)
+                case_types[switch_code] = (term_name,arg_type,vec_type,vec_name,ctype)
                 dit_cases[matrix_typenum] = f'return {switch_code};'
                 switch_code += 1
                 
-            bit_body = cpp.emit_case('T_typenum',bit_cases,'return -1;')
-            dit_body = cpp.emit_case('T_typenum',dit_cases,'return -1;')
+            bit_body = cpp.emit_case('T_typenum',bit_cases,
+                default = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+            )
+            dit_body = cpp.emit_case('T_typenum',dit_cases,
+                default = cpp.emit_invalid_argument('Operator dtype',matrix_types_str)
+            )
 
             bit_body = bit_body.replace('\n','\n    ')
             dit_body = dit_body.replace('\n','\n    ')
@@ -1049,7 +1079,7 @@ class operator_abi:
         def emit_data(self):        
             _,case_types = self.get_generate_type_switch_code_body()
             cases = {}
-            for switch_code,(term_name,arg_type,vec_type,vec_name) in case_types.items():
+            for switch_code,(term_name,arg_type,vec_type,vec_name,ctype) in case_types.items():
                 cases[switch_code] = (f'return (void *){vec_name}.data();')
 
             return cpp.emit_method('data','void *',[],cpp.emit_case('type_switch_code',cases,'return nullptr;'))
@@ -1058,21 +1088,20 @@ class operator_abi:
     def emit_operator_abi_typedefs():
         return """
 
-    template<typename T>
     struct operator_string_args { // OP_STRING
-        std::vector<int> locs;
-        std::vector<std::vector<T>> datas;
-        std::vector<std::vector<int>> perms;
+        const int nlocs;
+        int * locs;
+        void * datas;
+        int * perms;
         
     };
 
-    template<typename T>
     struct N_body_op_args { // TWO_BODY
         // store each the data as a void*. 
         // data will be recast to the appropriate
         // pointer type and copied later.
-        std::vector<int> locs;
-        std::vector<T> data;
+        int * locs;
+        void * data;
     };
 
     enum OPERATOR_TYPES {OP_STRING, OP_TWO_BODY};
