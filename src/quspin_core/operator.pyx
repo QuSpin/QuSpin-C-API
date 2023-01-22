@@ -34,7 +34,8 @@ cdef class OperatorString:
         if self.datas.ndim > 2:
             raise ValueError('"datas" must be a 2d array of integers.')
 
-        if self.perms.shape != self.datas.shape:
+        if (self.perms.shape[0] != self.datas.shape[0] and  
+            self.perms.shape[1] != self.datas.shape[1]):
             raise ValueError('"perms" and "datas" must be the same shape.')
 
         if self.locs.ndim > 1:
@@ -49,8 +50,26 @@ cdef class OperatorString:
         self.nlocs = self.locs.size
         self.lhss = self.perms.shape[1]
 
+    @property
+    def datas(self):
+        datas = self.datas
+        datas.flags.writeable=False
+        return datas
+
+    @property
+    def perms(self):
+        perms = self.perms
+        perms.flags.writeable=False
+        return perms
+
+    @property
+    def locs(self):
+        locs = self.locs
+        locs.flags.writeable=False
+        return locs
+
     def astype(self,dtype,**kwargs):    
-        return OperatorString(self.locs, self.perms, self.data.astype(dtype,**kwargs))
+        return OperatorString(self.locs, self.perms, self.datas.astype(dtype,**kwargs))
 
     cdef OPERATOR_TYPES get_op_type(self):
         return OP_STRING
