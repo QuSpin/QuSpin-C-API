@@ -29,8 +29,6 @@ class TestOperatorString(unittest.TestCase):
         locs = np.array([[1]])
         perms = np.array([[1,0,1]])
         datas = np.array([[1.0,1.0]])
-        print(perms.shape[0],datas.shape[0])
-        print(perms.shape[1],datas.shape[1])
 
         self.assertRaises(ValueError,OperatorString,locs,perms,datas)
         
@@ -38,8 +36,6 @@ class TestOperatorString(unittest.TestCase):
         perms = np.array([[1,0],[0,1]])
         datas = np.array([[1.0,1.0]])
         
-        print(perms.shape[0],datas.shape[0])
-        print(perms.shape[1],datas.shape[1])
         self.assertRaises(ValueError,OperatorString,locs,perms,datas)
         
     def test_constructor_shape_locs(self):
@@ -103,14 +99,19 @@ class TestNBodyOperator(unittest.TestCase):
         data = np.random.uniform(0,10,size=(4,4))
         self.assertRaises(ValueError,NBodyOperator,locs,data)
         
+    def test_constructor_one_body(self):
+        locs = np.array([1])
+        data = np.random.uniform(0,10,size=(4,4))
+        self.assertRaises(ValueError,NBodyOperator,locs,data)
+        
     def test_constructor_lhss(self):
         locs = np.array([1,2])
         data = np.random.uniform(0,10,size=(6,6))
         self.assertRaises(ValueError,NBodyOperator,locs,data)
         
     def test_astype(self):
-        locs = np.array([1])
-        data = np.array([[0.25,1.25],[0.5,2.0]])
+        locs = np.array([1,2])
+        data = np.random.uniform(0,10,size=(4,4))
         obj = NBodyOperator(locs,data)
 
         for dtype in _allowed_types.values():
@@ -123,11 +124,50 @@ class TestNBodyOperator(unittest.TestCase):
         
         
     def test_properties(self):
-        locs = np.array([1,2,3])
-        data = np.random.uniform(0,10,size=(8,8))
+        locs = np.array([1,2])
+        data = np.random.uniform(0,10,size=(4,4))
 
         obj = NBodyOperator(locs,data)
 
         self.assertTrue(np.all(locs==obj.locs))
         self.assertTrue(np.all(data==obj.data))
         self.assertEqual(obj.lhss,2)
+        
+class TestOperatorAPI(unittest.TestCase):
+    def get_valid_strings(self,lhss=2):
+        
+        p1 = np.random.permutation(np.arange(lhss))
+        p2 = np.random.permutation(np.arange(lhss))
+        d1 = np.random.normal(size=lhss)
+        d2 = np.random.normal(size=lhss)
+        op1 = OperatorString([1],p1,d1)
+        op2 = OperatorString([2],p2,d2)
+
+        return [op1,op2]
+    
+    def get_valid_two_body(self):
+        sigma_x = np.array([[0.0,1.0],[1.0,0.0]])
+        sigma_z = np.array([[-1.0,0.0],[0.0,1.0]])
+
+        op1 = NBodyOperator([0,1],np.kron(sigma_z,sigma_x))
+        op2 = NBodyOperator([2,3],np.kron(sigma_z,sigma_x))
+        
+        return [op1,op2]    
+    
+    def test_constructor_mo_terms(self):
+        self.assertRaises(ValueError,OperatorAPI,[],np.complex128)
+    
+    def test_constructor_mixed_terms(self):
+        self.assertRaises(ValueError,OperatorAPI,[np.eye(4)],np.complex128)
+        
+        terms = self.get_valid_strings()+self.get_valid_two_body()
+        self.assertRaises(ValueError,OperatorAPI,terms,np.complex128)
+        
+        terms = self.get_valid_strings(2)+self.get_valid_strings(3)
+        self.assertRaises(ValueError,OperatorAPI,terms,np.complex128)
+        
+
+    def test_constructor(self):
+        for dtype in _allowed_types.values():
+            a = OperatorAPI(self.get_valid_strings(),dtype)
+            b = OperatorAPI(self.get_valid_two_body(),dtype)
