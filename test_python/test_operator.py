@@ -1,7 +1,7 @@
 import unittest
 from quspin_core.operator import OperatorAPI,OperatorString,NBodyOperator
 import numpy as np
-from src.quspin_core._utils import _allowed_types
+from quspin_core._utils import _allowed_types
 
 class TestOperatorString(unittest.TestCase):
     def test_constructor_type(self):
