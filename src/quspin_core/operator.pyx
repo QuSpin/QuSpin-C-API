@@ -74,7 +74,7 @@ cdef class OperatorString:
     def astype(self,dtype,**kwargs):    
         return OperatorString(self.locs, self.perms, self.datas.astype(dtype,**kwargs))
 
-    cdef OPERATOR_TYPES get_op_type(self):
+    cdef OPERATOR_TYPES get_term_type(self):
         return OP_STRING
 
     cdef NPY_TYPES get_typenum(self):
@@ -84,7 +84,7 @@ cdef class OperatorString:
         return reinterpret_pointer_cast[void,operator_string_args](make_shared[operator_string_args](
                 self.nlocs, 
                 <int*>PyArray_DATA(self.locs), 
-                <int*>PyArray_DATA(self.pers), 
+                <int*>PyArray_DATA(self.perms), 
                 <void*>PyArray_DATA(self.datas)
             )
         )
@@ -107,6 +107,9 @@ cdef class NBodyOperator:
 
         if self.locs.ndim > 1:
             raise ValueError('"locs" must be a 1d array of integers')
+
+        if len(self.locs) not in  [2]:
+            raise ValueError('NBodyOperator only supports two-body terms in the QuSpin-ABI')
 
         n_body = len(self.locs)
 
@@ -135,10 +138,7 @@ cdef class NBodyOperator:
     def lhss(self):
         return self.lhss
 
-    cdef OPERATOR_TYPES get_op_type(self):
-        if len(self.locs) not in  [2]:
-            raise ValueError('NBodyOperator only supports two-body terms in the QuSpin-ABI')
-
+    cdef OPERATOR_TYPES get_term_type(self):
         return OP_TWO_BODY
             
     
@@ -156,54 +156,59 @@ cdef class NBodyOperator:
 
 cdef class OperatorAPI:
 
-    cdef operator_abi * op
+    cdef operator_abi * terms
 
-    def __cinit__(self,ops,dtype):
+    def __cinit__(self,terms,dtype):
 
-        ops = list(ops)
 
-        for op in ops:
+        terms = list(terms)
 
-            if (type(op) not in [OperatorString,NBodyOperator]) or (type(op) != type(ops[0])):
+        if len(terms) == 0:
+            raise ValueError("OperatorAPI requires at least one Term")
+
+        for term in terms:
+
+            if (type(term) not in [OperatorString,NBodyOperator]) or (type(term) != type(terms[0])):
                 raise ValueError(
-                    'all operators in "ops" must be one '
+                    'all operators in "terms" must be one '
                     'of the same type: "OperatorString" or "NBodyOperator"'
                 )
 
-            if op.lhss != ops[0].lhss:
+            if term.lhss != terms[0].lhss:
                 raise ValueError(
-                    'all operators in "ops" must have '
+                    'all operators in "terms" must have '
                     'the same local hilbert space size.'
-                    f'found {op.lhss}, expecting {ops[0].lhss}'
+                    f'found {term.lhss}, expecting {terms[0].lhss}'
                 )
 
-        ops = [op.astype(dtype) for op in ops]
+        terms = [term.astype(dtype,copy=True) for term in terms]
 
         cdef vector[shared_ptr[void]] args
-
         cdef NBodyOperator n_body_op
         cdef OperatorString op_string
         cdef int lhss
         cdef NPY_TYPES T_typenum
-        cdef OPERATOR_TYPES op_type
+        cdef OPERATOR_TYPES term_type
 
-        if type(ops[0]) == OperatorString:
-            for op_string in ops:
+        if type(terms[0]) == OperatorString:
+            for op_string in terms:
                 args.push_back(op_string.get_arg())
             
+            op_string = terms[0]
             T_typenum = op_string.get_typenum()
-            op_type = op_string.get_op_type()
+            term_type = op_string.get_term_type()
             lhss = op_string.lhss
         else:
-            for n_body_op in ops:
+            for n_body_op in terms:
                 args.push_back(n_body_op.get_arg())
 
+            n_body_op = terms[0]
             T_typenum = n_body_op.get_typenum()
-            op_type = n_body_op.get_op_type()
+            term_type = n_body_op.get_term_type()
             lhss = n_body_op.lhss
 
 
-        self.op = new operator_abi(T_typenum,op_type,lhss,args)
+        self.terms = new operator_abi(T_typenum,term_type,lhss,args)
 
     
 
