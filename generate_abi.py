@@ -921,24 +921,24 @@ class operator_abi:
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
                         f'    {vec_name}.emplace_back(lhss,op_arg->nlocs,op_arg->locs,op_arg->perms,({ctype} *)op_arg->datas);\n'
-                        f'    break;\n'
-                        f'}}'
+                        f'}}\n'
+                        f'break;'
                     )
                 elif 'two_body_bit_op' in term_name:
                     cases[switch_code] = (
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
-                        f'    {vec_name}.emplace_back(op_arg->locs,({ctype} *)op_arg->data);'
-                        f'    break;\n'
-                        f'}}'
+                        f'    {vec_name}.emplace_back(op_arg->locs,({ctype} *)op_arg->data);\n'
+                        f'}}\n'
+                        f'break;'
                     )
                 elif 'two_body_dit_op' in term_name:
                     cases[switch_code] = (
                         f'for(std::shared_ptr<void>  _op_arg : _op_args){{\n'
                         f'    std::shared_ptr<{arg_type}> op_arg = std::reinterpret_pointer_cast<{arg_type}>(_op_arg);\n'
-                        f'    {vec_name}.emplace_back(lhss,op_arg->locs,({ctype} *)op_arg->data);'
-                        f'    break;\n'
-                        f'}}'                
+                        f'    {vec_name}.emplace_back(lhss,op_arg->locs,({ctype} *)op_arg->data);\n'
+                        f'}}\n'
+                        f'break;'              
                     )
                 else:
                     raise NotImplementedError()                
@@ -1060,8 +1060,8 @@ class operator_abi:
             )
             
             
-            
-            method_body = f'if(lhss < 2){{return -1;}}\n'+cpp.emit_case('op_type',op_cases,'return -1;')
+            lhss_error = cpp.emit_out_of_range('lhss','2 <= lhss <= 255')
+            method_body = f'if(lhss < 2){{{lhss_error}}}\n'+cpp.emit_case('op_type',op_cases,'return -1;')
                 
             
 
