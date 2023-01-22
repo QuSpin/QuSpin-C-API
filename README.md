@@ -8,15 +8,7 @@ Low-level C++ and Cython API for QuSpin. Note currently the Cython CI just tests
 
 ## TODO:
 
-1. generate code coverage results for both Cython and C++ tests. 
-    
-    d. for Cython API use coverage.py, see (NOTE: This is a bit lower on priorities since cython code hasn't even been designed.)
-    
-	* https://cython.readthedocs.io/en/latest/src/tutorial/profiling_tutorial.html#enabling-coverage-analysis
-        
-    * https://coverage.readthedocs.io/en/7.0.1/
-        
-    * needs to be integrated into install/build commands in setup.py
+~~1. generate code coverage results for both Cython and C++ tests.~~
 
 2. create unit tests for C++ API. 
 
