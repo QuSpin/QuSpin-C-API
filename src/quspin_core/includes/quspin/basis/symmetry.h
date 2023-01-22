@@ -109,7 +109,7 @@ private:
     std::vector<int> locs;
 
 public:
-    perm_dit(const std::vector<std::vector<int>>& _perm,const std::vector<int>& _locs) : lhss(_perm.front().size())
+    perm_dit(const int _lhss, const std::vector<std::vector<int>>& _perm,const std::vector<int>& _locs) : lhss(_lhss)
     { 
 
         assert(_perm.size() == _locs.size());
@@ -415,7 +415,7 @@ TEST_SUITE("quspin/basis/symmetry.h"){
         std::vector<int> perm = {1,2,0};
         std::vector<int> inv  = {2,0,1};
         dit_set<uint8_t> dit_state({0,1,2,0},3);
-        perm_dit<uint8_t> dp({perm, perm}, {1,3});
+        perm_dit<uint8_t> dp(3,{perm, perm}, {1,3});
         double coeff = 1.0;
 
         auto result = dp.app(dit_state,coeff);
