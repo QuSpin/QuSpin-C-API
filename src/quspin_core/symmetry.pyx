@@ -24,7 +24,7 @@ cdef class BitPerm:
         return 2
 
     def __hash__(self):
-        return hash((2,tuple(self.perm)))
+        return hash((BitPerm,2,tuple(self.perm)))
 
     cdef shared_ptr[void] get_arg(self):
         return reinterpret_pointer_cast[void,bit_perm_args](
@@ -46,7 +46,7 @@ cdef class PermBit:
         return 2
 
     def __hash__(self):
-        return hash((2,tuple(self.mask)))
+        return hash((PermBit,2,tuple(self.mask)))
 
     cdef shared_ptr[void] get_arg(self):
         return reinterpret_pointer_cast[void,perm_bit_args](
@@ -68,7 +68,7 @@ cdef class DitPerm:
         return self.lhss
 
     def __hash__(self):
-        return hash((self.lhss,tuple(self.perm)))
+        return hash((DitPerm,self.lhss,tuple(self.perm)))
 
     cdef shared_ptr[void] get_arg(self):
         return reinterpret_pointer_cast[void,dit_perm_args](
@@ -106,7 +106,7 @@ cdef class PermDit:
     def __hash__(self):
         perms = tuple(tuple( ele for ele in perm) for perm in self.perms)
         locs = tuple(self.locs)
-        return hash((self.lhss,locs,perms))
+        return hash((PermDit,self.lhss,locs,perms))
 
     cdef shared_ptr[void] get_arg(self):
         return reinterpret_pointer_cast[void,perm_dit_args](

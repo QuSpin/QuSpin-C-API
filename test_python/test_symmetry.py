@@ -12,7 +12,7 @@ class TestBitPerm(unittest.TestCase):
     def test_hash(self):
         perm = [0,1,2,3]
         obj = BitPerm(perm)
-        self.assertEqual(hash((2,(0,1,2,3))),hash(obj))
+        self.assertEqual(hash((BitPerm,2,(0,1,2,3))),hash(obj))
     
     def test_lhss(self):
         perm = [0,1,2,3]
@@ -26,7 +26,7 @@ class TestPermBit(unittest.TestCase):
 
     def test_hash(self):
         obj = PermBit([1,0,1,0])
-        self.assertEqual(hash((2,(1,0,1,0))),hash(obj))
+        self.assertEqual(hash((PermBit,2,(1,0,1,0))),hash(obj))
     
     def test_lhss(self):
         obj = PermBit([1,0,1,0])
@@ -36,7 +36,7 @@ class TestDitPerm(unittest.TestCase):
     def test_hash(self):
         perm = [0,1,2,3]
         obj = DitPerm(4,perm)
-        self.assertEqual(hash((4,(0,1,2,3))),hash(obj))
+        self.assertEqual(hash((DitPerm,4,(0,1,2,3))),hash(obj))
     
     def test_lhss(self):
         perm = [0,1,2,3]
@@ -54,7 +54,7 @@ class TestPermDit(unittest.TestCase):
     def test_hash(self):
         args = (3,(0,1,2),((0,1,2),(0,1,2),(0,1,2)))
         obj = PermDit(*args)
-        self.assertEqual(hash(args),hash(obj))
+        self.assertEqual(hash((PermDit,)+args),hash(obj))
     
     def test_lhss(self):
         args = (3,(0,1,2),((0,1,2),(0,1,2),(0,1,2)))
