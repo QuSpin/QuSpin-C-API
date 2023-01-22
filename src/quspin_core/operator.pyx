@@ -34,8 +34,7 @@ cdef class OperatorString:
         if self.datas.ndim > 2:
             raise ValueError('"datas" must be a 2d array of integers.')
 
-        if (self.perms.shape[0] != self.datas.shape[0] and  
-            self.perms.shape[1] != self.datas.shape[1]):
+        if (self.perms.shape[0] != self.datas.shape[0] or self.perms.shape[1] != self.datas.shape[1]):
             raise ValueError('"perms" and "datas" must be the same shape.')
 
         if self.locs.ndim > 1:
@@ -52,21 +51,25 @@ cdef class OperatorString:
 
     @property
     def datas(self):
-        datas = self.datas
-        datas.flags.writeable=False
-        return datas
+        arr = self.datas
+        arr.flags.writeable=False
+        return arr
 
     @property
     def perms(self):
-        perms = self.perms
-        perms.flags.writeable=False
-        return perms
+        arr = self.perms
+        arr.flags.writeable=False
+        return arr
 
     @property
     def locs(self):
-        locs = self.locs
-        locs.flags.writeable=False
-        return locs
+        arr = self.locs
+        arr.flags.writeable=False
+        return arr
+
+    @property
+    def lhss(self):
+        return self.lhss
 
     def astype(self,dtype,**kwargs):    
         return OperatorString(self.locs, self.perms, self.datas.astype(dtype,**kwargs))
@@ -100,7 +103,7 @@ cdef class NBodyOperator:
             raise TypeError(f'dtype must be one of: {types}')
 
         if self.data.ndim > 2 or self.data.shape[0] != self.data.shape[1]:
-            raise ValueError('"datas" must be square array. ')
+            raise ValueError('"data" must be square array. ')
 
         if self.locs.ndim > 1:
             raise ValueError('"locs" must be a 1d array of integers')
@@ -109,12 +112,29 @@ cdef class NBodyOperator:
 
         self.lhss = int((self.data.shape[0])**(1.0/n_body))
 
-        if self.lhss**n_body !=self. datas.shape[0]:
-            raise ValueError(f'"datas" must must be the {n_body}th power of an integer.')
+        if self.lhss**n_body !=self.data.shape[0]:
+            raise ValueError(f'number of rows in "data" must must be the {n_body}th power of an integer, expecting {self.lhss**n_body}, got {self.data.shape[0]}.')
 
     def astype(self,dtype,**kwargs):
         return NBodyOperator(self.locs,self.data.astype(dtype,**kwargs))
-        
+
+
+    @property
+    def data(self):
+        arr = self.data
+        arr.flags.writeable=False
+        return arr
+
+    @property
+    def locs(self):
+        arr = self.locs
+        arr.flags.writeable=False
+        return arr
+
+    @property
+    def lhss(self):
+        return self.lhss
+
     cdef OPERATOR_TYPES get_op_type(self):
         if len(self.locs) not in  [2]:
             raise ValueError('NBodyOperator only supports two-body terms in the QuSpin-ABI')
