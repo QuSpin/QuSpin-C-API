@@ -109,7 +109,7 @@ private:
     std::vector<int> locs;
 
 public:
-    perm_dit(const std::vector<std::vector<int>>& _perm,const std::vector<int>& _locs) : lhss(_perm.front().size())
+    perm_dit(const int _lhss, const std::vector<std::vector<int>>& _perm,const std::vector<int>& _locs) : lhss(_lhss)
     { 
 
         assert(_perm.size() == _locs.size());

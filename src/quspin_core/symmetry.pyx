@@ -4,7 +4,7 @@
 # distutils: language=c++
 ###########################
 from quspin_core_abi cimport symmetry_abi,bit_perm_args,perm_bit_args,dit_perm_args,perm_dit_args
-from numpy cimport complex128_t
+from numpy cimport complex128_t, ndarray, PyArray_DATA
 from libcpp.vector cimport vector
 from libcpp.memory cimport shared_ptr,make_shared,reinterpret_pointer_cast
 ###########################
@@ -85,10 +85,10 @@ cdef class PermDit:
         perms = [[int(ele) for ele in perm] for perm in perms]
 
         if len(locs) != len(perms):
-            raise ValueError
+            raise ValueError('number of elements in locs must equal the number of permutations in perms.')
 
         if any(len(perm) != lhss for perm in perms):
-            raise ValueError
+            raise ValueError('length of permutations must be equal to "lhss"')
 
         cdef vector[int] perm_vec
 
@@ -125,38 +125,43 @@ cdef class SymmetryAPI:
         dict lat_args = {},
         dict loc_args = {}):
 
-
-        lat_symm,lat_chars = list(zip(*lat_args.items()))
-        loc_symm,loc_chars = list(zip(*loc_args.items()))
+        if len(lat_args) > 0:
+            lat_symm,lat_chars = list(zip(*lat_args.items()))
+        else:
+            lat_symm,lat_chars = [],[]
+        
+        if len(loc_args) > 0:
+            loc_symm,loc_chars = list(zip(*loc_args.items()))
+        else:
+            loc_symm,loc_chars = [],[]
 
         for symm in lat_symm:
 
             if (type(symm) not in [BitPerm,DitPerm]) or (type(symm) != type(lat_symm[0])):
-                raise ValueError(
+                raise TypeError(
                     'all symmetry objects in "lat_args" must be one '
                     'of the same type: "BitPerm" or "DitPerm"'
                 )
 
-            if symm.lhss != lat_symm[0].lhss:
+            if symm.lhss != lhss:
                 raise ValueError(
-                    'all operators in "ops" must have '
+                    'all symmetry in "lat_args" must have '
                     'the same local hilbert space size.'
-                    f'found {symm.lhss}, expecting {lat_symm[0].lhss}'
+                    f'found {symm.lhss}, expecting {lhss}'
                 )
 
         for symm in loc_symm:
-
-            if (type(symm) not in [PermBit,PermDit]) or (type(symm) != type(lat_symm[0])):
-                raise ValueError(
-                    'all symmetry objects in "lat_args" must be one '
-                    'of the same type: "BitPerm" or "DitPerm"'
+            if (type(symm) not in [PermBit,PermDit]) or (type(symm) != type(loc_symm[0])):
+                raise TypeError(
+                    'all symmetry objects in "loc_args" must be one '
+                    'of the same type: "PermBit" or "PermDit"'
                 )
 
-            if symm.lhss != lat_symm[0].lhss:
+            if symm.lhss != lhss:
                 raise ValueError(
-                    'all operators in "ops" must have '
+                    'all symmetry in "loc_args" must have '
                     'the same local hilbert space size.'
-                    f'found {symm.lhss}, expecting {lat_symm[0].lhss}'
+                    f'found {symm.lhss}, expecting {lhss}'
                 )
 
         cdef vector[shared_ptr[void]] lat_args_vec
@@ -167,26 +172,33 @@ cdef class SymmetryAPI:
         cdef PermDit perm_dit
         cdef DitPerm dit_perm
 
-        if (type(lat_symm[0]) == BitPerm and type(loc_symm[0]) == PermBit):
-            for perm_bit in lat_symm:
-                lat_args_vec.push_back(perm_bit.get_arg())
+        if len(lat_args) > 0 and len(loc_args) > 0:
+            if (type(lat_symm[0]) == BitPerm and type(loc_symm[0]) == PermBit):
+                for bit_perm in lat_symm:
+                    lat_args_vec.push_back(bit_perm.get_arg())
 
-            for bit_perm in loc_symm:
-                loc_args_vec.push_back(bit_perm.get_arg())
+                for perm_bit in loc_symm:
+                    loc_args_vec.push_back(perm_bit.get_arg())
 
-        elif (type(lat_symm[0]) == DitPerm and type(loc_symm[0]) == PermDit):
-            for perm_dit in lat_symm:
-                lat_args_vec.push_back(perm_dit.get_arg())
+            elif (type(lat_symm[0]) == DitPerm and type(loc_symm[0]) == PermDit):
+                for dit_perm in lat_symm:
+                    lat_args_vec.push_back(dit_perm.get_arg())
 
-            for dit_perm in loc_symm:
-                loc_args_vec.push_back(dit_perm.get_arg())
-        else:
-            raise TypeError('cannot mix dit and bit symmetries.')
+                for perm_dit in loc_symm:
+                    loc_args_vec.push_back(perm_dit.get_arg())
+            else:
+                raise TypeError('cannot mix dit and bit symmetries.')
 
-        cdef complex128_t[::1] _lat_chars = np.ascontiguousarray(lat_chars,dtype=np.complex128)
-        cdef complex128_t[::1] _loc_chars = np.ascontiguousarray(loc_chars,dtype=np.complex128)
-
-        self.symm = new symmetry_abi(lhss,bits,lat_args_vec,&_lat_chars[0],loc_args_vec,&_loc_chars[0])
+        cdef ndarray _lat_chars = np.ascontiguousarray(lat_chars,dtype=np.complex128)
+        cdef ndarray _loc_chars = np.ascontiguousarray(loc_chars,dtype=np.complex128)
+        
+        self.symm = new symmetry_abi(
+            lhss,bits,
+            lat_args_vec,
+            <complex128_t*>PyArray_DATA(_lat_chars),
+            loc_args_vec,
+            <complex128_t*>PyArray_DATA(_loc_chars)
+        )
 
     def __dealloc__(self):
         del self.symm

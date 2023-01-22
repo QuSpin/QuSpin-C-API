@@ -5,7 +5,8 @@ from typing import NoReturn, Optional
 from itertools import product
 
 
-
+pwd = os.path.dirname(os.path.realpath(__file__))
+exec(open(os.path.join(pwd,'src','quspin_core','_version.py')).read())
 
 numpy_ctypes={float32:"float",float64:"double",complex64:"npy_cfloat_wrapper",complex128:"npy_cdouble_wrapper",
                 int32:"npy_int32",int64:"npy_int64",int8:"npy_int8",int16:"npy_int16"}
@@ -1155,16 +1156,16 @@ class symmetry_abi:
                     cases[switch_code] = (
                         f'{{\n'
                         f'    std::vector<{lat_symm}> lat_symm;\n'
-                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());'
                         f'    std::vector<{loc_symm}> loc_symm;\n'
-                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());'
+                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());\n'
+                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());\n'
                         f'    for(std::shared_ptr<void> _lat_arg : _lat_args){{\n'
                         f'        std::shared_ptr<{lat_args}> lat_arg =  std::reinterpret_pointer_cast<{lat_args}>(_lat_arg);\n'
                         f'        lat_symm.emplace_back(lhss,lat_arg->perm);\n'
                         f'    }}\n'
                         f'    for(std::shared_ptr<void> _loc_arg : _loc_args){{\n'
                         f'        std::shared_ptr<{loc_args}> loc_arg = std::reinterpret_pointer_cast<{loc_args}>(_loc_arg);\n'
-                        f'        loc_symm.emplace_back(loc_arg->perms,loc_arg->locs);\n'
+                        f'        loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);\n'
                         f'    }}\n'
                         f'    std::shared_ptr<{symmetry_type}> symmetry = std::make_shared<{symmetry_type}>(lat_symm,lat_char,loc_symm,loc_char);\n'
                         f'    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);\n'
@@ -1175,9 +1176,9 @@ class symmetry_abi:
                     cases[switch_code] = (
                         f'{{\n'
                         f'    std::vector<{lat_symm}> lat_symm;\n'
-                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());'
                         f'    std::vector<{loc_symm}> loc_symm;\n'
-                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());'
+                        f'    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());\n'
+                        f'    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());\n'
                         f'    for(std::shared_ptr<void> _lat_arg : _lat_args){{\n'
                         f'        std::shared_ptr<{lat_args}> lat_arg =  std::reinterpret_pointer_cast<{lat_args}>(_lat_arg);\n'
                         f'        lat_symm.emplace_back(lat_arg->perm);\n'
@@ -1405,7 +1406,7 @@ class utils_abi:
 
     #endif"""
 
-def emit_abi_source(use_boost):
+def emit_abi_source(use_boost):    
     boost_flag = ('#define USE_BOOST\n' if use_boost else '')
         
     
@@ -1438,8 +1439,6 @@ def get_boost_types(use_boost:bool):
 
 def generate_abi(use_boost):
 
-    pwd = os.path.dirname(os.path.realpath(__file__))
-    exec(open(os.path.join(pwd,'src','quspin_core','_version.py')).read())
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','basis_abi.h'),'w') as IO:
         IO.write(basis_abi().emit(use_boost))
         
@@ -1453,4 +1452,12 @@ def generate_abi(use_boost):
         IO.write(utils_abi.emit(use_boost))     
     
     with open(os.path.join('src','quspin_core','includes','quspin_core_abi','quspin_core_abi.h'),'w') as IO:
-        IO.write(emit_abi_source(use_boost))    
+        IO.write(emit_abi_source(use_boost))  
+             
+if __name__=="__main__":
+    try:
+        use_boost = eval(sys.argv[1])
+    except IndexError:
+        use_boost = False
+        
+    generate_abi(use_boost)  
