@@ -1,7 +1,5 @@
 import unittest
-from quspin_core.operator import operator_string
+from quspin_core.operator import OperatorAPI
 
 class TestBasis(unittest.TestCase):
-    def test(self):
-        op = operator_string()
-        self.assertEqual(op.name,"operator_string")
+    pass

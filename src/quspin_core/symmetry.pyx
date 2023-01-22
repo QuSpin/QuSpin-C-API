@@ -8,83 +8,112 @@ from numpy cimport complex128_t
 from libcpp.vector cimport vector
 from libcpp.memory cimport shared_ptr,make_shared,reinterpret_pointer_cast
 ###########################
-import numpy as _np
+import numpy as np
+from ._utils import check_is_perm
 
-def _to_int_array(a):
-    return _np.asarray(list(a)).astype(int,casting='equiv')
+cdef class BitPerm:
+    cdef vector[int] perm
 
-def _to_bool_array(a):
-    return _np.asarray(list(a)).astype(bool,casting='equiv')
+    def __init__(self,perm):
+        perm = [int(ele) for ele in perm]
+        check_is_perm(perm)
+        self.perm = perm
 
-def _to_complex_array(a):
-    return _np.asarray(list(a)).astype(_np.complex128,casting='safe')
+    @property
+    def lhss(self):
+        return 2
 
-def _check_lat_args(args,chars):
-    args = _to_int_array(args) # cast to integers
-    args = [[int(ele) for ele in perm] for perm in args] # extract as list of lists
-    
-    if len(args) != len(chars): 
-        raise ValueError("number of lattice symmetries must equal the number of characters.")
-    
-    return args, _to_complex_array(chars)
+    def __hash__(self):
+        return hash((2,tuple(self.perm)))
 
-def _check_bit_lat_args(args,chars):
-    return _check_lat_args(args,chars)
+    cdef shared_ptr[void] get_arg(self):
+        return reinterpret_pointer_cast[void,bit_perm_args](
+            make_shared[bit_perm_args](self.perm)
+        )
 
-def _check_dit_lat_args(lhss,args,chars):
-    return _check_lat_args(args,chars)
+cdef class PermBit:
+    cdef vector[int] mask
 
-def _check_bit_loc_args(args,chars):
-    args = _to_bool_array(args) # cast to integers
-    args = [[bool(ele) for ele in perm] for perm in args] # extract as list of lists
-    
-    if len(args) != len(chars): 
-        raise ValueError("number of local symmetries must equal the number of characters.")
-    
-    return args, _to_complex_array(chars)
+    def __init__(self,mask):
+        mask = [int(ele) for ele in mask]
+        if any((ele > 1 or ele < 0) for ele in mask):
+            raise ValueError('mask must be collection of bools or {0,1}.')
 
-def _check_dit_loc_args(lhss,args,chars):
-    new_args = []
-    for (perms,locs) in args:
-        perms = _to_int_array(perms)
-        locs = _to_int_array(locs)
-        
-        if perms.ndim != 2: raise ValueError('local dit permutation must be given for each location as a 2d array-like object')
-        if locs.ndim != 1: raise ValueError('locations for dit permutations must be given as a 1d array-like object')
-        if perms.shape[0] != locs.shape[0]: raise ValueError('the number of locations must match the number of permutations.')
-        if perms.shape[1] != lhss: raise ValueError
-        perms = [[int(v) for v in perm] for perm in perms[:]]
-        locs = [int(v) for v in locs]
-        
-        new_args.append((perms,locs))
-        
-    if len(new_args) != len(chars): 
-        raise ValueError("number of local symmetries must equal the number of characters.")            
-    
-    return new_args,_to_complex_array(chars)
+        self.mask = mask
 
-def _check_bit_args(lat_list,lat_chars,loc_list,loc_chars):
-    return (_check_bit_lat_args(lat_list,lat_chars) +
-            _check_bit_loc_args(loc_list,loc_chars))
+    @property
+    def lhss(self):
+        return 2
 
-def _check_dit_args(lhss,lat_list,lat_chars,loc_list,loc_chars):
-    return (_check_dit_lat_args(lhss,lat_list,lat_chars) +
-            _check_dit_loc_args(lhss,loc_list,loc_chars))
+    def __hash__(self):
+        return hash((2,tuple(self.mask)))
 
-def check_args(lhss,lat_args,loc_args):
-    lat_list,lat_chars = list(zip(*lat_args.items()))
-    loc_list,loc_chars = list(zip(*loc_args.items()))
-    
-    if lhss < 2:
-        raise ValueError('expecting 1 < lhss < 256.')
-    elif lhss == 2:
-        return _check_bit_args(lat_list,lat_chars,loc_list,loc_chars)
-    else:
-        return _check_dit_args(lhss,lat_list,lat_chars,loc_list,loc_chars)
+    cdef shared_ptr[void] get_arg(self):
+        return reinterpret_pointer_cast[void,perm_bit_args](
+            make_shared[perm_bit_args](self.mask)
+        )
 
+cdef class DitPerm:
+    cdef vector[int] perm
+    cdef int lhss
 
+    def __init__(self,lhss,perm):
+        perm = [int(ele) for ele in perm]
+        check_is_perm(perm)
+        self.perm = perm
+        self.lhss = lhss
 
-cdef class symmetry_api:
+    @property
+    def lhss(self):
+        return self.lhss
+
+    def __hash__(self):
+        return hash((self.lhss,tuple(self.perm)))
+
+    cdef shared_ptr[void] get_arg(self):
+        return reinterpret_pointer_cast[void,dit_perm_args](
+            make_shared[dit_perm_args](self.perm)
+        )
+
+cdef class PermDit:
+    cdef vector[vector[int]] perms
+    cdef vector[int] locs
+    cdef int lhss
+
+    def __init__(self,lhss,locs,perms):
+        locs = [int(ele) for ele in locs]
+        perms = [[int(ele) for ele in perm] for perm in perms]
+
+        if len(locs) != len(perms):
+            raise ValueError
+
+        if any(len(perm) != lhss for perm in perms):
+            raise ValueError
+
+        cdef vector[int] perm_vec
+
+        self.lhss = lhss
+        self.locs = locs
+        for perm in perms:
+            check_is_perm(perm)
+            perm_vec = perm
+            self.perms.push_back(perm_vec)
+
+    @property
+    def lhss(self):
+        return self.lhss
+
+    def __hash__(self):
+        perms = tuple(tuple( ele for ele in perm) for perm in self.perms)
+        locs = tuple(self.locs)
+        return hash((self.lhss,locs,perms))
+
+    cdef shared_ptr[void] get_arg(self):
+        return reinterpret_pointer_cast[void,perm_dit_args](
+            make_shared[perm_dit_args](self.perms,self.locs)
+        )
+ 
+cdef class SymmetryAPI:
     """An Extension class that constructs a low-level QuSpin symmetry_abi object."""
 
     cdef symmetry_abi * symm
@@ -96,56 +125,68 @@ cdef class symmetry_api:
         dict lat_args = {},
         dict loc_args = {}):
 
-        (
-            lat_list, lat_chars,
-            loc_list, loc_chars,
-        ) = check_args(lhss, lat_args, loc_args)
 
-        cdef vector[shared_ptr[void]] _lat_list
-        cdef vector[shared_ptr[void]] _loc_list
+        lat_symm,lat_chars = list(zip(*lat_args.items()))
+        loc_symm,loc_chars = list(zip(*loc_args.items()))
 
-        cdef vector[int] int_vec
-        cdef vector[vector[int]] int_vec_vec
+        for symm in lat_symm:
 
-        if lhss == 2:
-            for perm in lat_list:
-                int_vec = perm
-                _lat_list.push_back(
-                    reinterpret_pointer_cast[void,bit_perm_args](
-                        make_shared[bit_perm_args](int_vec)
-                    )
-                )
-            
-            for mask in loc_list:
-                int_vec = mask
-                _loc_list.push_back(
-                    reinterpret_pointer_cast[void,perm_bit_args](
-                        make_shared[perm_bit_args](int_vec)
-                    )
+            if (type(symm) not in [BitPerm,DitPerm]) or (type(symm) != type(lat_symm[0])):
+                raise ValueError(
+                    'all symmetry objects in "lat_args" must be one '
+                    'of the same type: "BitPerm" or "DitPerm"'
                 )
 
-        elif lhss > 2:
-            for perm in lat_list:
-                int_vec = perm
-                _lat_list.push_back(
-                    reinterpret_pointer_cast[void,dit_perm_args](
-                        make_shared[dit_perm_args](int_vec)
-                    )
+            if symm.lhss != lat_symm[0].lhss:
+                raise ValueError(
+                    'all operators in "ops" must have '
+                    'the same local hilbert space size.'
+                    f'found {symm.lhss}, expecting {lat_symm[0].lhss}'
                 )
 
-            for perms,locs in loc_list:
-                int_vec = locs
-                int_vec_vec = perms
-                _loc_list.push_back(
-                    reinterpret_pointer_cast[void,perm_dit_args](
-                        make_shared[perm_dit_args](int_vec_vec,int_vec)
-                    )
+        for symm in loc_symm:
+
+            if (type(symm) not in [PermBit,PermDit]) or (type(symm) != type(lat_symm[0])):
+                raise ValueError(
+                    'all symmetry objects in "lat_args" must be one '
+                    'of the same type: "BitPerm" or "DitPerm"'
                 )
 
-        cdef complex128_t[::1] _lat_chars = lat_chars
-        cdef complex128_t[::1] _loc_chars = loc_chars
+            if symm.lhss != lat_symm[0].lhss:
+                raise ValueError(
+                    'all operators in "ops" must have '
+                    'the same local hilbert space size.'
+                    f'found {symm.lhss}, expecting {lat_symm[0].lhss}'
+                )
 
-        self.symm = new symmetry_abi(lhss,bits,_lat_list,&_lat_chars[0],_loc_list,&_loc_chars[0])
+        cdef vector[shared_ptr[void]] lat_args_vec
+        cdef vector[shared_ptr[void]] loc_args_vec
+
+        cdef PermBit perm_bit
+        cdef BitPerm bit_perm
+        cdef PermDit perm_dit
+        cdef DitPerm dit_perm
+
+        if (type(lat_symm[0]) == BitPerm and type(loc_symm[0]) == PermBit):
+            for perm_bit in lat_symm:
+                lat_args_vec.push_back(perm_bit.get_arg())
+
+            for bit_perm in loc_symm:
+                loc_args_vec.push_back(bit_perm.get_arg())
+
+        elif (type(lat_symm[0]) == DitPerm and type(loc_symm[0]) == PermDit):
+            for perm_dit in lat_symm:
+                lat_args_vec.push_back(perm_dit.get_arg())
+
+            for dit_perm in loc_symm:
+                loc_args_vec.push_back(dit_perm.get_arg())
+        else:
+            raise TypeError('cannot mix dit and bit symmetries.')
+
+        cdef complex128_t[::1] _lat_chars = np.ascontiguousarray(lat_chars,dtype=np.complex128)
+        cdef complex128_t[::1] _loc_chars = np.ascontiguousarray(loc_chars,dtype=np.complex128)
+
+        self.symm = new symmetry_abi(lhss,bits,lat_args_vec,&_lat_chars[0],loc_args_vec,&_loc_chars[0])
 
     def __dealloc__(self):
         del self.symm

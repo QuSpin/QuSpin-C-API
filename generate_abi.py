@@ -127,7 +127,7 @@ class cpp:
         non_const_attr = [(v,t) for v,t in zip(vars,types) if not 'const' in t]
         attr = "\n".join([cpp.emit_var(v,t) for v,t in zip(vars,types)])
 
-        preconstruct = ", ".join(f'{v}(_{v}' for v,t in const_attr)
+        preconstruct = ", ".join(f'{v}(_{v})' for v,t in const_attr)
         args = [cpp.emit_declare('_'+v,t) for v,t in zip(vars,types)]
         body = "\n".join([f'{v} = _{v};' for (v,t) in non_const_attr])
         
@@ -1086,27 +1086,20 @@ class operator_abi:
     
     @staticmethod
     def emit_operator_abi_typedefs():
-        return """
+        op_string_struct = cpp.emit_simple_struct('operator_string_args',
+            vars=['nlocs','locs','perms','datas'],
+            types = ['const int','int *','int *','void *']                    
+        )
+        n_body_struct = cpp.emit_simple_struct('N_body_op_args',
+            vars=['locs','data'],
+            types = ['int *','void *']                    
+        )
+        return f"""
+{op_string_struct}
 
-    struct operator_string_args { // OP_STRING
-        const int nlocs;
-        int * locs;
-        void * datas;
-        int * perms;
-        
-    };
+{n_body_struct}
 
-    struct N_body_op_args { // TWO_BODY
-        // store each the data as a void*. 
-        // data will be recast to the appropriate
-        // pointer type and copied later.
-        int * locs;
-        void * data;
-    };
-
-    enum OPERATOR_TYPES {OP_STRING, OP_TWO_BODY};
-
-    """
+enum OPERATOR_TYPES {{OP_STRING, OP_TWO_BODY}};"""
     
     @staticmethod
     def emit_operator_abi_body() -> str:
@@ -1442,14 +1435,11 @@ def get_boost_types(use_boost:bool):
         
     return boost_types
 
-if __name__ == '__main__':
-    try:
-        use_boost=eval(sys.argv[1])
-    except IndexError:
-        use_boost = False
-        
-    pwd = os.path.split(os.path.abspath(__file__))[0]
-    exec(open(os.path.join(pwd,"src","quspin_core","_version.py")).read())
+
+def generate_abi(use_boost):
+
+    pwd = os.path.dirname(os.path.realpath(__file__))
+    exec(open(os.path.join(pwd,'src','quspin_core','_version.py')).read())
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','basis_abi.h'),'w') as IO:
         IO.write(basis_abi().emit(use_boost))
         
@@ -1462,5 +1452,5 @@ if __name__ == '__main__':
     with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','utils_abi.h'),'w') as IO:
         IO.write(utils_abi.emit(use_boost))     
     
-    with open(os.path.join(pwd,'src','quspin_core','includes','quspin_core_abi','quspin_core_abi.h'),'w') as IO:
+    with open(os.path.join('src','quspin_core','includes','quspin_core_abi','quspin_core_abi.h'),'w') as IO:
         IO.write(emit_abi_source(use_boost))    
