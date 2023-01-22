@@ -63,6 +63,7 @@ jobs:
         run: |
           coverage run -m unittest discover
           coverage xml
+          cat coverage.xml
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3          
