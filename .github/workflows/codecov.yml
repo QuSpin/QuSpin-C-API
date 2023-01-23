@@ -57,7 +57,7 @@ jobs:
       - name: Install
         run: |
           pip install -v coverage Cython cython-coverage numpy
-          ENABLE_COVERATE=True python setup.py develop
+          ENABLE_COVERAGE=True python setup.py develop
 
       - name: Test
         working-directory: ${{github.workspace}}
