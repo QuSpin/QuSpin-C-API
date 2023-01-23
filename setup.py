@@ -2,7 +2,7 @@ from setuptools import find_packages, setup, Extension
 from distutils.command import build_ext, install
 from Cython.Build import cythonize
 import numpy as np
-import os,subprocess,sys
+import os,subprocess,sys,warnings
 
 def check_for_boost_includes(include_dirs):
     for include_dir in include_dirs:
@@ -30,40 +30,58 @@ def get_include_dirs():
          
     return include_dirs
 
-def get_extension_kwargs(include_dirs):
+def get_extension_kwargs(include_dirs,coverage):
     if sys.platform == 'win32':
+        if coverage:
+             warnings.warn(UserWarning('coverage not supported on OS-X. ignoring coverage request.'))
         return dict(
             extra_compile_args =  ['/std:c++20'],
             extra_link_args = [],
             include_dirs = include_dirs
         )    
-    else:
+    elif sys.platform == 'darwin':
+        if coverage:
+             warnings.warn(UserWarning('coverage not supported on OS-X. ignoring coverage request.'))
+             
         return dict(
-            extra_compile_args =['--std=c++20'],
+            extra_compile_args = ['--std=c++20'],
             extra_link_args = [],
             include_dirs = include_dirs
+        )        
+    else: # assume linux
+        extra_compile_args = ['--std=c++20']
+        extra_link_args = []
+        if coverage:
+            extra_compile_args += [
+                '--coverage', 
+                '-fno-inline', 
+                '-fno-inline-small-functions', 
+                '-fno-default-inline', 
+                '-O0'
+            ]
+            extra_link_args += ['--coverage']
+            
+            
+        return dict(
+            extra_compile_args = extra_compile_args,
+            extra_link_args = extra_link_args,
+            include_dirs = include_dirs
         )
+
  
  
 include_dirs = get_include_dirs()
- 
-
-# optional arguments only to be used in development mode. 
-   
-if "--boost-includes" in sys.argv:
-    i = sys.argv.index("--boost-includes")
-    include_dirs.append(sys.argv[i+1])
-    sys.argv.pop(i) # remove flag
-    sys.argv.pop(i) # remove argument for flag
+    
+if os.environ.get('BOOST_INCLUDE_DIR',False):
+    include_dirs.append(os.environ.get('BOOST_INCLUDE_DIR'))
 
 use_boost,include_dirs = check_for_boost_includes(include_dirs)
-extension_kwargs = get_extension_kwargs(include_dirs)
+extension_kwargs = get_extension_kwargs(
+    include_dirs,
+    os.environ.get('ENABLE_COVERAGE',False)
+)
 
-if "--no-generate-abi" in sys.argv:
-    i = sys.argv.index("--no-generate-abi")
-    sys.argv.pop(i)
-    
-else:
+if not os.environ.get("NO_GENERATE_ABI",False):
     subprocess.check_call([sys.executable,
                             os.path.join(os.path.dirname(__file__),
                                 'generate_abi.py'),f'{use_boost}'])

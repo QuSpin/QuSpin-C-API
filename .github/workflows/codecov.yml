@@ -56,8 +56,8 @@ jobs:
 
       - name: Install
         run: |
-          pip install -v coverage Cython cython-coverage
-          pip install -v -e ${{github.workspace}}
+          pip install -v coverage Cython cython-coverage numpy
+          ENABLE_COVERAGE=True python setup.py develop
 
       - name: Test
         working-directory: ${{github.workspace}}
@@ -70,4 +70,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-          files: ./coverage.xml
+          gcov: true
