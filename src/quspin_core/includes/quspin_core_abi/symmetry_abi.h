@@ -101,8 +101,16 @@ private:
                     return 0;
                 case 64:
                     return 1;
+                case 128:
+                    return 2;
+                case 1024:
+                    return 3;
+                case 4096:
+                    return 4;
+                case 16384:
+                    return 5;
                 default:
-                    throw std::invalid_argument("expecting value of bits to be in: [32, 64]");
+                    throw std::invalid_argument("expecting value of bits to be in: [32, 64, 128, 1024, 4096, 16384]");
             
             }
         }
@@ -111,11 +119,19 @@ private:
             switch(bits)
             {
                 case 32:
-                    return 2;
+                    return 6;
                 case 64:
-                    return 3;
+                    return 7;
+                case 128:
+                    return 8;
+                case 1024:
+                    return 9;
+                case 4096:
+                    return 10;
+                case 16384:
+                    return 11;
                 default:
-                    throw std::invalid_argument("expecting value of bits to be in: [32, 64]");
+                    throw std::invalid_argument("expecting value of bits to be in: [32, 64, 128, 1024, 4096, 16384]");
             
             }
         }
@@ -173,6 +189,78 @@ public:
                 }
             case 2:
                 {
+                    std::vector<bit_perm<quspin::basis::uint128_t>> lat_symm;
+                    std::vector<perm_bit<quspin::basis::uint128_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<bit_perm_args> lat_arg =  std::reinterpret_pointer_cast<bit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_bit_args> loc_arg =  std::reinterpret_pointer_cast<perm_bit_args>(_loc_arg);
+                        loc_symm.emplace_back(loc_arg->mask);
+                    }
+                    std::shared_ptr<bit_symmetry<quspin::basis::uint128_t>> symmetry = std::make_shared<bit_symmetry<quspin::basis::uint128_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 3:
+                {
+                    std::vector<bit_perm<quspin::basis::uint1024_t>> lat_symm;
+                    std::vector<perm_bit<quspin::basis::uint1024_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<bit_perm_args> lat_arg =  std::reinterpret_pointer_cast<bit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_bit_args> loc_arg =  std::reinterpret_pointer_cast<perm_bit_args>(_loc_arg);
+                        loc_symm.emplace_back(loc_arg->mask);
+                    }
+                    std::shared_ptr<bit_symmetry<quspin::basis::uint1024_t>> symmetry = std::make_shared<bit_symmetry<quspin::basis::uint1024_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 4:
+                {
+                    std::vector<bit_perm<quspin::basis::uint4096_t>> lat_symm;
+                    std::vector<perm_bit<quspin::basis::uint4096_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<bit_perm_args> lat_arg =  std::reinterpret_pointer_cast<bit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_bit_args> loc_arg =  std::reinterpret_pointer_cast<perm_bit_args>(_loc_arg);
+                        loc_symm.emplace_back(loc_arg->mask);
+                    }
+                    std::shared_ptr<bit_symmetry<quspin::basis::uint4096_t>> symmetry = std::make_shared<bit_symmetry<quspin::basis::uint4096_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 5:
+                {
+                    std::vector<bit_perm<quspin::basis::uint16384_t>> lat_symm;
+                    std::vector<perm_bit<quspin::basis::uint16384_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<bit_perm_args> lat_arg =  std::reinterpret_pointer_cast<bit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_bit_args> loc_arg =  std::reinterpret_pointer_cast<perm_bit_args>(_loc_arg);
+                        loc_symm.emplace_back(loc_arg->mask);
+                    }
+                    std::shared_ptr<bit_symmetry<quspin::basis::uint16384_t>> symmetry = std::make_shared<bit_symmetry<quspin::basis::uint16384_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 6:
+                {
                     std::vector<dit_perm<quspin::basis::uint32_t>> lat_symm;
                     std::vector<perm_dit<quspin::basis::uint32_t>> loc_symm;
                     std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
@@ -189,7 +277,7 @@ public:
                     symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
                     break;
                 }
-            case 3:
+            case 7:
                 {
                     std::vector<dit_perm<quspin::basis::uint64_t>> lat_symm;
                     std::vector<perm_dit<quspin::basis::uint64_t>> loc_symm;
@@ -204,6 +292,78 @@ public:
                         loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);
                     }
                     std::shared_ptr<dit_symmetry<quspin::basis::uint64_t>> symmetry = std::make_shared<dit_symmetry<quspin::basis::uint64_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 8:
+                {
+                    std::vector<dit_perm<quspin::basis::uint128_t>> lat_symm;
+                    std::vector<perm_dit<quspin::basis::uint128_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<dit_perm_args> lat_arg =  std::reinterpret_pointer_cast<dit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lhss,lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_dit_args> loc_arg = std::reinterpret_pointer_cast<perm_dit_args>(_loc_arg);
+                        loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);
+                    }
+                    std::shared_ptr<dit_symmetry<quspin::basis::uint128_t>> symmetry = std::make_shared<dit_symmetry<quspin::basis::uint128_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 9:
+                {
+                    std::vector<dit_perm<quspin::basis::uint1024_t>> lat_symm;
+                    std::vector<perm_dit<quspin::basis::uint1024_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<dit_perm_args> lat_arg =  std::reinterpret_pointer_cast<dit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lhss,lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_dit_args> loc_arg = std::reinterpret_pointer_cast<perm_dit_args>(_loc_arg);
+                        loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);
+                    }
+                    std::shared_ptr<dit_symmetry<quspin::basis::uint1024_t>> symmetry = std::make_shared<dit_symmetry<quspin::basis::uint1024_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 10:
+                {
+                    std::vector<dit_perm<quspin::basis::uint4096_t>> lat_symm;
+                    std::vector<perm_dit<quspin::basis::uint4096_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<dit_perm_args> lat_arg =  std::reinterpret_pointer_cast<dit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lhss,lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_dit_args> loc_arg = std::reinterpret_pointer_cast<perm_dit_args>(_loc_arg);
+                        loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);
+                    }
+                    std::shared_ptr<dit_symmetry<quspin::basis::uint4096_t>> symmetry = std::make_shared<dit_symmetry<quspin::basis::uint4096_t>>(lat_symm,lat_char,loc_symm,loc_char);
+                    symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
+                    break;
+                }
+            case 11:
+                {
+                    std::vector<dit_perm<quspin::basis::uint16384_t>> lat_symm;
+                    std::vector<perm_dit<quspin::basis::uint16384_t>> loc_symm;
+                    std::vector<npy_cdouble_wrapper> lat_char((npy_cdouble_wrapper*)_lat_char, ((npy_cdouble_wrapper*)_lat_char) + lat_symm.size());
+                    std::vector<npy_cdouble_wrapper> loc_char((npy_cdouble_wrapper*)_loc_char, ((npy_cdouble_wrapper*)_loc_char) + loc_symm.size());
+                    for(std::shared_ptr<void> _lat_arg : _lat_args){
+                        std::shared_ptr<dit_perm_args> lat_arg =  std::reinterpret_pointer_cast<dit_perm_args>(_lat_arg);
+                        lat_symm.emplace_back(lhss,lat_arg->perm);
+                    }
+                    for(std::shared_ptr<void> _loc_arg : _loc_args){
+                        std::shared_ptr<perm_dit_args> loc_arg = std::reinterpret_pointer_cast<perm_dit_args>(_loc_arg);
+                        loc_symm.emplace_back(lhss,loc_arg->perms,loc_arg->locs);
+                    }
+                    std::shared_ptr<dit_symmetry<quspin::basis::uint16384_t>> symmetry = std::make_shared<dit_symmetry<quspin::basis::uint16384_t>>(lat_symm,lat_char,loc_symm,loc_char);
                     symmetry_ptr = std::reinterpret_pointer_cast<void>(symmetry);
                     break;
                 }

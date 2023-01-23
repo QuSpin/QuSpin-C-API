@@ -14,6 +14,10 @@
     if(0){}
     else if(min_bits <= 32){return 32;}
     else if(min_bits <= 64){return 64;}
+    else if(min_bits <= 128){return 128;}
+    else if(min_bits <= 1024){return 1024;}
+    else if(min_bits <= 4096){return 4096;}
+    else if(min_bits <= 16384){return 16384;}
     else{throw std::runtime_error("The combination of lhss and system size not compatible with QuSpin.");}
 }
     }
