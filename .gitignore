@@ -35,7 +35,7 @@ basis.cpp
 operator.cpp
 symmetry.cpp
 _utils.cpp
-**/*_abi.h
+
 
 dist/
 *.egg
