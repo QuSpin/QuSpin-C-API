@@ -48,8 +48,9 @@ def get_extension_kwargs(include_dirs,coverage):
             extra_link_args = [],
             include_dirs = include_dirs
         )        
-    elif sys.platform == 'linux2':
+    elif sys.platform == 'linux':
         extra_compile_args = ['--std=c++20']
+        extra_link_args = []
         if coverage:
             extra_compile_args += [
                 '--coverage', 
@@ -58,10 +59,12 @@ def get_extension_kwargs(include_dirs,coverage):
                 '-fno-default-inline', 
                 '-O0'
             ]
+            extra_link_args += ['--coverage']
+            
             
         return dict(
-            extra_compile_args =extra_compile_args,
-            extra_link_args = [],
+            extra_compile_args = extra_compile_args,
+            extra_link_args = extra_link_args,
             include_dirs = include_dirs
         )
  
