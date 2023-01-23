@@ -48,7 +48,7 @@ def get_extension_kwargs(include_dirs,coverage):
             extra_link_args = [],
             include_dirs = include_dirs
         )        
-    elif sys.platform == 'linux':
+    else: # assume linux
         extra_compile_args = ['--std=c++20']
         extra_link_args = []
         if coverage:
@@ -67,6 +67,7 @@ def get_extension_kwargs(include_dirs,coverage):
             extra_link_args = extra_link_args,
             include_dirs = include_dirs
         )
+
  
  
 include_dirs = get_include_dirs()
