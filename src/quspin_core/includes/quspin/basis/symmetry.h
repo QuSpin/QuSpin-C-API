@@ -98,7 +98,7 @@ public:
     }
 };
 
-
+// potentially change names
 template <typename I>
 class perm_dit // permutations of the dit states locally
 {
