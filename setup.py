@@ -1,123 +1,50 @@
-from setuptools import find_packages, setup, Extension
-from distutils.command import build_ext, install
-from Cython.Build import cythonize
+# Available at setup time due to pyproject.toml
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup
 import numpy as np
-import os,subprocess,sys,warnings
+import os
+import sys
 
-def check_for_boost_includes(include_dirs):
-    for include_dir in include_dirs:
-        if os.path.exists(os.path.join(include_dir,'boost')):
-            return True,include_dirs
-    
-    # check of boost is installed in local workspace
-    for root, dirs, files in os.walk(".", topdown=True):
-        if 'boost' in dirs:
-            include_dirs.append(root)
-            return True,include_dirs
-            
-    return False,include_dirs
+__version__ = "0.1.0"
 
-def get_include_dirs():
-    from sysconfig import get_paths
-    data_path = get_paths()["data"]
-    
-    include_dirs = [np.get_include(),os.path.join('src','quspin_core','includes')]
-    
-    if sys.platform == 'win32':
-        include_dirs.append(os.path.join(data_path,'Library','include'))
-    else:
-         include_dirs.append(os.path.join(data_path,'include'))
-         
-    return include_dirs
+extra_compile_args = []
+extra_link_args = []
 
-def get_extension_kwargs(include_dirs,coverage):
-    if sys.platform == 'win32':
-        if coverage:
-             warnings.warn(UserWarning('coverage not supported on OS-X. ignoring coverage request.'))
-        return dict(
-            extra_compile_args =  ['/std:c++20'],
-            extra_link_args = [],
-            include_dirs = include_dirs
-        )    
-    elif sys.platform == 'darwin':
-        if coverage:
-             warnings.warn(UserWarning('coverage not supported on OS-X. ignoring coverage request.'))
-             
-        return dict(
-            extra_compile_args = ['--std=c++20'],
-            extra_link_args = [],
-            include_dirs = include_dirs
-        )        
-    else: # assume linux
-        extra_compile_args = ['--std=c++20']
-        extra_link_args = []
-        if coverage:
-            extra_compile_args += [
-                '--coverage', 
-                '-fno-inline', 
-                '-fno-inline-small-functions', 
-                '-fno-default-inline', 
-                '-O0'
-            ]
-            extra_link_args += ['--coverage']
-            
-            
-        return dict(
-            extra_compile_args = extra_compile_args,
-            extra_link_args = extra_link_args,
-            include_dirs = include_dirs
-        )
+if os.environ.get("COVERAGE", False):
+    if sys.platform != "linux":
+        raise ValueError("Coverage is only supported on Linux")
 
- 
- 
-include_dirs = get_include_dirs()
-    
-if os.environ.get('BOOST_INCLUDE_DIR',False):
-    include_dirs.append(os.environ.get('BOOST_INCLUDE_DIR'))
+    extra_compile_args += [
+        "-O0",
+        "--coverage",
+        "-fno-inline",
+        "-fno-inline-small-functions",
+        "-fno-default-inline",
+    ]
+    extra_link_args += ["--coverage"]
 
-use_boost,include_dirs = check_for_boost_includes(include_dirs)
-extension_kwargs = get_extension_kwargs(
-    include_dirs,
-    os.environ.get('ENABLE_COVERAGE',False)
-)
 
-if not os.environ.get("NO_GENERATE_ABI",False):
-    subprocess.check_call([sys.executable,
-                            os.path.join(os.path.dirname(__file__),
-                                'generate_abi.py'),f'{use_boost}'])
+if sys.platform == "darwin":
+    extra_compile_args += ["-mmacosx-version-min=10.15"]
 
-with open('README.md', 'r') as f:
-    long_description = f.read()
-
-exec(open(os.path.join('src','quspin_core','_version.py')).read())
-
-ext = [
-    Extension('quspin_core.basis', [os.path.join('src','quspin_core','basis.pyx')],
-        **extension_kwargs
-    ),
-    Extension('quspin_core.symmetry', [os.path.join('src','quspin_core','symmetry.pyx')],
-        **extension_kwargs
-    ),
-    Extension('quspin_core.operator', [os.path.join('src','quspin_core','operator.pyx')],
-        **extension_kwargs
+ext_modules = [
+    Pybind11Extension(
+        "hamiltonian_core.ext",
+        [os.path.join("src", "hamiltonian_core", "ext.cxx")],
+        define_macros=[
+            ("VERSION_INFO", __version__),
+        ],
+        include_dirs=[
+            os.path.join("src", "hamiltonian_core", "include"),
+            np.get_include(),
+        ],
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
     ),
 ]
 
 setup(
-    name='quspin-core',
-    version=__version__,
+    ext_modules=ext_modules,
+    cmdclass={"build_ext": build_ext},
     zip_safe=False,
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
-    author='Phillip Weinberg, Marin Bukov, Markus Schmitt',
-    description='Base low-level components for QuSpin.',
-    long_description=long_description,
-    url='https://github.com/weinbe58/QuSpin-Core',
-    ext_modules=cythonize(ext,
-        include_path=extension_kwargs['include_dirs']
-    ),
-    install_requires=[
-        'numpy>=1.19.2',
-    ],
-    test_suite="test_python"
 )

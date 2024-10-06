@@ -1,0 +1,43 @@
+name: codecov upload
+# only run on merge into main branch
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+jobs:
+  run-python:
+    name: Python code-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: checking pip
+        run:  python -m ensurepip --upgrade
+
+      - name: Install
+        run: |
+          pip install coverage pytest setuptools pybind11 numpy scipy
+          python setup.py install
+        env:
+          COVERAGE: 1
+
+      - name: Test
+        working-directory: ${{github.workspace}}
+        run: |
+          coverage run -m pytest -x
+          coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          plugins: gcov, pycoverage
