@@ -56,3 +56,5 @@ install.txt
 **/.DS_Store
 .coverage
 *.lcov
+*-build/
+*venv/
