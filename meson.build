@@ -8,10 +8,12 @@ project(
 add_project_arguments('-DVERSION_INFO=' + meson.project_version() + '', language: 'cpp')
 
 # libquspin subproject
+
 libquspin = subproject('libquspin')
 libquspin_dep = libquspin.get_variable('libquspin_dep')
 
 # python bindings
+
 py = import('python').find_installation(pure: false)
 pybind11_dep = dependency('pybind11')
 
