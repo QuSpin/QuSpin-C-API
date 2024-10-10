@@ -1,11 +1,6 @@
 name: Build and Publish
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-
   release:
     types:
       - published
@@ -55,6 +50,7 @@ jobs:
 
   upload_all:
     needs: [build_wheels, build_sdist]
+    environment: pypi
     permissions:
       id-token: write
     runs-on: ubuntu-latest

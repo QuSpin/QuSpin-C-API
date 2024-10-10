@@ -28,7 +28,7 @@ jobs:
       - name: Install
         run: |
           pip install coverage pytest
-          pip install . -v
+          pip install -e . -v
         env:
           COVERAGE: 1
 
@@ -41,4 +41,5 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           plugins: gcov, pycoverage
