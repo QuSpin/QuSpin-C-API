@@ -24,6 +24,12 @@ license = {text = "BDS-3"}
 requires = ["meson-python", "pybind11"]
 build-backend = "mesonpy"
 
+[tool.meson-python.args]
+setup = []
+compile = ['-j4']
+install = []
+dist = []
+
 [tool.cibuildwheel]
 skip = ""
 
