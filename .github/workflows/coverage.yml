@@ -28,7 +28,7 @@ jobs:
       - name: Install
         run: |
           pip install coverage pytest
-          pip install -e . -v
+          pip install . -v
         env:
           COVERAGE: 1
 

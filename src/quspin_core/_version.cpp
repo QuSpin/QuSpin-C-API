@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <quspin/array/array.hpp>
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
