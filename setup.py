@@ -19,7 +19,7 @@ LIBQUSPIN_DIR = "libquspin"
 def extra_compile_args() -> List[str]:
     if sys.platform in ["win32", "cygwin", "win64"]:
         extra_compile_args = ["/openmp", "/std:c++20"]
-    if sys.platform in ["darwin"]:
+    elif sys.platform in ["darwin"]:
         extra_compile_args = [
             "-DLLVM_ENABLE_PROJECTS",
             "-Xpreprocessor",
@@ -47,7 +47,7 @@ def extra_compile_args() -> List[str]:
 def extra_link_args() -> List[str]:
     if sys.platform in ["win32", "cygwin", "win64"]:
         extra_link_args = ["/openmp"]
-    if sys.platform in ["darwin"]:
+    elif sys.platform in ["darwin"]:
         extra_link_args = [
             "-DLLVM_ENABLE_PROJECTS",
             "-Xpreprocessor",
