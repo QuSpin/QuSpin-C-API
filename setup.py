@@ -84,7 +84,7 @@ def build_libquspin() -> Dict[str, List[str]]:
     for lib_file in [
         "libquspin.so",
         "libquspin.dylib",
-        "libquspin.lib",
+        "quspin.dll",
     ]:
         if os.path.exists(os.path.join(LIBQUISPIN_BUILD_DIR, lib_file)):
             shutil.copy(
@@ -109,7 +109,9 @@ def build_libquspin() -> Dict[str, List[str]]:
         "library_dirs": library_dirs,
         "runtime_library_dirs": runtime_library_dirs,
         "include_dirs": include_dirs,
-        "extra_link_args": ["-Wl,-rpath,@loader_path/lib"],
+        "extra_link_args": (
+            ["-Wl,-rpath,@loader_path/lib"] if sys.platform != "win32" else []
+        ),
     }
 
 
