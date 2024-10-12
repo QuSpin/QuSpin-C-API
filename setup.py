@@ -8,6 +8,25 @@ import sys
 from typing import Dict, List
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
+
+class BuildCommand(build_ext):
+
+    def run(self):
+        super().run()
+
+
+class PostDevelopCommand(develop):
+    def run(self):
+        super().run()
+
+
+class PostInstallCommand(install):
+    def run(self):
+        self.install_lib
+        super().run()
 
 
 __version__ = "0.1.0"
@@ -67,26 +86,20 @@ def extra_link_args() -> List[str]:
 
 
 def build_libquspin() -> Dict[str, List[str]]:
-    def check(res: subprocess.CompletedProcess[bytes]):
+    def run_cmd(cmds: list[str]):
+        encoding = "utf-8" if sys.flags.utf8_mode else locale.getencoding()
+
+        res = subprocess.run(cmds, encoding=encoding)
+
         if res.returncode == 0:
             return
 
-        strerr = res.stdout.decode(
-            "utf-8" if sys.flags.utf8_mode else locale.getencoding()
-        )
+        strerr = res.stdout.decode(encoding)
+
         raise RuntimeError(f"Failed to build libquspin: {strerr}")
 
-    check(
-        subprocess.run(
-            ["meson", "setup", "libquspin", LIBQUISPIN_BUILD_DIR, "--reconfigure"],
-        )
-    )
-
-    check(
-        subprocess.run(
-            ["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"],
-        )
-    )
+    run_cmd(["meson", "setup", "libquspin", LIBQUISPIN_BUILD_DIR, "--reconfigure"])
+    run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
 
     relocatation_dir = os.path.join("src", "quspin_core", "lib")
     if not os.path.exists(relocatation_dir):
@@ -113,21 +126,21 @@ def build_libquspin() -> Dict[str, List[str]]:
 
     libraries = ["quspin"]
     library_dirs = [os.path.join("src", "quspin_core", "lib")]
-    runtime_library_dirs = library_dirs if sys.platform != "win32" else None
-    include_dirs = [os.path.join("src", "quspin_core", "include")]
+    include_dirs = [os.path.join(LIBQUSPIN_DIR, "include")]
+    runtime_library_dirs = [] if sys.platform != "win32" else None
 
     return {
         "libraries": libraries,
         "library_dirs": library_dirs,
         "runtime_library_dirs": runtime_library_dirs,
         "include_dirs": include_dirs,
-        "extra_link_args": ["-Wl,-rpath=$ORIGIN/lib"],
+        "extra_link_args": ["-rpath", "@loader_path/lib"],
     }
 
 
 def find_extensions(**ext_options) -> List[Pybind11Extension]:
     extensions = []
-    for filename in glob.glob("src/quspin_core/*.cpp"):
+    for filename in glob.glob(os.path.join("src", "quspin_core", "*.cpp")):
         name = os.path.splitext(os.path.basename(filename))[0]
         ext = Pybind11Extension(f"quspin_core.{name}", [filename], **ext_options)
         extensions.append(ext)
@@ -146,7 +159,11 @@ ext_options["define_macros"] = [("VERSION_INFO", __version__)]
 
 setup(
     ext_modules=find_extensions(**ext_options),
-    cmdclass={"build_ext": build_ext},
+    cmdclass={
+        "build_ext": BuildCommand,
+        "develop": PostDevelopCommand,
+        "install": PostInstallCommand,
+    },
     zip_safe=False,
     packages=["quspin_core"],
     package_dir={"quspin_core": "src/quspin_core"},
