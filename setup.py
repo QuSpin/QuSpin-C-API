@@ -84,7 +84,7 @@ def build_libquspin() -> Dict[str, List[str]]:
     for lib_file in [
         "libquspin.so",
         "libquspin.dylib",
-        "libquspin.dll",
+        "libquspin.lib",
         "libquspin.lib",
     ]:
         if os.path.exists(os.path.join(LIBQUISPIN_BUILD_DIR, lib_file)):
