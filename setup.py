@@ -110,7 +110,7 @@ def build_libquspin() -> Dict[str, List[str]]:
         "library_dirs": library_dirs,
         "runtime_library_dirs": runtime_library_dirs,
         "include_dirs": include_dirs,
-        "extra_link_args": ["-rpath", "@loader_path/lib"],
+        "extra_link_args": ["-Wl,-rpath,@loader_path/lib"],
     }
 
 
