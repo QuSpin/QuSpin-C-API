@@ -1,6 +1,5 @@
 # Available at setup time due to pyproject.toml
 import glob
-import locale
 import shutil
 import subprocess
 import os
@@ -87,14 +86,12 @@ def extra_link_args() -> List[str]:
 
 def build_libquspin() -> Dict[str, List[str]]:
     def run_cmd(cmds: list[str]):
-        encoding = "utf-8" if sys.flags.utf8_mode else locale.getencoding()
-
-        res = subprocess.run(cmds, encoding=encoding)
+        res = subprocess.run(cmds, encoding="utf-8")
 
         if res.returncode == 0:
             return
 
-        strerr = res.stdout.decode(encoding)
+        strerr = res.stdout.decode("utf-8")
 
         raise RuntimeError(f"Failed to build libquspin: {strerr}")
 
