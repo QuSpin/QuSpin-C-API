@@ -7,25 +7,6 @@ import sys
 from typing import Dict, List
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
-from setuptools.command.develop import develop
-from setuptools.command.install import install
-
-
-class BuildCommand(build_ext):
-
-    def run(self):
-        super().run()
-
-
-class PostDevelopCommand(develop):
-    def run(self):
-        super().run()
-
-
-class PostInstallCommand(install):
-    def run(self):
-        self.install_lib
-        super().run()
 
 
 __version__ = "0.1.0"
@@ -86,14 +67,12 @@ def extra_link_args() -> List[str]:
 
 def build_libquspin() -> Dict[str, List[str]]:
     def run_cmd(cmds: list[str]):
-        res = subprocess.run(cmds, encoding="utf-8")
+        res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr)
 
         if res.returncode == 0:
             return
 
-        strerr = res.stdout.decode("utf-8")
-
-        raise RuntimeError(f"Failed to build libquspin: {strerr}")
+        raise RuntimeError("Failed to build libquspin")
 
     run_cmd(["meson", "setup", "libquspin", LIBQUISPIN_BUILD_DIR, "--reconfigure"])
     run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
@@ -156,11 +135,7 @@ ext_options["define_macros"] = [("VERSION_INFO", __version__)]
 
 setup(
     ext_modules=find_extensions(**ext_options),
-    cmdclass={
-        "build_ext": BuildCommand,
-        "develop": PostDevelopCommand,
-        "install": PostInstallCommand,
-    },
+    cmdclass={"build_ext": build_ext},
     zip_safe=False,
     packages=["quspin_core"],
     package_dir={"quspin_core": "src/quspin_core"},
