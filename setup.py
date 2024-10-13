@@ -94,7 +94,8 @@ def setup_quspin_core() -> Dict[str, List[str]]:
             "setup",
             "libquspin",
             LIBQUISPIN_BUILD_DIR,
-            "--reconfigure" "--buildtype=release",
+            "--reconfigure",
+            "--buildtype=release",
         ]
     )
     run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
