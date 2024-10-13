@@ -29,7 +29,7 @@ def extra_compile_args() -> List[str]:
             "--std=c++20",
         ]
     else:
-        extra_compile_args = ["-fopenmp", "--std=c++20"]
+        extra_compile_args = ["-fopenmp", "-std=c++2a"]
 
     if os.environ.get("COVERAGE", False):
         if sys.platform in ["win32", "cygwin", "win64", "darwin"]:

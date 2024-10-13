@@ -1,4 +1,4 @@
-name: Build and Publish
+name: CI
 
 on:
   pull_request:
@@ -15,16 +15,19 @@ concurrency:
 
 jobs:
   ruff:
+    name: Ruff
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
   black:
+    name: Black
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
   clang-format-checking:
+    name: Clang-format-checking
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +38,7 @@ jobs:
 
   coverage:
     needs: [ruff, black, clang-format-checking]
-    name: Python code-coverage
+    name: Code Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -65,7 +68,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           plugins: gcov, pycoverage
 
   build_wheels:
