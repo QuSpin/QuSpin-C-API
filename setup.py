@@ -19,7 +19,7 @@ LIBQUSPIN_DIR = "libquspin"
 
 
 def extra_compile_args() -> List[str]:
-    if sys.platform in ["win32", "cygwin", "win64"]:
+    if sys.platform == "win32":
         extra_compile_args = ["/openmp", "/std:c++20"]
     elif sys.platform in ["darwin"]:
         extra_compile_args = [
