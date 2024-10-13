@@ -1,12 +1,14 @@
 # Available at setup time due to pyproject.toml
 import glob
-import shutil
 import subprocess
 import os
 import sys
 from typing import Dict, List
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 from setuptools import setup
+
+# Optional multithreaded build
+ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
 
 __version__ = "0.1.0"
@@ -65,7 +67,7 @@ def extra_link_args() -> List[str]:
     return extra_link_args
 
 
-def build_libquspin() -> Dict[str, List[str]]:
+def setup_quspin_core() -> Dict[str, List[str]]:
     def run_cmd(cmds: list[str]):
         res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr)
 
@@ -74,71 +76,49 @@ def build_libquspin() -> Dict[str, List[str]]:
 
         raise RuntimeError("Failed to build libquspin")
 
+    if sys.platform == "win32":
+        obj_ext = "obj"
+        lib_file = "quspin.dll"
+    elif sys.platform == "darwin":
+        obj_ext = "o"
+        lib_file = "libquspin.dylib"
+    elif sys.platform == "linux":
+        obj_ext = "o"
+        lib_file = "libqpsin.so"
+    else:
+        raise ValueError(f"Unsupported platform {sys.platform}")
+
     run_cmd(["meson", "setup", "libquspin", LIBQUISPIN_BUILD_DIR, "--reconfigure"])
     run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
 
-    relocatation_dir = os.path.join("src", "quspin_core", "lib")
-    if not os.path.exists(relocatation_dir):
-        os.mkdir(relocatation_dir)
-
-    for lib_file in [
-        "libquspin.so",
-        "libquspin.dylib",
-        "quspin.dll",
-    ]:
-        if os.path.exists(os.path.join(LIBQUISPIN_BUILD_DIR, lib_file)):
-            shutil.copy(
-                os.path.join(LIBQUISPIN_BUILD_DIR, lib_file),
-                os.path.join(relocatation_dir, lib_file),
-            )
-            break
-
-    shutil.copytree(
-        os.path.join(LIBQUSPIN_DIR, "include"),
-        os.path.join("src", "quspin_core", "include"),
-        dirs_exist_ok=True,
+    extra_objects = glob.glob(
+        os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", f"*.{obj_ext}")
     )
 
-    libraries = ["quspin"]
-    library_dirs = [os.path.join("src", "quspin_core", "lib")]
     include_dirs = [os.path.join(LIBQUSPIN_DIR, "include")]
-    runtime_library_dirs = [] if sys.platform != "win32" else None
 
-    return {
-        "libraries": libraries,
-        "library_dirs": library_dirs,
-        "runtime_library_dirs": runtime_library_dirs,
-        "include_dirs": include_dirs,
-        "extra_link_args": (
-            ["-Wl,-rpath,@loader_path/lib"] if sys.platform != "win32" else []
-        ),
-    }
+    bindings_cpp = os.path.join("src", "quspin_core", "_bindings.cpp")
+    submodules_cpp = glob.glob(
+        os.path.join("src", "quspin_core", "_submodules", "*.cpp")
+    )
 
+    include_dirs.append(os.path.join("src", "quspin_core"))
 
-def find_extensions(**ext_options) -> List[Pybind11Extension]:
-    extensions = []
-    for filename in glob.glob(os.path.join("src", "quspin_core", "*.cpp")):
-        name = os.path.splitext(os.path.basename(filename))[0]
-        ext = Pybind11Extension(f"quspin_core.{name}", [filename], **ext_options)
-        extensions.append(ext)
+    return Pybind11Extension(
+        "quspin_core._bindings",
+        sorted([bindings_cpp, *submodules_cpp]),
+        extra_objects=extra_objects,
+        extra_compile_args=extra_compile_args(),
+        extra_link_args=extra_link_args(),
+        include_dirs=include_dirs,
+        define_macros=[("VERSION_INFO", __version__)],
+    )
 
-    return extensions
-
-
-ext_options = build_libquspin()
-ext_options["extra_compile_args"] = (
-    ext_options.get("extra_compile_args", []) + extra_compile_args()
-)
-ext_options["extra_link_args"] = (
-    ext_options.get("extra_link_args", []) + extra_link_args()
-)
-ext_options["define_macros"] = [("VERSION_INFO", __version__)]
 
 setup(
-    ext_modules=find_extensions(**ext_options),
+    ext_modules=[setup_quspin_core()],
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     packages=["quspin_core"],
     package_dir={"quspin_core": "src/quspin_core"},
-    package_data={"quspin_core": ["lib/*", "include/**/*.hpp"]},
 )

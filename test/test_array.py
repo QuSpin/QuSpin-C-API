@@ -1,4 +1,4 @@
-from quspin_core.array import hello
+from quspin_core._bindings.array import hello
 
 
 def test_hello():
