@@ -88,7 +88,15 @@ def setup_quspin_core() -> Dict[str, List[str]]:
     else:
         raise ValueError(f"Unsupported platform {sys.platform}")
 
-    run_cmd(["meson", "setup", "libquspin", LIBQUISPIN_BUILD_DIR, "--reconfigure"])
+    run_cmd(
+        [
+            "meson",
+            "setup",
+            "libquspin",
+            LIBQUISPIN_BUILD_DIR,
+            "--reconfigure" "--buildtype=release",
+        ]
+    )
     run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
 
     extra_objects = glob.glob(
