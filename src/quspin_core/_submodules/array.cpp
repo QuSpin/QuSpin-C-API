@@ -45,11 +45,6 @@ quspin::DType numpy_to_quspin_dtype(const py::dtype &npy_dtype) {
   }
 }
 
-template <typename T> std::string quspin_format() {
-  char dtype_char = py::dtype::of<T>().char_();
-  return std::string(&dtype_char, 1);
-}
-
 quspin::Array to_array(py::buffer &buf) {
   py::buffer_info info = buf.request();
   py::dtype dtype = py::dtype(info);
@@ -70,6 +65,11 @@ const quspin::Array to_array(const py::buffer &buf) {
   std::copy(info.shape.cbegin(), info.shape.cend(), shape.begin());
   std::copy(info.strides.cbegin(), info.strides.cend(), strides.begin());
   return quspin::Array(shape, strides, numpy_to_quspin_dtype(dtype), info.ptr);
+}
+
+template <typename T> std::string quspin_format() {
+  char dtype_char = py::dtype::of<T>().char_();
+  return std::string(&dtype_char, 1);
 }
 
 py::buffer_info to_numpy_style_buffer(quspin::Array &arr) {
