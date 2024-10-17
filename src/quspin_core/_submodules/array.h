@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
+#include <quspin/array/array.hpp>
 
 namespace py = pybind11;
 
