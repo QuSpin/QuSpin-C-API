@@ -25,7 +25,8 @@ def extra_compile_args() -> List[str]:
         extra_compile_args = [
             "-DLLVM_ENABLE_PROJECTS",
             "-Xpreprocessor",
-            "-fopenmp-version=50" "-fopenmp",
+            "-fopenmp-version=50",
+            "-fopenmp",
             "--std=c++20",
         ]
     else:
@@ -53,7 +54,8 @@ def extra_link_args() -> List[str]:
         extra_link_args = [
             "-DLLVM_ENABLE_PROJECTS",
             "-Xpreprocessor",
-            "-fopenmp-version=50" "-fopenmp",
+            "-fopenmp-version=50",
+            "-fopenmp",
         ]
     else:
         extra_link_args = ["-fopenmp"]
@@ -98,7 +100,7 @@ def setup_quspin_core() -> Dict[str, List[str]]:
             "--buildtype=release",
         ]
     )
-    run_cmd(["meson", "compile", "-C", LIBQUISPIN_BUILD_DIR, "-j", "4"])
+    run_cmd(["meson", "test", "-C", LIBQUISPIN_BUILD_DIR, "-j4"])
 
     extra_objects = glob.glob(
         os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", f"*.{obj_ext}")
