@@ -102,10 +102,11 @@ def setup_quspin_core() -> Dict[str, List[str]]:
     )
     run_cmd(["meson", "test", "-C", LIBQUISPIN_BUILD_DIR, "-j4"])
 
-    files_glob = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", f"*.{obj_ext}")
-    extra_objects = glob.glob(files_glob)
+    files_glob = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p")
+    extra_objects = glob.glob(os.path.join(files_glob, f"*.{obj_ext}"))
 
     if len(extra_objects) == 0:
+        os.listdir(files_glob)
         raise RuntimeError(f"No object files found in {files_glob}")
 
     include_dirs = [os.path.join(LIBQUSPIN_DIR, "include")]
