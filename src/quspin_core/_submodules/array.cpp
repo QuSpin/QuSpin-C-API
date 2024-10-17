@@ -84,10 +84,10 @@ py::buffer_info to_numpy_style_buffer(quspin::Array &arr) {
         auto arr_strides = arr.strides();
 
         std::transform(arr_shape.cbegin(), arr_shape.cend(), shape.begin(),
-                       [](auto &&i) { return static_cast<ssize_t>(i); });
+                       [](auto &&val) { return static_cast<ssize_t>(val); });
         std::transform(arr_strides.cbegin(), arr_strides.cend(),
                        strides.begin(),
-                       [](auto &&i) { return static_cast<ssize_t>(i); });
+                       [](auto &&val) { return static_cast<ssize_t>(val); });
 
         return py::buffer_info(arr.mut_data(), sizeof(T), quspin_format<T>(),
                                arr.ndim(), shape, strides);
