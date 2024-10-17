@@ -40,7 +40,7 @@ quspin::DType numpy_to_quspin_dtype(const py::dtype &npy_dtype) {
   case dt::npy_api::NPY_CDOUBLE_:
     return quspin::CDouble;
   default:
-    std::string name = py::str(npy_dtype);
+    std::string name = py::str(py::object(npy_dtype));
     throw std::invalid_argument("dtype " + name + " not supported.");
   }
 }
