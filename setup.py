@@ -13,9 +13,9 @@ ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
 __version__ = "0.1.0"
 
-LIB_QUISPIN_BUILD = False
-LIBQUISPIN_BUILD_DIR = "libquspin-build"
-LIBQUSPIN_DIR = "libquspin"
+CWD = os.path.dirname(os.path.abspath(__file__))
+LIBQUISPIN_BUILD_DIR = os.path.join(CWD, "libquspin-build")
+LIBQUSPIN_DIR = os.path.join(CWD, "libquspin")
 
 
 def extra_compile_args() -> List[str]:
@@ -71,7 +71,7 @@ def extra_link_args() -> List[str]:
 
 def setup_quspin_core() -> Dict[str, List[str]]:
     def run_cmd(cmds: list[str]):
-        res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr)
+        res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr, cwd=CWD)
 
         if res.returncode == 0:
             return
@@ -86,7 +86,7 @@ def setup_quspin_core() -> Dict[str, List[str]]:
         lib_file = "libquspin.dylib"
     elif sys.platform == "linux":
         obj_ext = "o"
-        lib_file = "libqpsin.so"
+        lib_file = "libquspin.so"
     else:
         raise ValueError(f"Unsupported platform {sys.platform}")
 
@@ -102,9 +102,11 @@ def setup_quspin_core() -> Dict[str, List[str]]:
     )
     run_cmd(["meson", "test", "-C", LIBQUISPIN_BUILD_DIR, "-j4"])
 
-    extra_objects = glob.glob(
-        os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", f"*.{obj_ext}")
-    )
+    files_glob = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", f"*.{obj_ext}")
+    extra_objects = glob.glob(files_glob)
+
+    if len(extra_objects) == 0:
+        raise RuntimeError(f"No object files found in {files_glob}")
 
     include_dirs = [os.path.join(LIBQUSPIN_DIR, "include")]
 
@@ -130,6 +132,4 @@ setup(
     ext_modules=[setup_quspin_core()],
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
-    packages=["quspin_core"],
-    package_dir={"quspin_core": "src/quspin_core"},
 )
