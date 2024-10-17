@@ -1,5 +1,6 @@
 #pragma once
 
+#include <pybind11/numoy.h>
 #include <pybind11/pybind11.h>
 #include <quspin/array/array.hpp>
 
