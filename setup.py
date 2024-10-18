@@ -18,6 +18,32 @@ LIBQUISPIN_BUILD_DIR = os.path.join(CWD, "libquspin-build")
 LIBQUSPIN_DIR = os.path.join(CWD, "libquspin")
 
 
+def run_cmd(cmds: list[str]):
+    res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr, cwd=CWD)
+
+    if res.returncode == 0:
+        return
+
+    raise RuntimeError("Failed to build libquspin")
+
+
+class quspin_build_ext(build_ext):
+
+    def run(self):
+        run_cmd(
+            [
+                "meson",
+                "setup",
+                "libquspin",
+                LIBQUISPIN_BUILD_DIR,
+                "--reconfigure",
+                "--buildtype=release",
+            ]
+        )
+        run_cmd(["meson", "test", "-C", LIBQUISPIN_BUILD_DIR, "-j4"])
+        super().run()
+
+
 def extra_compile_args() -> List[str]:
     if sys.platform == "win32":
         extra_compile_args = ["/std:c++20"]
@@ -62,14 +88,6 @@ def extra_link_args() -> List[str]:
 
 
 def setup_quspin_core() -> Dict[str, List[str]]:
-    def run_cmd(cmds: list[str]):
-        res = subprocess.run(cmds, stdout=sys.stdout, stderr=sys.stderr, cwd=CWD)
-
-        if res.returncode == 0:
-            return
-
-        raise RuntimeError("Failed to build libquspin")
-
     if sys.platform == "win32":
         obj_ext = "obj"
         lib_file = "libquspin.lib"
@@ -82,24 +100,25 @@ def setup_quspin_core() -> Dict[str, List[str]]:
     else:
         raise ValueError(f"Unsupported platform {sys.platform}")
 
-    run_cmd(
-        [
-            "meson",
-            "setup",
-            "libquspin",
-            LIBQUISPIN_BUILD_DIR,
-            "--reconfigure",
-            "--buildtype=release",
-        ]
-    )
-    run_cmd(["meson", "test", "-C", LIBQUISPIN_BUILD_DIR, "-j4"])
+    source_names = []
 
-    files_glob = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p")
-    extra_objects = glob.glob(os.path.join(files_glob, f"*.{obj_ext}"))
+    for root, _, files in os.walk(os.path.join(LIBQUSPIN_DIR, "src")):
+        root = os.path.relpath(root, LIBQUSPIN_DIR)
+        files = [f for f in files if f.endswith(".cpp")]
+        for file in files:
+            source_names.append((*root.split(os.path.sep), file))
+
+    extra_objects = []
+    for source_name in source_names:
+        object_name = "_".join(source_name) + f".{obj_ext}"
+        object_path = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p", object_name)
+        print(object_path)
+        extra_objects.append(object_path)
 
     if len(extra_objects) == 0:
-        os.listdir(files_glob)
-        raise RuntimeError(f"No object files found in {files_glob}")
+        object_folder = os.path.join(LIBQUISPIN_BUILD_DIR, f"{lib_file}.p")
+        os.listdir(object_folder)
+        raise RuntimeError(f"No object files found in {object_folder}")
 
     include_dirs = [os.path.join(LIBQUSPIN_DIR, "include")]
 
@@ -123,6 +142,6 @@ def setup_quspin_core() -> Dict[str, List[str]]:
 
 setup(
     ext_modules=[setup_quspin_core()],
-    cmdclass={"build_ext": build_ext},
+    cmdclass={"build_ext": quspin_build_ext},
     zip_safe=False,
 )
