@@ -20,17 +20,13 @@ LIBQUSPIN_DIR = os.path.join(CWD, "libquspin")
 
 def extra_compile_args() -> List[str]:
     if sys.platform == "win32":
-        extra_compile_args = ["/openmp", "/std:c++20"]
+        extra_compile_args = ["/std:c++20"]
     elif sys.platform in ["darwin"]:
         extra_compile_args = [
-            "-DLLVM_ENABLE_PROJECTS",
-            "-Xpreprocessor",
-            "-fopenmp-version=50",
-            "-fopenmp",
             "--std=c++20",
         ]
     else:
-        extra_compile_args = ["-fopenmp", "-std=c++2a"]
+        extra_compile_args = ["-std=c++2a"]
 
     if os.environ.get("COVERAGE", False):
         if sys.platform in ["win32", "cygwin", "win64", "darwin"]:
