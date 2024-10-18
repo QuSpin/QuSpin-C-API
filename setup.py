@@ -24,6 +24,7 @@ def extra_compile_args() -> List[str]:
     elif sys.platform in ["darwin"]:
         extra_compile_args = [
             "--std=c++20",
+            "-mmacosx-version-min=10.14",
         ]
     else:
         extra_compile_args = ["-std=c++2a"]
