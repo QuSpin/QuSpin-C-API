@@ -71,7 +71,7 @@ def setup_quspin_core() -> Dict[str, List[str]]:
 
     if sys.platform == "win32":
         obj_ext = "obj"
-        lib_file = "quspin.lib"
+        lib_file = "libquspin.a"
     elif sys.platform == "darwin":
         obj_ext = "o"
         lib_file = "libquspin.dylib"
