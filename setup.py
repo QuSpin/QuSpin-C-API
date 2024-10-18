@@ -45,16 +45,11 @@ def extra_compile_args() -> List[str]:
 
 def extra_link_args() -> List[str]:
     if sys.platform in ["win32", "cygwin", "win64"]:
-        extra_link_args = ["/openmp"]
+        extra_link_args = []
     elif sys.platform in ["darwin"]:
-        extra_link_args = [
-            "-DLLVM_ENABLE_PROJECTS",
-            "-Xpreprocessor",
-            "-fopenmp-version=50",
-            "-fopenmp",
-        ]
+        extra_link_args = []
     else:
-        extra_link_args = ["-fopenmp"]
+        extra_link_args = []
 
     if os.environ.get("COVERAGE", False):
         if sys.platform in ["win32", "cygwin", "win64", "darwin"]:
