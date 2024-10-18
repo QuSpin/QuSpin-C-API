@@ -3,6 +3,8 @@
 #include <variant>
 #include <vector>
 
+#include "_submodules/array.h"
+
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <quspin/array/array.hpp>
@@ -48,22 +50,18 @@ quspin::DType numpy_to_quspin_dtype(const py::dtype &npy_dtype) {
 quspin::Array to_array(py::buffer &buf) {
   py::buffer_info info = buf.request();
   py::dtype dtype = py::dtype(info);
-  std::vector<std::size_t> shape(info.shape.size());
-  std::vector<std::size_t> strides(info.strides.size());
+  auto shape = cast_vector<std::size_t>(info.shape);
+  auto strides = cast_vector<std::size_t>(info.strides);
 
-  std::copy(info.shape.cbegin(), info.shape.cend(), shape.begin());
-  std::copy(info.strides.cbegin(), info.strides.cend(), strides.begin());
   return quspin::Array(shape, strides, numpy_to_quspin_dtype(dtype), info.ptr);
 }
 
 const quspin::Array to_array(const py::buffer &buf) {
   py::buffer_info info = buf.request();
   py::dtype dtype = py::dtype(info);
-  std::vector<std::size_t> shape(info.shape.size());
-  std::vector<std::size_t> strides(info.strides.size());
+  auto shape = cast_vector<std::size_t>(info.shape);
+  auto strides = cast_vector<std::size_t>(info.strides);
 
-  std::copy(info.shape.cbegin(), info.shape.cend(), shape.begin());
-  std::copy(info.strides.cbegin(), info.strides.cend(), strides.begin());
   return quspin::Array(shape, strides, numpy_to_quspin_dtype(dtype), info.ptr);
 }
 
@@ -77,18 +75,8 @@ py::buffer_info to_numpy_style_buffer(quspin::Array &arr) {
       [](auto &&arr) {
         using T = typename std::decay_t<decltype(arr)>::value_type;
 
-        std::vector<py::ssize_t> shape(arr.ndim());
-        std::vector<py::ssize_t> strides(arr.ndim());
-
-        auto arr_shape = arr.shape();
-        auto arr_strides = arr.strides();
-
-        std::transform(
-            arr_shape.cbegin(), arr_shape.cend(), shape.begin(),
-            [](auto &&val) { return static_cast<py::ssize_t>(val); });
-        std::transform(
-            arr_strides.cbegin(), arr_strides.cend(), strides.begin(),
-            [](auto &&val) { return static_cast<py::ssize_t>(val); });
+        auto shape = cast_vector<py::ssize_t>(arr.shape());
+        auto strides = cast_vector<py::ssize_t>(arr.strides());
 
         return py::buffer_info(arr.mut_data(), sizeof(T), quspin_format<T>(),
                                arr.ndim(), shape, strides);
